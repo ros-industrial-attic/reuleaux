@@ -1,2 +1,2 @@
 # reuleaux
-GSoC Project for robot reachaiblity
+GSoC Project for robot reachability
