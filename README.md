@@ -39,7 +39,7 @@ roslaunch reuleaux show_arrow.launch (the data will take some time to generate)
 
 /**********************Reuleaux***************************************/
 
-This package is designed to create a reachability/ capability map of the robot. The steps for creating a map follows:
+This package is designed to create a reachability/ capability map of the robot. 
 
 To visualize the bounding box of the workspace in terms of spheres:
 
