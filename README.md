@@ -17,7 +17,7 @@ rosrun reuleaux rand_pos_generator
 
 rosrun reuleaux show_sphere
 
-(there is a huge delay between messsages purposely generated as the data is quite big and takes time to generate. It will be solved eventually. The publisher would not publish until it is subscribed to the subscriber)
+(there is a purposely generated huge delay between messsages as the data is quite big and takes time to generate. It will be solved eventually. The publisher would not publish until it is subscribed to the subscriber)
 
 To visualize randomly generated orientations.
 
