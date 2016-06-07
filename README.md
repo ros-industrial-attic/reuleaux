@@ -5,7 +5,7 @@ Please read this file before using this package
 
 ***This package is constantly updated and still in progress. So please use with caution ***
 
-
+(This package depends on the ikfast package. So please modify and put your ikfast.h file location in the mh5_ikfast.h file in the include folder before start building)
 
 The package is divided into two parts. First part creates the data and second part visualizes the data. To run the programs in a terminal open rviz and open marker/markerArray depending upon your visualization [generally marker for spheres and markerArray for poses]. In a second terminal run the visualization program and in a third terminal run the data generation programs.
 
@@ -61,7 +61,7 @@ rosrun reuleaux create_pose_and_show
 rosrun reuleaux show_arrow
 
 
-To visualize all the reachable poses and spheres: (This part depends on the ikfast package. So please modify and put your ikfast.h file location in the mh5_ikfast.h file in the include folder)
+To visualize all the reachable poses and spheres: 
 
 rosrun reuleaux create_sphere_and_arrow
 
