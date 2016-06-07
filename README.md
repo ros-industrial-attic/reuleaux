@@ -61,7 +61,7 @@ rosrun reuleaux create_pose_and_show
 rosrun reuleaux show_arrow
 
 
-To visualize all the reachable poses and spheres:
+To visualize all the reachable poses and spheres: (This part depends on the ikfast package. So please modify and put your ikfast.h file location in the mh5_ikfast.h file in the include folder)
 
 rosrun reuleaux create_sphere_and_arrow
 
