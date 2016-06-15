@@ -47,6 +47,8 @@ while(point_pub.getNumSubscribers() == 0)
 	
 		
  	}
+
+
     
     cout<<"The # of leaf nodes in first tree: "<<tree->getNumLeafNodes()<<endl;
     cout<<"The # of data in the array: "<<newData.size()<<endl;

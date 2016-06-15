@@ -106,7 +106,10 @@ add_dependencies(rand_orientation_generator ${${PROJECT_NAME}_EXPORTED_TARGETS} 
 target_link_libraries(rand_orientation_generator ${catkin_LIBRARIES})
 
 add_executable(create_sphere_and_show src/create_sphere_and_show.cpp)
-add_dependencies(create_sphere_and_show ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+<<<<<<< HEAD
+
+=======
+>>>>>>> map-cretor commit
 target_link_libraries(create_sphere_and_show sphere_discretization kinematics ${catkin_LIBRARIES})
 
 add_executable(create_discretized_sphere src/create_discretized_sphere.cpp)
@@ -122,12 +125,22 @@ add_dependencies(create_pose_and_show ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catk
 target_link_libraries(create_pose_and_show sphere_discretization kinematics ${catkin_LIBRARIES})
 
 #add_executable(create_sphere_and_arrow src/create_sphere_and_arrow.cpp)
-#add_dependencies(create_sphere_and_arrow ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+<<<<<<< HEAD
+
+
+
+
+
+
+=======
 #target_link_libraries(create_sphere_and_arrow sphere_discretization kinematics ${catkin_LIBRARIES})
 
 add_executable(create_sphere_and_arrow_color src/create_sphere_and_arrow_color.cpp)
-add_dependencies(create_sphere_and_arrow_color ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(create_sphere_and_arrow_color sphere_discretization kinematics -lhdf5 -lhdf5_cpp ${catkin_LIBRARIES})
+
+add_executable(create_maps src/create_maps.cpp)
+target_link_libraries(create_maps sphere_discretization kinematics -lhdf5 -lhdf5_cpp ${catkin_LIBRARIES})
+>>>>>>> map-cretor commit
 
 add_executable(create_maps src/create_maps.cpp)
 add_dependencies(create_maps ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})

@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include<vector>
+#include<ros/ros.h>
 
 #if IK_VERSION > 54
 #define IKREAL_TYPE IkReal // for IKFast 56,61
@@ -29,7 +30,9 @@ public:
  float NORM(float a, float b, float c, float d);  
     void getPoseFromFK( const std::vector<double>  joint_values,  std::vector<double>& pose);
 
-    bool isIKSuccess(std::vector<double> pose);
+    bool isIKSuccess(std::vector<double> pose,std::vector<double>& joints);
+
+    const string getRobotName();
 };
 }
 

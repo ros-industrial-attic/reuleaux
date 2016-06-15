@@ -45,11 +45,15 @@
   <build_depend>message_generation</build_depend>
   <build_depend>octomap_server</build_depend>
   <build_depend>tf2</build_depend>
+  <build_depend>hdf5</build_depend>
+  <build_depend>rviz_visual_tools</build_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>visualization_msgs</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>octomap_server</run_depend>
   <run_depend>tf2</run_depend>
+  <run_depend>hdf5</run_depend>
+  <run_depend>rviz_visual_tools</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
