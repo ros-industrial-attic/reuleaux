@@ -93,5 +93,8 @@ The launch file also shows the motoman robot with joint_state_publisher, so you 
 
 
 
+The create_maps file generates and saves a databse of the reachability of robot with reachable poses, sphere locations and reachability index.
 
+You have to have libhdf5 to run the database.
+sudo apt-get install libhdf5-serial-dev
 
