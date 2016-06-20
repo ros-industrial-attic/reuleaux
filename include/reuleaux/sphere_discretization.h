@@ -8,6 +8,11 @@
 #include "geometry_msgs/Pose.h"
 #include<tf2/LinearMath/Quaternion.h>
 #include<vector>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/surface/convex_hull.h>
+#include <pcl/common/transforms.h>
+#include <pcl/segmentation/extract_polygonal_prism_data.h>
 using namespace octomap;
 using namespace std;
 using namespace octomath;
@@ -40,10 +45,18 @@ public:
     
     double r8_modp(double x, double y);
 
-    void convertPointToVector(point3d point, vector<double> & data);
-
+    void convertPointToVector(const point3d point, vector<double> & data);
+    void convertVectorToPoint(const std::vector<double> data, point3d & point);
     void convertPoseToVector(const geometry_msgs::Pose pose, std::vector<double> & data);
+    void convertVectorToPose(const std::vector<double> data, geometry_msgs::Pose & pose);
+    geometry_msgs::Pose findOptimalPose(const vector<geometry_msgs::Pose> poses, point3d origin);
 
+
+    void createConeCloud(const geometry_msgs::Pose pose, const double angle, const double scale,pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
+
+    void poseToPoint(const geometry_msgs::Pose pose, point3d & point);
+
+    bool isPointInCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, point3d point);
 
     Pointcloud make_sphere_spiral_points(point3d origin, double r, int sample);
     Pointcloud make_long_lat_grid(point3d origin, double r, int sample, int lat_num, int lon_num);

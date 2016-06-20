@@ -86,42 +86,57 @@ void WorkSpaceViz::PointCallback(const reuleaux::WsColor::ConstPtr& msg)
           marker.scale.x = 0.2;
           marker.scale.y = 0.2;
           marker.scale.z = 0.2;
+	  marker.color.a = 0.9;
 	  //ROS_INFO("color [%d] ",msg->points[i].col);
-	  if (msg->points[i].col>=35){
+	  if (msg->points[i].col>=90){
 
     	  	marker.color.r = 0.0f;
     	  	marker.color.g = 0.0f;
     	  	marker.color.b = 1.0f;
-    	  	marker.color.a = 0.3;
+    	  	
 	  }
-	  else if (msg->points[i].col<35 && msg->points[i].col>=25){
+	  else if (msg->points[i].col<90 && msg->points[i].col>=70){
+
+    	  	marker.color.r = 0.0f;
+    	  	marker.color.g = 0.5f;
+    	  	marker.color.b = 0.5f;
+    	  	
+	  }
+	  else if (msg->points[i].col<70 && msg->points[i].col>=50){
 
     	  	marker.color.r = 0.0f;
     	  	marker.color.g = 1.0f;
-    	  	marker.color.b = 1.0f;
-    	  	marker.color.a = 0.3;
+    	  	marker.color.b = 0.5f;
+    	  	
 	  }
-	  else if (msg->points[i].col<25 && msg->points[i].col>=15){
+	  else if (msg->points[i].col<50 && msg->points[i].col>=30){
 
     	  	marker.color.r = 0.0f;
     	  	marker.color.g = 1.0f;
     	  	marker.color.b = 0.0f;
-    	  	marker.color.a = 0.3;
+    	  	
 	  }
 	  
-	  else if (msg->points[i].col<15 && msg->points[i].col>=3){
+ 	 else if (msg->points[i].col<30 && msg->points[i].col>=20){
 
     	  	marker.color.r = 1.0f;
     	  	marker.color.g = 1.0f;
     	  	marker.color.b = 0.0f;
-    	  	marker.color.a = 0.3;
+    	  	
+	  }
+	  else if (msg->points[i].col<20 && msg->points[i].col>=5){
+
+    	  	marker.color.r = 0.65f;
+    	  	marker.color.g = 0.35f;
+    	  	marker.color.b = 0.0f;
+    	  	
 	  }
 	  else{
 
     	  	marker.color.r = 1.0f;
     	  	marker.color.g = 0.0f;
     	  	marker.color.b = 0.0f;
-    	  	marker.color.a = 0.3;
+    	  	
 	  }
 	  
 	  marker.id=i;

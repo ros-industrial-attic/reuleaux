@@ -62,10 +62,9 @@ void WorkSpaceViz::PointCallback(const reuleaux::WorkSpace::ConstPtr& msg)
 	  marker.pose.orientation.x=msg->poses[i].orientation.x;
 	  marker.pose.orientation.y=msg->poses[i].orientation.y;
           marker.pose.orientation.z=msg->poses[i].orientation.z;
-	  //ROS_INFO("received msg [%f] [%f] [%f]",msg->poses[i].position.x,msg->poses[i].position.y,msg->poses[i].position.z);
-          //marker.pose.push_back(p);
+	  
 	  markerArr.markers.push_back(marker);
-	  //ROS_INFO("received msg [#%i ] ",i);
+	  
 	}
      
      arrow_pub.publish(markerArr);

@@ -77,14 +77,17 @@ while(workspace_pub.getNumSubscribers() == 0)
 }
 
 Kinematics k;
-multimap<vector<double>, vector<double> > PoseColFilter;
-for (multimap<vector<double>, vector<double> >::iterator it = PoseCol.begin();it != PoseCol.end();++it){
-	//std::cout << it->first[0] <<" "<< it->first[1]<<" "<<it->first[2]<<" "<< it->first[3]<<" "<< it->first[4]<<" "<< it->first[5]<<" "<< it->first[6]<<endl;
-	//cout<<k.isIKSuccess(it->first)<<endl;
-	if (k.isIKSuccess(it->first)){
+    multimap<vector<double>, vector<double> > PoseColFilter;
+    vector<vector<double> > ikSolutions;
+    for (multimap<vector<double>, vector<double> >::iterator it = PoseCol.begin();it != PoseCol.end();++it){
+        std::vector<double> joints;
+	joints.resize(6);
+	if (k.isIKSuccess(it->first,joints)){
 		PoseColFilter.insert(pair<vector<double>, vector<double> >(it->second,it->first));
-	}
-}
+	        ikSolutions.push_back(joints);
+		//cout<<it->first[0]<<" "<<it->first[1]<<" "<<it->first[2]<<" "<<it->first[3]<<" "<<it->first[4]<<" "<<it->first[5]<<" "<<it->first[6]<<endl;
+	    }
+    }
 cout<<"Total number of poses: "<<PoseCol.size()<<endl;
 cout<<"Total number of reachable poses: "<<PoseColFilter.size()<<endl;
    
@@ -109,8 +112,9 @@ cout<<"Total number of reachable poses: "<<PoseColFilter.size()<<endl;
 
 map<vector<double>, int>  sphereColor;
 for (multimap<vector<double>, vector<double> >::iterator it = PoseColFilter.begin();it != PoseColFilter.end();++it){
-	//cout<<PoseColFilter.count(it->first)<<endl;
-	
+	//Reachability Index D=R/N*100;
+	float d=float(PoseColFilter.count(it->first))/(PoseCol.size()/newData.size())*100;
+	cout<<d<<endl;
 	sphereColor.insert(pair<vector<double>, int >(it->first,PoseColFilter.count(it->first)));
 	
 }

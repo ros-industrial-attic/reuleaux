@@ -104,7 +104,9 @@ void Kinematics::getPoseFromFK(const std::vector<double> joint_values,  std::vec
      }
 
 
-bool Kinematics::isIKSuccess(std::vector<double> pose){
+bool Kinematics::isIKSuccess(std::vector<double> pose, std::vector<double>& joints){
+
+
      #if IK_VERSION > 54
     // for IKFast 56,61
     unsigned int num_of_joints = GetNumJoints();
@@ -151,24 +153,62 @@ bool Kinematics::isIKSuccess(std::vector<double> pose){
 
 #if IK_VERSION > 54
             // for IKFast 56,61
-            bool bSuccess = ComputeIk(eetrans, eerot, vfree.size() > 0 ? &vfree[0] : NULL, solutions);
-	    if(!bSuccess){
+            bool b1Success = ComputeIk(eetrans, eerot, vfree.size() > 0 ? &vfree[0] : NULL, solutions);
+	    
+#else
+            // for IKFast 54
+            bool b2Success = ik(eetrans, eerot, vfree.size() > 0 ? &vfree[0] : NULL, vsolutions);
+
+
+	
+#endif
+#if IK_VERSION > 54
+	// for IKFast 56,61
+            unsigned int num_of_solutions = (int)solutions.GetNumSolutions();
+#else
+            // for IKFast 54
+            unsigned int num_of_solutions = (int)vsolutions.size();
+#endif
+            
+            std::vector<IKREAL_TYPE> solvalues(num_of_joints);
+           
+#if IK_VERSION > 54
+            // for IKFast 56,61
+if(!b1Success){
 		return false;
 		}
 	else{
+		//cout<<"Found ik solutions: "<< num_of_solutions<<endl; 
+		const IkSolutionBase<IKREAL_TYPE>& sol = solutions.GetSolution(1);
+                int this_sol_free_params = (int)sol.GetFree().size(); 
+		std::vector<IKREAL_TYPE> vsolfree(this_sol_free_params);
+		sol.GetSolution(&solvalues[0],vsolfree.size()>0?&vsolfree[0]:NULL);
+		joints=solvalues;
 		return true;
 	}
 #else
-            // for IKFast 54
-            bool bSuccess = ik(eetrans, eerot, vfree.size() > 0 ? &vfree[0] : NULL, vsolutions);
-
-
-	if(!bsuccess){
+if(!b2success){
 		return false;
 		}
 	else{
+		//cout<<"Found ik solutions: "<< num_of_solutions<<endl; 
+		int this_sol_free_params = (int)vsolutions[i].GetFree().size();
+		std::vector<IKREAL_TYPE> vsolfree(this_sol_free_params);
+		vsolutions[i].GetSolution(&solvalues[0],vsolfree.size()>0?&vsolfree[0]:NULL);
 		return true;
 	}
 #endif
-    }
+
+}
+
+const string Kinematics::getRobotName(){
+
+	const char* hash=GetKinematicsHash();;
+	
+	string part=hash;
+	part.erase(0,22);
+	string name=part.substr(0,part.find(" "));
+        return name;
+
+}
 };
