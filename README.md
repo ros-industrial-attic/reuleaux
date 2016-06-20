@@ -91,7 +91,13 @@ roslaunch reuleaux show_ws_color.launch
 
 The launch file also shows the motoman robot with joint_state_publisher, so you can validate the results. So you must have motoman_mh5_support package before you run the launch file.
 
+The create_maps file generates and saves a databse of the reachability of robot with reachable poses, sphere locations and reachability index.
 
+You have to have libhdf5 to run the database.
+sudo apt-get install libhdf5-serial-dev
+
+
+The create_capability_map filr generates and saves a database of capability of the robot, with cone and sphere representation.
 
 
 
