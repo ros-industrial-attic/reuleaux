@@ -144,3 +144,8 @@ add_executable(create_capability_map src/create_capability_map.cpp)
 add_dependencies(show_cone ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(create_capability_map sphere_discretization kinematics -lhdf5 -lhdf5_cpp ${catkin_LIBRARIES})
 
+add_executable(create_capability src/create_capability.cpp)
+add_dependencies(create_capability ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(create_capability sphere_discretization kinematics  ${catkin_LIBRARIES})
+
+
