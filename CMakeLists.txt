@@ -10,7 +10,9 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   octomap_server
   tf2
+  rviz_visual_tools
 )
+
 
  add_message_files(
    FILES
@@ -39,7 +41,9 @@ catkin_package(
 )
 
 
-include_directories(include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS})
+
+
+include_directories(include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR})
 
 
 
@@ -59,6 +63,8 @@ target_link_libraries(kinematics
    ${catkin_LIBRARIES}
  )
 
+
+
  install(TARGETS sphere_discretization kinematics
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -72,9 +78,12 @@ install(DIRECTORY include/${PROJECT_NAME}/
 
 
 
+
+
 add_executable(show_sphere src/show_sphere.cpp)
 add_dependencies(show_sphere ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(show_sphere ${catkin_LIBRARIES})
+
 
 add_executable(show_sphere_and_arrow src/show_sphere_and_arrow.cpp)
 add_dependencies(show_sphere_and_arrow ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -98,7 +107,7 @@ target_link_libraries(rand_orientation_generator ${catkin_LIBRARIES})
 
 add_executable(create_sphere_and_show src/create_sphere_and_show.cpp)
 add_dependencies(create_sphere_and_show ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(create_sphere_and_show sphere_discretization ${catkin_LIBRARIES})
+target_link_libraries(create_sphere_and_show sphere_discretization kinematics ${catkin_LIBRARIES})
 
 add_executable(create_discretized_sphere src/create_discretized_sphere.cpp)
 add_dependencies(create_discretized_sphere ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -109,15 +118,17 @@ add_dependencies(show_discretized_sphere ${${PROJECT_NAME}_EXPORTED_TARGETS} ${c
 target_link_libraries(show_discretized_sphere sphere_discretization ${catkin_LIBRARIES})
 
 add_executable(create_pose_and_show src/create_pose_and_show.cpp)
-add_dependencies(create_pose_and_show ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(create_pose_and_show${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(create_pose_and_show sphere_discretization kinematics ${catkin_LIBRARIES})
 
-add_executable(create_sphere_and_arrow src/create_sphere_and_arrow.cpp)
-add_dependencies(create_sphere_and_arrow ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(create_sphere_and_arrow sphere_discretization kinematics ${catkin_LIBRARIES})
+#add_executable(create_sphere_and_arrow src/create_sphere_and_arrow.cpp)
+#add_dependencies(create_sphere_and_arrow${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#target_link_libraries(create_sphere_and_arrow sphere_discretization kinematics ${catkin_LIBRARIES})
 
 add_executable(create_sphere_and_arrow_color src/create_sphere_and_arrow_color.cpp)
-add_dependencies(create_sphere_and_arrow_color ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(create_sphere_and_arrow_color sphere_discretization kinematics ${catkin_LIBRARIES})
+add_dependencies(create_sphere_and_arrow_color${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(create_sphere_and_arrow_color sphere_discretization kinematics -lhdf5 -lhdf5_cpp ${catkin_LIBRARIES})
 
-
+add_executable(create_maps src/create_maps.cpp)
+add_dependencies(create_maps${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(create_maps sphere_discretization kinematics -lhdf5 -lhdf5_cpp ${catkin_LIBRARIES})
