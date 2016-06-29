@@ -121,9 +121,7 @@ add_executable(create_pose_and_show src/create_pose_and_show.cpp)
 add_dependencies(create_pose_and_show ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(create_pose_and_show sphere_discretization kinematics ${catkin_LIBRARIES})
 
-#add_executable(create_sphere_and_arrow src/create_sphere_and_arrow.cpp)
-#add_dependencies(create_sphere_and_arrow ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-#target_link_libraries(create_sphere_and_arrow sphere_discretization kinematics ${catkin_LIBRARIES})
+
 
 add_executable(create_sphere_and_arrow_color src/create_sphere_and_arrow_color.cpp)
 add_dependencies(create_sphere_and_arrow_color ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
