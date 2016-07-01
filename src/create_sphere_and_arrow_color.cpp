@@ -22,11 +22,9 @@ int main(int argc, char **argv)
   
     
 
-    ros::Publisher workspace_pub = n.advertise<reuleaux::WsColor>("workspace", 1000);
-  //ros::Rate loop_rate(10);
-  ros::Rate poll_rate(100);
-while(workspace_pub.getNumSubscribers() == 0)
-    poll_rate.sleep();
+    ros::Publisher workspace_pub = n.advertise<reuleaux::WsColor>("workspace", 1);
+  ros::Rate loop_rate(10);
+  
   int count = 0;
   while (ros::ok())
   {
@@ -41,17 +39,17 @@ while(workspace_pub.getNumSubscribers() == 0)
     float resolution =0.1;
     point3d origin=point3d(0,0,0);
     OcTree* tree=sd.generateBoxTree(origin, r, resolution);
-    cout<<"Leaf"<<endl;
+   
     std::vector<point3d> newData;
-    cout<<"Creating the box and discretizing with resolution: "<<resolution<<endl;
+    ROS_INFO("Creating the box and discretizing with resolution:[%f] ",resolution);
     for (OcTree::leaf_iterator it=tree->begin_leafs(maxDepth), end=tree->end_leafs();it !=end;++it){
 	
 	newData.push_back(it.getCoordinate());
 		
  	}
-    //cout<<"The # of leaf nodes in first tree: "<<tree->getNumLeafNodes()<<endl;
-    cout<<"Total no of spheres now: "<<newData.size()<<endl;
-    cout<<"Please hold ON. Spheres are discretized and all of the poses are checked for Ik solutions. May take some time"<<endl;
+    
+    ROS_INFO("Total no of spheres now: [%zd] ",newData.size());
+    ROS_INFO("Please hold ON. Spheres are discretized and all of the poses are checked for Ik solutions. May take some time");
 
 
 
@@ -71,7 +69,7 @@ while(workspace_pub.getNumSubscribers() == 0)
 		vector<double> point_on_sphere;
    		sd.convertPoseToVector(pose[j],point_on_sphere);
         
-   	//cout<<"Data from vector"<<point_on_sphere[0]<<" "<<point_on_sphere[1]<<" "<<point_on_sphere[2]<<" "<<point_on_sphere[3]<<" "<<point_on_sphere[4]<<" "<<point_on_sphere[5]<<" "<<point_on_sphere[6]<<endl;
+   	
 	PoseCol.insert(pair<vector<double>, vector<double> >(point_on_sphere,sphere_coord));
 	}
 }
@@ -85,11 +83,11 @@ Kinematics k;
 	if (k.isIKSuccess(it->first,joints)){
 		PoseColFilter.insert(pair<vector<double>, vector<double> >(it->second,it->first));
 	        ikSolutions.push_back(joints);
-		//cout<<it->first[0]<<" "<<it->first[1]<<" "<<it->first[2]<<" "<<it->first[3]<<" "<<it->first[4]<<" "<<it->first[5]<<" "<<it->first[6]<<endl;
+		
 	    }
     }
-cout<<"Total number of poses: "<<PoseCol.size()<<endl;
-cout<<"Total number of reachable poses: "<<PoseColFilter.size()<<endl;
+ROS_INFO("Total number of poses: [%zd]",PoseCol.size());
+ROS_INFO("Total number of reachable poses: [%zd] ",PoseColFilter.size());
    
     reuleaux::WsColor ws;
 
@@ -114,12 +112,12 @@ map<vector<double>, int>  sphereColor;
 for (multimap<vector<double>, vector<double> >::iterator it = PoseColFilter.begin();it != PoseColFilter.end();++it){
 	//Reachability Index D=R/N*100;
 	float d=float(PoseColFilter.count(it->first))/(PoseCol.size()/newData.size())*100;
-	cout<<d<<endl;
+	
 	sphereColor.insert(pair<vector<double>, int >(it->first,PoseColFilter.count(it->first)));
 	
 }
 
-cout<<"No of spheres reachable: "<<sphereColor.size()<<endl;
+ROS_INFO("No of spheres reachable: [%zd]",sphereColor.size());
 	
    for (map<vector<double>, int> ::iterator it = sphereColor.begin();it != sphereColor.end();++it){
       reuleaux::PointColor p;
@@ -139,4 +137,3 @@ cout<<"No of spheres reachable: "<<sphereColor.size()<<endl;
 }
 return 0;
 }
-
