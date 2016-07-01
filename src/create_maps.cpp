@@ -357,7 +357,7 @@ int main(int argc, char **argv)
     ROS_INFO ("Completed");
     ros::spinOnce();
     //sleep(10000);
-    return -1;
+    return 1;
     loop_rate.sleep();
     count;
 }
