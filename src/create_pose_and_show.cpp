@@ -39,7 +39,7 @@ while(arrow_pub.getNumSubscribers() == 0)
     float resolution =0.5;
     point3d origin=point3d(0,0,0);
     OcTree* tree=sd.generateBoxTree(origin, r, resolution);
-    cout<<"Leaf"<<endl;
+    
     std::vector<point3d> newData;
     for (OcTree::leaf_iterator it=tree->begin_leafs(maxDepth), end=tree->end_leafs();it !=end;++it){
 	
@@ -47,9 +47,8 @@ while(arrow_pub.getNumSubscribers() == 0)
 		
  	}
     
-    cout<<"The # of leaf nodes in first tree: "<<tree->getNumLeafNodes()<<endl;
-    cout<<"The # of data in the array: "<<newData.size()<<endl;
-    cout<<"Hello"<<endl;
+    ROS_INFO("The # of leaf nodes in first tree: [%zd]",tree->getNumLeafNodes());
+    ROS_INFO("The # of data in the array: [%zd]",newData.size());
     //point3d origin (0.0, 0.0, 0.0);
     float radius=resolution;
     std::vector<geometry_msgs::Pose> PoseCol;
@@ -78,14 +77,14 @@ while(arrow_pub.getNumSubscribers() == 0)
 
 
 
-   	//cout<<"pose"<<PoseCol[6271].position.x<<" "<<PoseCol[6271].position.y<<" "<<PoseCol[6271].position.z<<" "<<PoseCol[6271].orientation.x<<" "<<PoseCol[6271].orientation.y<<" "<<PoseCol[6271].orientation.z<<" "<<PoseCol[6271].orientation.w<<endl;
+   
 
 
 
     geometry_msgs::PoseArray po;
     po.header.stamp=ros::Time::now();
     po.header.frame_id="/base_link";
-    cout<<"Total # of poses: "<<PoseCol.size()<<endl;
+    ROS_INFO("Total # of poses: [%zd]",PoseCol.size());
     for(int i=0;i<PoseCol.size();++i){
       geometry_msgs::Pose p;
       p.position.x=PoseCol[i].position.x;

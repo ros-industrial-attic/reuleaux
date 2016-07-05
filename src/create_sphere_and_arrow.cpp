@@ -41,7 +41,7 @@ while(workspace_pub.getNumSubscribers() == 0)
     float resolution =0.05;
     point3d origin=point3d(0,0,0);
     OcTree* tree=sd.generateBoxTree(origin, r, resolution);
-    cout<<"Leaf"<<endl;
+   
     std::vector<point3d> newData;
     
     for (OcTree::leaf_iterator it=tree->begin_leafs(maxDepth), end=tree->end_leafs();it !=end;++it){
@@ -49,9 +49,7 @@ while(workspace_pub.getNumSubscribers() == 0)
 	newData.push_back(it.getCoordinate());
 		
  	}
-    //cout<<"The # of leaf nodes in first tree: "<<tree->getNumLeafNodes()<<endl;
-    cout<<"Total no of spheres now: "<<newData.size()<<endl;
-    //cout<<"Hello"<<endl;
+    
 
 
 
@@ -71,7 +69,7 @@ while(workspace_pub.getNumSubscribers() == 0)
 		vector<double> point_on_sphere;
    		sd.convertPoseToVector(pose[j],point_on_sphere);
         
-   	//cout<<"Data from vector"<<point_on_sphere[0]<<" "<<point_on_sphere[1]<<" "<<point_on_sphere[2]<<" "<<point_on_sphere[3]<<" "<<point_on_sphere[4]<<" "<<point_on_sphere[5]<<" "<<point_on_sphere[6]<<endl;
+   	
 	PoseCol.insert(pair<vector<double>, vector<double> >(point_on_sphere,sphere_coord));
 	}
 }
@@ -79,14 +77,13 @@ while(workspace_pub.getNumSubscribers() == 0)
 Kinematics k;
 multimap<vector<double>, vector<double> > PoseColFilter;
 for (multimap<vector<double>, vector<double> >::iterator it = PoseCol.begin();it != PoseCol.end();++it){
-	//std::cout << it->first[0] <<" "<< it->first[1]<<" "<<it->first[2]<<" "<< it->first[3]<<" "<< it->first[4]<<" "<< it->first[5]<<" "<< it->first[6]<<endl;
-	//cout<<k.isIKSuccess(it->first)<<endl;
+	
 	if (k.isIKSuccess(it->first)){
 		PoseColFilter.insert(pair<vector<double>, vector<double> >(it->second,it->first));
 	}
 }
-cout<<"Total # of poses: "<<PoseCol.size()<<endl;
-cout<<"Total # of filtered poses: "<<PoseColFilter.size()<<endl;
+ROS_INFO("Total # of poses: [%zd]",PoseCol.size());
+ROS_INFO("Total # of filtered poses: [%zd]",PoseColFilter.size());
    
     reuleaux::WorkSpace ws;
 
@@ -113,7 +110,7 @@ for (multimap<vector<double>, vector<double> >::iterator it = PoseColFilter.begi
 	
 }
 
-cout<<"No of spheres reachable: "<<sphereColor.size()<<endl;
+
 	
    for (map<vector<double>, int> ::iterator it = sphereColor.begin();it != sphereColor.end();++it){
       geometry_msgs::Point32 p;

@@ -34,9 +34,9 @@ void SphereViz::PointCallback(const reuleaux::PointArray::ConstPtr& msg)
     marker.type=visualization_msgs::Marker::SPHERE_LIST;
     marker.pose.orientation.w = 1.0;
     marker.lifetime=ros::Duration();
-    marker.scale.x = 0.2;
-    marker.scale.y = 0.2;
-    marker.scale.z = 0.2;
+    marker.scale.x = 0.02;
+    marker.scale.y = 0.02;
+    marker.scale.z = 0.02;
 
     marker.color.r = 0.0f;
     marker.color.g = 1.0f;

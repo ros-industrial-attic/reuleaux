@@ -39,7 +39,7 @@ while(point_pub.getNumSubscribers() == 0)
     float resolution =0.1;
     point3d origin=point3d(0,0,0);
     OcTree* tree=sd.generateBoxTree(origin, r, resolution);
-    cout<<"Leaf"<<endl;
+    
     std::vector<point3d> newData;
     for (OcTree::leaf_iterator it=tree->begin_leafs(maxDepth), end=tree->end_leafs();it !=end;++it){
 	
@@ -48,10 +48,10 @@ while(point_pub.getNumSubscribers() == 0)
 		
  	}
     
-    cout<<"The # of leaf nodes in first tree: "<<tree->getNumLeafNodes()<<endl;
-    cout<<"The # of data in the array: "<<newData.size()<<endl;
-    cout<<"Hello"<<endl;
-    //point3d origin (0.0, 0.0, 0.0);
+    ROS_INFO("The # of leaf nodes in first tree: [%zd]",tree->getNumLeafNodes());
+    ROS_INFO("The # of data in the array: [%zd]",newData.size());
+   
+    
     float radius=resolution;
     std::vector<Pointcloud> cloud_coll;
     
@@ -69,22 +69,10 @@ while(point_pub.getNumSubscribers() == 0)
 			whole_cloud.push_back(p[j]);
 		}
 	}
-    //cout<<whole_cloud.size()<<endl;
-
-
     
-    //Pointcloud cloud;
-    //cloud=make_sphere(origin,1);
-    //cloud=make_sphere_rand(origin,1,1000);
-    //cloud=make_sphere_Archimedes(origin,1,1000);
-    //cloud=make_sphere_fibonacci_grid(origin,1,1000);
-    //cloud=sd.make_sphere_spiral_points(origin,1,200);
-    
-    //cloud=sd.make_long_lat_grid(origin, radius,100, 20, 20);
-    //cout<<cloud.size()<<endl;
     
     reuleaux::PointArray po;
-    //po.point_len=whole_cloud.size();
+    
     for(int i=0;i<newData.size();++i){
       geometry_msgs::Point32 p;
       p.x=newData[i].x();
@@ -106,4 +94,3 @@ while(point_pub.getNumSubscribers() == 0)
   
   return 0;
 }
-
