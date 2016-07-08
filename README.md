@@ -25,12 +25,12 @@ __workspace_visualization__
 
 this package visualizes the reachability map and capability map in rviz. If everything goes right you can have new display panels in rviz with the tab of reachability map and capability map. Select whihch one you would like to visualize. (Dont run both of them at the same time, otherwise the system may hang up)
 
-rosrun workspace_visualization load_reachability_map <map location><map_name>  
-rosrun workspace_visualization load_capability_map <map location><map_name> 
+rosrun map_creator load_reachability_map <map location><map_name>  
+rosrun map_creator load_capability_map <map location><map_name> 
 
 e.g
 
-rosrun workspace_visualization load_reachability_map /home/abhi/Desktop/motoman_mh5_r0.035_reachability.h5
+rosrun map_creator load_reachability_map /home/abhi/Desktop/motoman_mh5_r0.035_reachability.h5
 
 choose the appropriate topic and you should see the maps.
 
