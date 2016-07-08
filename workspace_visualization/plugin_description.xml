@@ -1,0 +1,20 @@
+<library path="lib/libworkspace_visualization">
+   <class name="workspace_visualization/ReachabilityMap"
+         type="workspace_visualization::ReachMapDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays poses and spheres of reachability map
+    </description>
+    <message_type>map_creator::WorkSpace</message_type>
+  </class>
+
+
+  <class name="workspace_visualization/CapabilityMap"
+         type="workspace_visualization::CapMapDisplay"
+         base_class_type="rviz::Display">
+    <description>
+      Displays shapes of capability map
+    </description>
+    <message_type>map_creator::capability</message_type>
+  </class>
+</library>
