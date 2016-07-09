@@ -32,31 +32,28 @@ ReachMapVisual::~ReachMapVisual()
 void ReachMapVisual::setMessage( const map_creator::WorkSpace::ConstPtr& msg, bool do_display_arrow, bool do_display_sphere, int low_ri, int high_ri, int shape_choice, int disect_choice)
 {
  int low_SphereSize, up_SphereSize;
-  if(disect_choice == 0)
-    {
-	low_SphereSize = 0;
+  
+  switch(disect_choice){
+    case 0: {low_SphereSize = 0;
         up_SphereSize = msg->WsSpheres.size();
-    }
-  if(disect_choice == 1)
-    { 
-        low_SphereSize = 0;
+        break;}
+    case 1: {low_SphereSize = 0;
         up_SphereSize = msg->WsSpheres.size()/2;
-    }
-  if(disect_choice == 2)
-    { 
-        low_SphereSize = msg->WsSpheres.size()/2;
+        break;}
+    case 2: {low_SphereSize = msg->WsSpheres.size()/2;
         up_SphereSize = msg->WsSpheres.size();
-    }
-  if(disect_choice == 3)
-    { 
-        low_SphereSize = msg->WsSpheres.size()/2.2;
+        break;}
+    case 3: {low_SphereSize = msg->WsSpheres.size()/2.2;
         up_SphereSize = msg->WsSpheres.size()/1.8;
-    }
-  if(disect_choice == 4)
-    { 
-        low_SphereSize = 0;
+        break;}
+    case 4: {low_SphereSize = 0;
         up_SphereSize = msg->WsSpheres.size()/1.1;
-    }
+        break;}
+   }
+
+
+
+
         
   if(do_display_arrow){
   boost::shared_ptr<rviz::Arrow> pose_arrow;
@@ -103,26 +100,23 @@ void ReachMapVisual::setMessage( const map_creator::WorkSpace::ConstPtr& msg, bo
   
   for (size_t i = low_SphereSize; i < up_SphereSize; ++i) {
     if(low_ri<=int(msg->WsSpheres[i].ri) && int(msg->WsSpheres[i].ri<=high_ri)){
+
+  switch(shape_choice){
+    case 0: {
+	sphere_center.reset(new rviz::Shape(rviz::Shape::Sphere, scene_manager_,frame_node_ ));
+        break;}
+    case 1: {
+        sphere_center.reset(new rviz::Shape(rviz::Shape::Cylinder, scene_manager_,frame_node_ ));
+        break;}
+    case 2: {
+        sphere_center.reset(new rviz::Shape(rviz::Shape::Cone, scene_manager_,frame_node_ ));
+        break;}
+    case 3: {
+        sphere_center.reset(new rviz::Shape(rviz::Shape::Cube, scene_manager_,frame_node_ ));
+        break;}
+   
+   }
   
-  if(shape_choice == 0){
-	
-  sphere_center.reset(new rviz::Shape(rviz::Shape::Sphere, scene_manager_,frame_node_ ));
-  }
-
-  if(shape_choice == 1){
-	
-  sphere_center.reset(new rviz::Shape(rviz::Shape::Cylinder, scene_manager_,frame_node_ ));
-  }
-
-  if(shape_choice == 2){
-	
-  sphere_center.reset(new rviz::Shape(rviz::Shape::Cone, scene_manager_,frame_node_ ));
-  }
-
-  if(shape_choice == 3){
-	
-  sphere_center.reset(new rviz::Shape(rviz::Shape::Cube, scene_manager_,frame_node_ ));
-  }
   
   Ogre::Vector3 position_sphere(msg->WsSpheres[i].point.x,
                          msg->WsSpheres[i].point.y,
@@ -212,4 +206,3 @@ void ReachMapVisual::setSizeSphere( float l )
 }
 
 }//end namespace workspace_visualization
-
