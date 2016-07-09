@@ -29,31 +29,24 @@ CapMapVisual::~CapMapVisual()
 void CapMapVisual::setMessage( const map_creator::capability::ConstPtr& msg, int low_ri, int high_ri, int disect_choice)
 {
  int low_SphereSize, up_SphereSize;
-  if(disect_choice == 0)
-    {
-	low_SphereSize = 0;
+ switch(disect_choice){
+    case 0: {low_SphereSize = 0;
         up_SphereSize = msg->capShapes.size();
-    }
-  if(disect_choice == 1)
-    { 
-        low_SphereSize = 0;
+        break;}
+    case 1: {low_SphereSize = 0;
         up_SphereSize = msg->capShapes.size()/2;
-    }
-  if(disect_choice == 2)
-    { 
-        low_SphereSize = msg->capShapes.size()/2;
+        break;}
+    case 2: {low_SphereSize = msg->capShapes.size()/2;
         up_SphereSize = msg->capShapes.size();
-    }
-  if(disect_choice == 3)
-    { 
-        low_SphereSize = msg->capShapes.size()/2.2;
+        break;}
+    case 3: {low_SphereSize = msg->capShapes.size()/2.2;
         up_SphereSize = msg->capShapes.size()/1.8;
-    }
-  if(disect_choice == 4)
-    { 
-        low_SphereSize = 0;
+        break;}
+    case 4: {low_SphereSize = 0;
         up_SphereSize = msg->capShapes.size()/1.1;
-    }
+        break;}
+   }
+  
   
   boost::shared_ptr<rviz::Shape> sphere_center;
   int colorRI;
@@ -153,4 +146,3 @@ void CapMapVisual::setSize( float l )
 }
 
 }//end namespace workspace_visualization
-
