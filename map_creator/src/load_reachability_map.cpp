@@ -144,8 +144,10 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "workspace");
     ros::NodeHandle n;
     
-
+//TODO: It can be published as a latched topic. So the whole message will be published just once and stay on the topic
     ros::Publisher workspace_pub = n.advertise<map_creator::WorkSpace>("reachability_map", 1);
+    //bool latchOn = 1;
+    //ros::Publisher workspace_pub = n.advertise<map_creator::WorkSpace>("reachability_map", 1, latchOn);
     ros::Rate loop_rate(10);
   
     int count = 0;
