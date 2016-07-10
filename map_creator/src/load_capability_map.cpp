@@ -68,12 +68,12 @@ int main(int argc, char **argv)
 	
     ros::init(argc, argv, "workspace");
     ros::NodeHandle n;
+    bool latchOn = 1;
     ros::Publisher workspace_pub = n.advertise<map_creator::capability>("capability_map", 1);
+    
     ros::Rate loop_rate(10);
   
-    int count = 0;
-    while (ros::ok())
-    {   
+      
       time_t startit,finish;
       time (&startit);
       const char* FILE = argv[1];
@@ -104,6 +104,8 @@ int main(int argc, char **argv)
 
 //Creating messages
 
+     
+
       map_creator::capability cp;
       cp.header.stamp = ros::Time::now();
       cp.header.frame_id = "/base_link";
@@ -125,18 +127,17 @@ int main(int argc, char **argv)
         cp.capShapes.push_back(cpSp);
         }
        
-
+       int count = 0;
+       
+    while (ros::ok())
+    { 
        workspace_pub.publish(cp);
-       time (&finish);
-       double dif = difftime (finish,startit);
-       ROS_INFO ("Elasped time is %.2lf seconds.", dif );
-       ROS_INFO ("Completed");
        ros::spinOnce();
-       sleep(10);
+       sleep(1);
        ++count;
       }
+   
   }
 return 0;
 }
-
 
