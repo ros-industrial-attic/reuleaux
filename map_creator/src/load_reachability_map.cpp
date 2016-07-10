@@ -149,8 +149,7 @@ int main(int argc, char **argv)
     ros::Rate loop_rate(10);
   
     int count = 0;
-    while (ros::ok())
-    {   
+      
 	time_t startit,finish;
         time (&startit);
    	const char* FILE = argv[1];
@@ -220,15 +219,16 @@ int main(int argc, char **argv)
 	}
 	ws.WsSpheres.push_back(wss);
     }
-   workspace_pub.publish(ws);
+
+
+
+   while (ros::ok())
+    { 
+     workspace_pub.publish(ws);
     
-    time (&finish);
-    double dif = difftime (finish,startit);
-    ROS_INFO ("Elasped time is %.2lf seconds.", dif );
-    ROS_INFO ("Completed");
-    ros::spinOnce();
-    sleep(10);
-    ++count;
+     ros::spinOnce();
+     sleep(5);
+     ++count;
  }
 }
 return 0;
