@@ -1,8 +1,0 @@
-<launch>
-  
-
-  <node pkg="reuleaux" type="show_arrow" name="show_spheres"/>
-  <node pkg="reuleaux" type="get_orientation.py" name="fromDatabase"/>
-    
-  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find reuleaux)/rviz/workspace_arrow.rviz"/>
-</launch>
