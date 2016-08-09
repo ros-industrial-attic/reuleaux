@@ -49,7 +49,7 @@ rosrun map_creator create_inverse_reachability motoman_mh5_0.08_reachability.h5
 
 it will create an inverse reachability map file from a reachability map defined in the previous steps. The next steps are needed just for now. All will be done in the plugin interface.
 
-=> Creating the Base Placement map
+#### Creating the Base Placement map
 
 The grasp poses are defined in the file. Please change the grasp co-ordinates according to need. This map will be created based on the inverse reachability map created in the previous step.
 
@@ -57,7 +57,7 @@ rosrun map_creator create_base_place_map motoman_mh5_0.08_Inv_reachability.h5
 
 It will now create an workspace map (union of transformed map from all the grasp poses) with spheres and arrows and saves a file of base_place.h5 It can be easily visualized by the workspace visualization panel and setting the topic to /reachability_map
 
-=> Creating final base poses
+#### Creating final base poses
 
 There are mainly four methods to get the base (Final decision is pending)
 
