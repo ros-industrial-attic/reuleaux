@@ -30,7 +30,7 @@ public:
  float NORM(float a, float b, float c, float d);  
     void getPoseFromFK( const std::vector<double>  joint_values,  std::vector<double>& pose);
 
-    bool isIKSuccess(std::vector<double> pose,std::vector<double>& joints);
+    bool isIKSuccess(std::vector<double> pose,std::vector<double>& joints, int& numOfSolns );
 
     const string getRobotName();
 };

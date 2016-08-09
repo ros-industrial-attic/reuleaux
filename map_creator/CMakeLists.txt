@@ -36,6 +36,7 @@ catkin_package(
   LIBRARIES
     sphere_discretization
     kinematics
+    hdf5_dataset
     roscpp
   CATKIN_DEPENDS message_runtime 
 )
@@ -54,6 +55,9 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS} ${HDF
  add_library(kinematics
    src/kinematics.cpp
    )
+ add_library(hdf5_dataset
+   src/hdf5_dataset.cpp
+   )
 
 
  target_link_libraries(sphere_discretization 
@@ -63,9 +67,11 @@ target_link_libraries(kinematics
    ${catkin_LIBRARIES}
  )
 
+ target_link_libraries(hdf5_dataset
+   ${catkin_LIBRARIES}
+ )
 
-
- install(TARGETS sphere_discretization kinematics
+ install(TARGETS sphere_discretization kinematics hdf5_dataset
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    
@@ -85,14 +91,51 @@ add_executable(create_capability_map src/create_capability_map.cpp)
 add_dependencies(create_capability_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(create_capability_map sphere_discretization kinematics -lhdf5 -lhdf5_cpp ${catkin_LIBRARIES})
 
+
+add_executable(create_inverse_reachability_map src/create_inverse_reachability_map.cpp)
+add_dependencies(create_inverse_reachability_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(create_inverse_reachability_map sphere_discretization kinematics -lhdf5 -lhdf5_cpp hdf5_dataset ${catkin_LIBRARIES})
+
+add_executable(create_base_place_map src/create_base_place_map.cpp)
+add_dependencies(create_base_place_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(create_base_place_map sphere_discretization kinematics -lhdf5 -lhdf5_cpp hdf5_dataset ${catkin_LIBRARIES})
+
+add_executable(find_base_byAverage src/find_base_byAverage.cpp)
+add_dependencies(find_base_byAverage ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(find_base_byAverage sphere_discretization kinematics -lhdf5 -lhdf5_cpp hdf5_dataset ${catkin_LIBRARIES})
+
+add_executable(find_base_byPCA src/find_base_byPCA.cpp)
+add_dependencies(find_base_byPCA ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(find_base_byPCA sphere_discretization kinematics -lhdf5 -lhdf5_cpp hdf5_dataset ${catkin_LIBRARIES})
+
+add_executable(find_base_byGraspReachabilityScore src/find_base_byGraspReachabilityScore.cpp)
+add_dependencies(find_base_byGraspReachabilityScore ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(find_base_byGraspReachabilityScore sphere_discretization kinematics -lhdf5 -lhdf5_cpp hdf5_dataset ${catkin_LIBRARIES})
+
+add_executable(find_base_byIKSolutionScore src/find_base_byIKSolutionScore.cpp)
+add_dependencies(find_base_byIKSolutionScore ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(find_base_byIKSolutionScore sphere_discretization kinematics -lhdf5 -lhdf5_cpp hdf5_dataset ${catkin_LIBRARIES})
+
+
+
+
 add_executable(load_reachability_map src/load_reachability_map.cpp)
 add_dependencies(load_reachability_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(load_reachability_map -lhdf5 -lhdf5_cpp ${catkin_LIBRARIES})
+target_link_libraries(load_reachability_map -lhdf5 -lhdf5_cpp hdf5_dataset ${catkin_LIBRARIES})
 
 add_executable(load_capability_map src/load_capability_map.cpp)
 add_dependencies(load_capability_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(load_capability_map -lhdf5 -lhdf5_cpp ${catkin_LIBRARIES})
+target_link_libraries(load_capability_map -lhdf5 -lhdf5_cpp hdf5_dataset ${catkin_LIBRARIES})
 
+
+
+add_executable(show_base src/show_base.cpp)
+add_dependencies(show_base ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(show_base ${catkin_LIBRARIES})
+
+add_executable(show_grasp_pose src/show_grasp_pose.cpp)
+add_dependencies(show_grasp_pose ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries(show_grasp_pose ${catkin_LIBRARIES})
 
 
 

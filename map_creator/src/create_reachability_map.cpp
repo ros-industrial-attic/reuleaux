@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 
     SphereDiscretization sd;
     float r=1;
-    float resolution = 0.035;//Change this parameter with arguments for different maps
+    float resolution = 0.08;//Change this parameter with arguments for different maps
     point3d origin=point3d(0,0,0); //This point will be the base of the robot
     OcTree* tree=sd.generateBoxTree(origin, r, resolution);
     std::vector<point3d> newData;
@@ -106,7 +106,8 @@ int main(int argc, char **argv)
     for (multimap<vector<double>, vector<double> >::iterator it = PoseCol.begin();it != PoseCol.end();++it){
         std::vector<double> joints;
 	joints.resize(6);
-	if (k.isIKSuccess(it->first,joints)){
+	int solns;
+	if (k.isIKSuccess(it->first,joints, solns)){
 		PoseColFilter.insert(pair<vector<double>, vector<double> >(it->second,it->first));
 	        ikSolutions.push_back(joints);
 		//cout<<it->first[0]<<" "<<it->first[1]<<" "<<it->first[2]<<" "<<it->first[3]<<" "<<it->first[4]<<" "<<it->first[5]<<" "<<it->first[6]<<endl;
@@ -141,8 +142,7 @@ int main(int argc, char **argv)
 
     ROS_INFO("No of spheres reachable: %lu",sphereColor.size());
     
-    ROS_INFO("size poseAndSphere %lu",poseReach.size());
-    ROS_INFO("data size in each poseAndSphere %lu",poseReach[1].size());
+   
  
 
 

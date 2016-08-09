@@ -6,8 +6,12 @@
 #include<iostream>
 #include<ros/ros.h>
 #include "geometry_msgs/Pose.h"
-#include<tf2/LinearMath/Quaternion.h>
-#include<vector>
+
+#include <tf2/LinearMath/Transform.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Vector3.h>
+
+#include <vector>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/surface/convex_hull.h>
@@ -60,9 +64,21 @@ public:
 
     Pointcloud make_sphere_spiral_points(point3d origin, double r, int sample);
     Pointcloud make_long_lat_grid(point3d origin, double r, int sample, int lat_num, int lon_num);
+
+    float distanceL2norm(const point3d p1, const point3d p2);
+
+    bool areQuaternionClose(tf2::Quaternion q1, tf2::Quaternion q2);
+
+    tf2::Quaternion inverseSignQuaternion(tf2::Quaternion q);
+
+    void findOptimalPosebyAverage(const vector<geometry_msgs::Pose> probBasePoses,geometry_msgs::Pose& final_base_pose);
+  
+    void associatePose(multimap<vector<double>, vector<double> >& baseTrnsCol, const vector<geometry_msgs::Pose> grasp_poses, const multimap<vector<double>, vector<double> > PoseColFilter, const float resolution);  
+
+
 };
 
-    
+   
 
 }// namespace sphere_discretization
 #endif  // SPHERE_DISCRETIZATION_H

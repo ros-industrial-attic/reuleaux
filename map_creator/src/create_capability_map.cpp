@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     
     SphereDiscretization sd;
     float r=1;
-    float resolution = 0.035; //Change this parameter with arguments for different maps
+    float resolution = 0.5; //Change this parameter with arguments for different maps
     point3d origin=point3d(0,0,0); //This point will be the base of the robot
     OcTree* tree=sd.generateBoxTree(origin, r, resolution);
     std::vector<point3d> newData;
@@ -101,7 +101,8 @@ int main(int argc, char **argv)
         std::vector<double> joints;
 	joints.resize(6);
 	PoseCol2.insert(pair<vector<double>, vector<double> >(it->second,it->first));
-	if (k.isIKSuccess(it->first,joints)){
+	int solns;
+	if (k.isIKSuccess(it->first,joints, solns)){
 		PoseColFilter.insert(pair<vector<double>, vector<double> >(it->second,it->first));
 	        ikSolutions.push_back(joints);
 		
