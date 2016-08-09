@@ -41,7 +41,7 @@ __Base Placement__
 The interface for base placement plugin is in progress.....
 To visualize the base placement (for now) please go through these steps:
 
-=> Creating the inverse reachability map
+#H1 Creating the inverse reachability map
 
 rosrun map_creator create_inverse_reachability_map <reachability map name>
 
