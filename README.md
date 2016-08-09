@@ -45,8 +45,6 @@ To visualize the base placement (for now) please go through these steps:
 
 rosrun map_creator create_inverse_reachability_map <reachability map name>
 
-e.g
-
 rosrun map_creator create_inverse_reachability motoman_mh5_0.08_reachability.h5
 
 it will create an inverse reachability map file from a reachability map defined in the previous steps. The next steps are needed just for now. All will be done in the plugin interface.
