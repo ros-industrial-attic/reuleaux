@@ -224,7 +224,7 @@ int main(int argc, char **argv)
     ROS_INFO("All the poses have Processed. Now saving data to a inverse Reachability Map.");
 
 //Creating maps now
-     string path(ros::package::getPath("map_creator")+"/maps/");
+     string path(ros::package::getPath("map_creator")+"/Inv_maps/");
     if (stat(path.c_str(),&st)!=0)
 	ROS_INFO("Path does not exist. Creating folder for maps");
 	const int dir_err = mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);

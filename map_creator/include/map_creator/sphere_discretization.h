@@ -12,11 +12,13 @@
 #include <tf2/LinearMath/Vector3.h>
 
 #include <vector>
+
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/surface/convex_hull.h>
 #include <pcl/common/transforms.h>
 #include <pcl/segmentation/extract_polygonal_prism_data.h>
+
 using namespace octomap;
 using namespace std;
 using namespace octomath;
@@ -67,12 +69,17 @@ public:
 
     float distanceL2norm(const point3d p1, const point3d p2);
 
+     
+    void poseToEigenVector(const geometry_msgs::Pose pose, Eigen::VectorXd& vec);
+
+    void findOptimalPosebyPCA(const vector<geometry_msgs::Pose> probBasePoses,geometry_msgs::Pose& final_base_pose);
+
     bool areQuaternionClose(tf2::Quaternion q1, tf2::Quaternion q2);
 
     tf2::Quaternion inverseSignQuaternion(tf2::Quaternion q);
 
     void findOptimalPosebyAverage(const vector<geometry_msgs::Pose> probBasePoses,geometry_msgs::Pose& final_base_pose);
-  
+
     void associatePose(multimap<vector<double>, vector<double> >& baseTrnsCol, const vector<geometry_msgs::Pose> grasp_poses, const multimap<vector<double>, vector<double> > PoseColFilter, const float resolution);  
 
 

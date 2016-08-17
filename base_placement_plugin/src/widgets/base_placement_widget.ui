@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>BasePlacementWidget</class>
+ <widget class="QWidget" name="BasePlacementWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>503</width>
+    <height>644</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="1" column="1">
+    <widget class="QProgressBar" name="progressBar">
+     <property name="value">
+      <number>24</number>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>1</number>
+     </property>
+     <widget class="QWidget" name="tab_1">
+      <attribute name="title">
+       <string>Make Task</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="9" column="0">
+        <widget class="QPushButton" name="btn_LoadPath">
+         <property name="text">
+          <string>Load Task</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Task Poses</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="1">
+        <widget class="QPushButton" name="btn_SavePath">
+         <property name="text">
+          <string>Save Task</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="3">
+        <widget class="QPushButton" name="btn_ClearAllPoints">
+         <property name="text">
+          <string>Clear All Poses</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0" rowspan="4" colspan="4">
+        <widget class="QTreeView" name="treeView">
+         <property name="rootIsDecorated">
+          <bool>true</bool>
+         </property>
+         <property name="uniformRowHeights">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="8" column="2" colspan="2">
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="7" column="3">
+        <layout class="QGridLayout" name="gridLayout_3">
+         <item row="4" column="0">
+          <spacer name="verticalSpacer">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLineEdit" name="txtPointName"/>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Point</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="0">
+          <spacer name="verticalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="10" column="0">
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>80</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item row="7" column="0">
+          <widget class="QPushButton" name="btnRemovePoint">
+           <property name="text">
+            <string>Remove Pose</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <layout class="QVBoxLayout" name="verticalLayout_2"/>
+         </item>
+        </layout>
+       </item>
+       <item row="7" column="0" colspan="2">
+        <widget class="QGroupBox" name="newPointLayout">
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(226, 226, 226)</string>
+         </property>
+         <layout class="QFormLayout" name="FormLayoutObjectPose_2">
+          <property name="fieldGrowthPolicy">
+           <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+          </property>
+          <item row="0" column="0">
+           <widget class="QGroupBox" name="groupBox">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="title">
+             <string>Add New Task Poses</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <spacer name="verticalSpacer_4">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Set Position/Orientation</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="xLabel">
+            <property name="text">
+             <string>X (m)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QLineEdit" name="LineEditX">
+            <property name="styleSheet">
+             <string notr="true">border-style: outset;
+border-width: 2px;
+border-color :rgb(48, 48, 48)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QLabel" name="yLabel">
+            <property name="text">
+             <string>Y (m)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="1">
+           <widget class="QLineEdit" name="LineEditY">
+            <property name="styleSheet">
+             <string notr="true">border-style: outset;
+border-width: 2px;
+border-color :rgb(48, 48, 48)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="zLabel">
+            <property name="text">
+             <string>Z (m)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QLineEdit" name="LineEditZ">
+            <property name="styleSheet">
+             <string notr="true">border-style: outset;
+border-width: 2px;
+border-color :rgb(48, 48, 48)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <widget class="QLabel" name="rxLabel">
+            <property name="text">
+             <string>Rx (deg)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QLineEdit" name="LineEditRx">
+            <property name="styleSheet">
+             <string notr="true">border-style: outset;
+border-width: 2px;
+border-color :rgb(48, 48, 48)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="QLabel" name="ryLabel">
+            <property name="text">
+             <string>Ry (deg)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="1">
+           <widget class="QLineEdit" name="LineEditRy">
+            <property name="styleSheet">
+             <string notr="true">border-style: outset;
+border-width: 2px;
+border-color :rgb(48, 48, 48)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="0">
+           <widget class="QLabel" name="rzLabel">
+            <property name="text">
+             <string>Rz (deg)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="12" column="1">
+           <widget class="QLineEdit" name="LineEditRz">
+            <property name="styleSheet">
+             <string notr="true">border-style: outset;
+border-width: 2px;
+border-color :rgb(48, 48, 48)</string>
+            </property>
+           </widget>
+          </item>
+          <item row="13" column="0">
+           <widget class="QPushButton" name="btnAddPoint">
+            <property name="text">
+             <string>Add Point</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+      <zorder>label</zorder>
+      <zorder>treeView</zorder>
+      <zorder>btn_LoadPath</zorder>
+      <zorder>btn_SavePath</zorder>
+      <zorder>newPointLayout</zorder>
+      <zorder>btn_ClearAllPoints</zorder>
+      <zorder>horizontalSpacer</zorder>
+     </widget>
+     <widget class="QWidget" name="tab_2">
+      <attribute name="title">
+       <string>Find Base</string>
+      </attribute>
+      <widget class="QPushButton" name="targetPoint">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>360</y>
+         <width>181</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Find Base</string>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>90</y>
+         <width>381</width>
+         <height>191</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+         <weight>75</weight>
+         <italic>false</italic>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">background-color: rgb(226, 226, 226)</string>
+       </property>
+       <property name="title">
+        <string>Base Placement Paramentes</string>
+       </property>
+       <widget class="QLabel" name="label_5">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>40</y>
+          <width>161</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Number of Base Location</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="lnEdit_BaseLocSize">
+        <property name="geometry">
+         <rect>
+          <x>240</x>
+          <y>40</y>
+          <width>113</width>
+          <height>27</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">border-style: outset;
+border-width: 2px;
+border-color :rgb(48, 48, 48)</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="combo_planGroup">
+        <property name="geometry">
+         <rect>
+          <x>110</x>
+          <y>130</y>
+          <width>181</width>
+          <height>23</height>
+         </rect>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_6">
+        <property name="geometry">
+         <rect>
+          <x>40</x>
+          <y>130</y>
+          <width>51</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Method</string>
+        </property>
+       </widget>
+       <widget class="QLineEdit" name="lnEdit_SpSize">
+        <property name="geometry">
+         <rect>
+          <x>240</x>
+          <y>80</y>
+          <width>113</width>
+          <height>27</height>
+         </rect>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">border-style: outset;
+border-width: 2px;
+border-color :rgb(48, 48, 48)</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="label_8">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>70</y>
+          <width>191</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Number of High Score Sphere</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QLabel" name="lbl_placeBaseCompleted">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>290</y>
+         <width>461</width>
+         <height>41</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>12</pointsize>
+         <weight>75</weight>
+         <italic>true</italic>
+         <bold>true</bold>
+        </font>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btn_LoadReachabilityFile">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>371</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Load Inverse Reachability File</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btn_showUnionMap">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>50</y>
+         <width>181</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Show Union Map</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btn_ClearUnionMap">
+       <property name="geometry">
+        <rect>
+         <x>200</x>
+         <y>50</y>
+         <width>181</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Clear Map</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="combo_opGroup">
+       <property name="geometry">
+        <rect>
+         <x>200</x>
+         <y>360</y>
+         <width>131</width>
+         <height>23</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_7">
+       <property name="geometry">
+        <rect>
+         <x>220</x>
+         <y>390</y>
+         <width>71</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Ouput Type</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
