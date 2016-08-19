@@ -1,49 +1,9 @@
 # reuleaux
-GSoC Project for robot reachability
+=====
+Google Summer of Code Project: Robot reachability and Base Placement
 
-Please read this file before using this package
+Documentation about Map creation can be found at: [map_creator] (https://github.com/ros-industrial-consortium/fermi/tree/hydro-devel/moveit_cartesian_plan_plugin)
 
-***This package is constantly updated and still in progress. So please use with caution ***
+Documentation about Workspace Visualization can be found at: workspace_visualization
 
-(This package depends on the ikfast package. So please modify and put your own robots ikfast.cpp file location in the kinematics.h file in the include folder before start building)
-
-__map_creator__ 
-
-This package creates two types of maps. 1. Reachability Map, 2. Capability Map
-Both have their own functionalities. To create a reahability map,
-
-rosrun map_creator create_reachability_map
-
-the default robot for now is motoman_mh5 and the resolution is 0.035. It will create a new folder called maps in the map_creator package and there you can find a databse file mentioning the robot name and resolution.
-For creating the capability map, the process is almost the same. You have to run
-
-rosrun map_creator create_capability_map
-
-It will also create a new database file mentioning the robot name and resolution
-
-For creating an Inverse Reachability map
-
-rosrun map_creator create_inverse_reachability_map <name of the reachability map>
-
-rosrun map_creator create_inverse_reachability_map motoman_mh5_r0.08r_reachability.h5
-
-It will create an inverse reachability map in the map_creator/Inv_map folder
-
-__workspace_visualization__
-
-this package visualizes the reachability map and capability map in rviz. If everything goes right you can have new display panels in rviz with the tab of reachability map and capability map. Select whihch one you would like to visualize. (Dont run both of them at the same time, otherwise the system may hang up)
-
-rosrun map_creator load_reachability_map <map location><map_name>  
-rosrun map_creator load_capability_map <map location><map_name> 
-
-e.g
-
-rosrun map_creator load_reachability_map /home/abhi/Desktop/motoman_mh5_r0.035_reachability.h5
-
-choose the appropriate topic and you should see the maps.
-
-
-__Base Placement__
-Please refer to the Base Placement Readme.
-(The whole wiki is under development)
-
+Documentation about Base Placement Planner can be found at: Base Placement Plugin
