@@ -14,4 +14,4 @@ Documentation about Workspace Visualization can be found at: [workspace_visualiz
 
 Documentation about Base Placement Planner can be found at: [Base Placement Plugin] (https://github.com/ros-industrial-consortium/reuleaux/tree/master/base_placement_plugin)
 
-Please refer to the [Reuleaux] (http://wiki.ros.org/reuleaux) ros http://wiki.ros.org/reuleaux page for detailed description and instructions.
+Please refer to [http://wiki.ros.org/reuleaux] (http://wiki.ros.org/reuleaux) for detailed description and instructions.
