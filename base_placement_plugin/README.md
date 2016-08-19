@@ -1,5 +1,9 @@
+## Base Placement plugin
+====
+Please refer to [ros wiki] (http://wiki.ros.org/reuleaux) for more detailed instruction
 
-##1. RViz and RQT User Interface:
+#1. RViz and RQT User Interface:
+
 There are two types of interactive markers:
   - The red arrow acts as a pointer which the user can move around the RViz enviroment. Fruthermore by clicking on the arrow another magenta arrow is added to the RViz enviroment. This arrow acts as task poses for base placement planner.
   - The magenta arrow is the task poses for the base placement planner. The orientation of the arrow can be changed by holding the CTRL key and moving it with the mouse.
@@ -9,7 +13,7 @@ There are two types of interactive markers:
   - The user can add new point or delete it through the RQT UI.
   - New tool component has been added for adding Arrows by using a mouse click
 
-##3. How to run the code
+#2. How to run the code
   Just run rosrun rviz rviz
 
   - From the panel window select base placement planner
@@ -34,5 +38,7 @@ Set the desired output visualization method.(The robot model visualization is st
 When everything is set up, press the Find Base button. It will show the base locations.
 
 If you want to see the union map, press the show union map button.
+
+
 
 
