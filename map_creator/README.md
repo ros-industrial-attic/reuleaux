@@ -10,23 +10,31 @@ a) Resolution parameter: The first step of the map generation process is discret
 
 b) Map filename: The second argument decides the output filename. If the user does not provide an ouput filename, it will automatically decide an ugly map name with the robot name and provided resolution.
 To create a reachability map, run:
+
 rosrun map_creator create_reachability_map
+
 with arguments:
+
 rosrun map_creator create_reachability_map funny_robot.h5 0.05
+
 When the process finishes, the output reachability map will be stored in map_creator/maps folder. If you do not have the existing maps folder, do not worry. It will create a map folder in the map_creator package and store the output there. 
 
 ###2. Capability Map (optional)
 Capability map is an extension of reachability map (I guess you have already done that, otherwise please create a reachability map first), where the outer spheres of the reachability map, is set as cones. So the reachability limit of the robot is well visualized. All the outer spheres are decided for a principal axes and iterates over different values for opening angles for cones. The suitable opening angle that correctly accumulates all the poses on that sphere, is picked up
 (** Until we found out some very useful algorithm for capability map, the process may take several hours based on resolution)
 The process is same as creating reachability map:
+
 rosrun map_creator create_capability_map
+
 The ouput map file will also be stored in map_creator/maps folder.
 
 
 ###3. Inverse Reachability Map
 The purpose of  Inverse Reachability map is to find suitable base positions for a robot with given task poses. To know how to find suitable bases, please refer to (base_placement plugin page)
 The inverse reachability map is a general inverse transformation of all the reachable poses of the reachability map of the robot. The user have to provide the reachability map as an argument. The desired name of the ouput file can also be provided. If no output file name is provided, the system will automatically generate a map file with the robot name and resolution provided in the reachability map. To create an inverse reachability map:
+
 rosrun map_creator create_inverse_reachability_map motoman_mh5_r0.08_reachability.h5
+
 (provided reachability map is of motoman_mh5 robot and resolution is 0.08).  The outout inverse reachability map will be stored in map_creator/Inv_map folder unless specified otherwise.
 
- (Congratulations. You have now also created the inverse reachability map which is the key element for finding bases. Now it is the time to see the result of all the hard work. Let’s move to the visualization page) link
+ (Congratulations. You have now also created the inverse reachability map which is the key element for finding bases. Now it is the time to see the result of all the hard work. Let’s move to the [visualization] (https://github.com/ros-industrial-consortium/reuleaux/tree/master/workspace_visualization) page) 
