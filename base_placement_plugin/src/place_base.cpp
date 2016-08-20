@@ -118,6 +118,15 @@ void PlaceBase::setBasePlaceParams(int base_loc_size, int high_score_sp)
                  
   BASE_LOC_SIZE_ = base_loc_size;
   HIGH_SCORE_SP_ = high_score_sp;
+  if(BASE_LOC_SIZE_ <= 0)
+  {
+    ROS_ERROR_STREAM("Please provide a valid number of how many base locations do you need.");
+  }
+
+  if(HIGH_SCORE_SP_  <= 0)
+  {
+    ROS_ERROR_STREAM("Please provide a valid number of how many spheres do you need to create valid base poses");
+  }
   
 }
 
@@ -349,6 +358,8 @@ void PlaceBase::findBaseByGraspReachabilityScore()
 
     }
     ROS_INFO_STREAM("Poses that have optimal base location: "<<final_base_loc.size());
+    if(final_base_loc.size()<BASE_LOC_SIZE_)
+      ROS_ERROR_STREAM("The map you have provided is not suitable for base placement. Please provide a valid map."); 
     for(int i=0;i<BASE_LOC_SIZE_;++i)
     {
       final_base_poses.push_back(final_base_loc[i]);
@@ -411,6 +422,8 @@ void PlaceBase::findBaseByIKSolutionScore()
     }
 
     ROS_INFO_STREAM("Poses that have optimal base location: "<<final_base_loc.size());
+    if(final_base_loc.size()<BASE_LOC_SIZE_)
+      ROS_ERROR_STREAM("The map you have provided is not suitable for base placement. Please provide a valid map."); 
     for(int i=0;i<BASE_LOC_SIZE_;++i)
     {
       final_base_poses.push_back(final_base_loc[i]);

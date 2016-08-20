@@ -44,9 +44,12 @@ namespace base_placement_plugin
       ui_.lnEdit_BaseLocSize->setText("10");
       ui_.lnEdit_SpSize->setText("10");
           
-      ui_.lnEdit_BaseLocSize->setValidator(new QDoubleValidator(1,20,1,ui_.lnEdit_BaseLocSize));
-
-      ui_.lnEdit_BaseLocSize->setValidator(new QDoubleValidator(1,20,1,ui_.lnEdit_SpSize));
+      //ui_.lnEdit_BaseLocSize->setValidator(new QDoubleValidator(1,20,1,ui_.lnEdit_BaseLocSize));
+      //QValidator *validator = new QIntValidator(1,100, this);
+      //ui_.lnEdit_BaseLocSize->setValidator(validator);
+      ui_.lnEdit_BaseLocSize->setValidator(new QIntValidator(1,100, this));
+      ui_.lnEdit_SpSize->setValidator(new QIntValidator(1,20, this));
+      
       
 
       //set progress bar when loading way-points from a yaml file. Could be nice when loading large way-points files
@@ -137,6 +140,7 @@ namespace base_placement_plugin
 
         base_loc_size_ = ui_.lnEdit_BaseLocSize->text().toInt();
         high_score_sp_ = ui_.lnEdit_SpSize->text().toInt();
+        
         
         Q_EMIT basePlacementParamsFromUI_signal(base_loc_size_, high_score_sp_);
 
