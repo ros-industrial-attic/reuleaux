@@ -17,7 +17,7 @@
 #include <hdf5.h>
 #include <string>
 #include <time.h>
-
+#include <sstream>
 
 
 //TODO get rid of all the headers that are not needed
@@ -30,32 +30,77 @@ using namespace kinematics;
 
 struct stat st;
 
-
+bool isFloat(string s) 
+{
+    istringstream iss(s);
+    float dummy;
+    iss >> noskipws >> dummy;
+    return iss && iss.eof();     // Result converted to bool
+}
 
 
 int main(int argc, char **argv)
-{
+{   
     ros::init(argc, argv, "workspace");
     ros::NodeHandle n;
     time_t startit,finish;
     time (&startit);
+    float resolution = 0.08;
+    Kinematics k;
+    string ext = ".h5";
+    string filename=string(k.getRobotName())+"_"+"r"+str( boost::format("%d") % resolution)+"_"+"reachability"+"."+"h5";
+    if(argc ==2)
+    {
+      if(!isFloat(argv[1]))
+      {
+	ROS_ERROR_STREAM("Probably you have just provided only the map filename. Hey!! The first argument is the resolution.");
+	return 0;
+       
+      }
+      resolution = atof(argv[1]);
+      filename=string(k.getRobotName())+"_"+"r"+str( boost::format("%d") % resolution)+"_"+"reachability"+"."+"h5";
+    }
 
+    else if(argc == 3)
+    {
+      string name ;
+      name = argv[2];
+      if(!isFloat(argv[1]) && isFloat(argv[2]))
+      {
+	ROS_ERROR_STREAM("Hey!! The first argument is the resolution and the second argument is the map filename. You messed up.");
+	return 0;
+      }
+      
+      else if(name.find(ext) == std::string::npos)
+      {
+	ROS_ERROR_STREAM("Please provide an extension of .h5 It will make life easy");
+	return 0;
+      }
+      else{
+      resolution = atof(argv[1]);
+      filename = argv[2];
+      }     
+    }
+    else if(argc<2)
+    {
+      ROS_INFO("You have not provided any argument. So taking default values.");
+    }
     //ros::Publisher workspace_pub = n.advertise<map_creator::WorkSpace>("workspace", 10);
     ros::Rate loop_rate(10);
   
     int count = 0;
+    
     while (ros::ok())
     {
         unsigned char maxDepth = 16;
         unsigned char minDepth = 0;
-    
+                  
 //A box of radius 1 is created. It will be the size of the robot+1.5. Then the box is discretized by voxels of specified resolution 
 //TODO resolution will be user argument
 //The center of every voxels are stored in a vector
 
     SphereDiscretization sd;
     float r=1;
-    float resolution = 0.08;//Change this parameter with arguments for different maps
     point3d origin=point3d(0,0,0); //This point will be the base of the robot
     OcTree* tree=sd.generateBoxTree(origin, r, resolution);
     std::vector<point3d> newData;
@@ -100,7 +145,7 @@ int main(int argc, char **argv)
 //Every pose is checked for IK solutions. The reachable poses and the their corresponsing joint solutions are stored. Only the First joint solution is stored. We may need this solutions in the future. Otherwise we can show the robot dancing with the joint solutions in a parallel thread
 //TODO Support for more than 6DOF robots needs to be implemented.
  
-    Kinematics k;
+    //Kinematics k;
     multimap<vector<double>, vector<double> > PoseColFilter;
     vector<vector<double> > ikSolutions;
     for (multimap<vector<double>, vector<double> >::iterator it = PoseCol.begin();it != PoseCol.end();++it){
@@ -179,11 +224,11 @@ int main(int argc, char **argv)
    
 //Creating all the file and group ids and the default file name 
  
-    string filename;
+    //string filename;
 //    filename=string(k.getRobotName())+"_"+boost::lexical_cast<std::string>(Hour)+":"+boost::lexical_cast<std::string>(Min)+"_"+boost::lexical_cast<std::string>(Month)+":"+boost::lexical_cast<std::string>(Day)+":"+boost::lexical_cast<std::string>(Year)+"_"+"r"+str( boost::format("%d") % resolution)+"_"+"sd"+"_"+"rot"+"_"+"reachability"+"."+"h5";
 
 //The filename is shortened for now for testing purpose.
-    filename=string(k.getRobotName())+"_"+"r"+str( boost::format("%d") % resolution)+"_"+"reachability"+"."+"h5";
+    //filename=string(k.getRobotName())+"_"+"r"+str( boost::format("%d") % resolution)+"_"+"reachability"+"."+"h5";
     
     const char * filepath = path.c_str();
     const char * name = filename.c_str();

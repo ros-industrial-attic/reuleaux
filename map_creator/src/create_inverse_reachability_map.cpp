@@ -40,23 +40,58 @@ struct stat st;
 
 int main(int argc, char **argv)
 {
-  if (argc<2){
-	ROS_ERROR_STREAM("Please provide the name of the reachability map. If you have not created it yet, Please create the map by running the create reachability map node in map_creator package");
-	return 1;
-    } 
-  else{
+  
   ros::init(argc, argv, "inverse_workspace");
   ros::NodeHandle n;
   //ros::Publisher workspace_pub = n.advertise<map_creator::WorkSpace>("reachability_map", 1);
   time_t startit,finish;
   time (&startit);
+  Kinematics k;
+  string filename;
+  string ext = ".h5";
+  const char* FILE;
+  if(argc < 2)
+  {
+    ROS_ERROR_STREAM("Please provide the name of the reachability map. If you have not created it yet, Please create the map by running the create reachability map node in map_creator package");
+	return 0;
+  } 
+  
+  else if(argc ==2)
+  {
+    ROS_INFO("Creating map with default name.");
+    FILE = argv[1];
+    hid_t file,sphere_group, sphere_dataset, attr;  
+    file = H5Fopen (FILE, H5F_ACC_RDONLY, H5P_DEFAULT);
+    sphere_group = H5Gopen (file, "/Spheres", H5P_DEFAULT);
+    sphere_dataset = H5Dopen (sphere_group, "sphere_dataset", H5P_DEFAULT);
+    float res;
+    attr = H5Aopen(sphere_dataset,"Resolution",H5P_DEFAULT);
+    herr_t ret = H5Aread(attr, H5T_NATIVE_FLOAT, &res);
+    filename=string(k.getRobotName())+"_"+"r"+str( boost::format("%d") % res)+"_"+"Inv_reachability"+"."+"h5";
+  }
+
+  else if(argc ==3)
+  {
+    string name ;
+    name = argv[2];
+    if(name.find(ext) == std::string::npos)
+    {
+      ROS_ERROR_STREAM("Please provide an extension of .h5 It will make life easy");
+	return 0;
+    }
+    FILE = argv[1];
+    filename = argv[2];
+
+  }
+
+  
   ros::Rate loop_rate(10);
   
   int count = 0;
   while (ros::ok())
     {
      
-     const char* FILE = argv[1];
+     
      hid_t file, poses_group, poses_dataset, sphere_group, sphere_dataset, attr; 
      file = H5Fopen (FILE, H5F_ACC_RDONLY, H5P_DEFAULT);
 
@@ -251,12 +286,12 @@ int main(int argc, char **argv)
 
 //Creating all the file and group ids and the default file name 
  
-    string filename;
+    //string filename;
 //    filename=string(k.getRobotName())+"_"+boost::lexical_cast<std::string>(Hour)+":"+boost::lexical_cast<std::string>(Min)+"_"+boost::lexical_cast<std::string>(Month)+":"+boost::lexical_cast<std::string>(Day)+":"+boost::lexical_cast<std::string>(Year)+"_"+"r"+str( boost::format("%d") % resolution)+"_"+"sd"+"_"+"rot"+"_"+"reachability"+"."+"h5";
 
 //The filename is shortened for now for testing purpose.
-    Kinematics k;
-    filename=string(k.getRobotName())+"_"+"r"+str( boost::format("%d") % resolution)+"_"+"Inv_reachability"+"."+"h5";
+    //Kinematics k;
+    //filename=string(k.getRobotName())+"_"+"r"+str( boost::format("%d") % resolution)+"_"+"Inv_reachability"+"."+"h5";
 
     const char * filepath = path.c_str();
     const char * name = filename.c_str();
@@ -442,6 +477,6 @@ int main(int argc, char **argv)
     loop_rate.sleep();
     count;
     }
-  }
+  
 return 0;
 }
