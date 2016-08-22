@@ -14,7 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   tf_conversions
   map_creator
-  PCL
+  pcl_ros
 )
 
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)

@@ -8,13 +8,12 @@ find_package(catkin REQUIRED COMPONENTS
   message_generation
   geometry_msgs
   std_msgs
-  octomap_server
   tf2
   rviz_visual_tools
-  PCL
+  pcl_ros
 )
 
-
+find_package(octomap REQUIRED)
 
  add_message_files(
    FILES
