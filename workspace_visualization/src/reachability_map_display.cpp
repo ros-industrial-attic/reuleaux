@@ -59,7 +59,7 @@ ReachMapDisplay::ReachMapDisplay()
   sphere_alpha_property_ = new rviz::FloatProperty( "Alpha", 1.0, "0 is fully transparent, 1.0 is fully opaque.", sphere_category_, SLOT( updateColorAndAlphaSphere() ),this);
                                             
   
-  sphere_radius_property_ = new rviz::FloatProperty( "Size", 0.1, "Size of the sphere",sphere_category_, SLOT( updateSphereSize() ),this);
+  sphere_radius_property_ = new rviz::FloatProperty( "Size", 0.05, "Size of the sphere",sphere_category_, SLOT( updateSphereSize() ),this);
 
   lower_bound_reachability_ = new rviz::IntProperty( "Lowest Reachability Index", 0 ,"Lowest Reachability index.",this);
 

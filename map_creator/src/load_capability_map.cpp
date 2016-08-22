@@ -1,61 +1,19 @@
 #include <ros/ros.h>
 
 #include "map_creator/capability.h"
-
+#include <map_creator/hdf5_dataset.h>
 
 #include "H5Cpp.h"
 #include <hdf5.h>
 
 using namespace H5;
 using namespace std;
+using namespace hdf5_dataset;
 
 #define CAP_DATASETNAME "capability_dataset"
 #define CAP_GROUPNAME "/Capability"
 #define RANK_OUT 2
 
-class loadHD5{
-public:
-
-void h5ToMultiMapCap(const hid_t dataset, multimap<vector<double>, vector<double> >& sphereColor){
-
-    hsize_t dims_out[2], count[2], offset[2], dimsm[2];
-    hid_t dataspace = H5Dget_space (dataset);    /* dataspace handle */
-    int rank      = H5Sget_simple_extent_ndims (dataspace);
-    herr_t status_n  = H5Sget_simple_extent_dims (dataspace, dims_out, NULL);
-    herr_t status;
-    offset[0] = 0;
-    offset[1] = 0;
-    count[0]  = dims_out[0];
-    count[1]  = 10;
-    double data_out[count[0]][count[1]];
-    status = H5Sselect_hyperslab (dataspace, H5S_SELECT_SET, offset, NULL, 
-                                  count, NULL);
-    dimsm[0] = count[0];
-    dimsm[1] =  count[1];
-    hid_t memspace;
-    memspace = H5Screate_simple (RANK_OUT, dimsm, NULL);  
-    status = H5Dread (dataset, H5T_NATIVE_DOUBLE, memspace, dataspace,
-                      H5P_DEFAULT, data_out);
-    for(int i=0;i<count[0];i++){
-	vector<double> posAndQuat;
-	vector<double> enumRIAngle;
-        for(int j=0;j<2;j++)
-	    {
-		 enumRIAngle.push_back(data_out[i][j]);
-	    }
-	for(int j=2;j<9;j++)
-	    {
-		 posAndQuat.push_back(data_out[i][j]);
-	    }
-        for(int j=9;j<10;j++)
-	    {
-		 enumRIAngle.push_back(data_out[i][j]);
-	    }
-        
-        sphereColor.insert(pair<vector<double>, vector<double> >(posAndQuat, enumRIAngle));
-    }
-  }
-};
 
 
 int main(int argc, char **argv)
@@ -85,7 +43,7 @@ int main(int argc, char **argv)
       cap_group = H5Gopen (file, CAP_GROUPNAME, H5P_DEFAULT);
       cap_dataset = H5Dopen (cap_group, CAP_DATASETNAME, H5P_DEFAULT);
       multimap<vector<double>, vector<double> > sphereColor;
-      loadHD5 hd5;
+      Hdf5Dataset hd5;
       hd5.h5ToMultiMapCap(cap_dataset, sphereColor);
 
 

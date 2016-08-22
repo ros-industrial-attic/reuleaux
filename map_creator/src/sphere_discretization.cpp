@@ -42,13 +42,16 @@ OcTree* SphereDiscretization::generateSphereTree2(point3d origin, float radius, 
 return tree;
 }
 
-OcTree* SphereDiscretization::generateBoxTree(point3d origin, float diameter, float resolution){
-    OcTree* tree=new OcTree(resolution);
-	Pointcloud p;
-	for (float x=origin.x()-diameter*1.5; x <=origin.x()+ diameter*1.5; x+=resolution*2){
 
-    		for (float y=origin.y()-diameter*1.5; y <= origin.y()+ diameter*1.5; y+= resolution*2){
-      			for (float z=origin.z()-diameter*1.5; z <= origin.z()+diameter*1.5; z+= resolution*2){
+
+
+OcTree* SphereDiscretization::generateBoxTree(point3d origin, float diameter, float resolution){
+    OcTree* tree=new OcTree(resolution/2);
+	Pointcloud p;
+	for (float x=origin.x()-diameter*1.5; x <=origin.x()+ diameter*1.5; x+=resolution){
+
+    		for (float y=origin.y()-diameter*1.5; y <= origin.y()+ diameter*1.5; y+= resolution){
+      			for (float z=origin.z()-diameter*1.5; z <= origin.z()+diameter*1.5; z+= resolution){
 				  //tree ->insertRay(origin, point3d(x,y,z));
 				  point3d point;
 				  point.x()=x;
@@ -401,7 +404,251 @@ bool SphereDiscretization::isPointInCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cl
 		}
 	}
     
-     
+float SphereDiscretization::distanceL2norm(const point3d p1, const point3d p2){
+    float dist;
+    dist = sqrt((p1.x()-p2.x())*(p1.x()-p2.x())+(p1.y()-p2.y())*(p1.y()-p2.y())+(p1.z()-p2.z())*(p1.z()-p2.z()));
+    return dist;
+}
+
+
+void SphereDiscretization::poseToEigenVector(const geometry_msgs::Pose pose, Eigen::VectorXd& vec)
+{
+    vec<<pose.position.x, pose.position.y, pose.position.z, pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w;
+}
+
+void SphereDiscretization::findOptimalPosebyPCA(const vector<geometry_msgs::Pose> probBasePoses,geometry_msgs::Pose& final_base_pose){
+ 
+    Eigen::MatrixXd poseData( 7,probBasePoses.size());  
+    for(int i=0;i<probBasePoses.size();++i)
+    {
+      Eigen::VectorXd vec(7);
+      poseToEigenVector(probBasePoses[i],vec);
+      poseData.col(i)<<vec;
+    }
+    
+   
+    //Mean Centering data
+    Eigen::VectorXd featureMeans = poseData.rowwise().mean();
+    Eigen::MatrixXd centered = poseData.colwise() - featureMeans;
+    
+
+    //Computing covariance matrix
+    Eigen::MatrixXd cov = centered * centered.adjoint();
+    cov = cov/(poseData.cols());
+    
+
+    //Computing Eigen vectors and Eigen Values
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eig(cov);
+    Eigen::VectorXd eigenValues = eig.eigenvalues();
+    
+    Eigen::MatrixXd eigenVectors = eig.eigenvectors();
+    Eigen::VectorXd prncplCompnent = eigenVectors.rightCols(1);
+    
+    
+    tf2::Quaternion pc_quat(prncplCompnent[3], prncplCompnent[4], prncplCompnent[5], prncplCompnent[6]); 
+    pc_quat.normalize();
+
+    final_base_pose.position.x = prncplCompnent[0];
+    final_base_pose.position.y = prncplCompnent[1];
+    final_base_pose.position.z = prncplCompnent[2];
+    final_base_pose.orientation.x = pc_quat[0];
+    final_base_pose.orientation.y = pc_quat[1];
+    final_base_pose.orientation.z = pc_quat[2];
+    final_base_pose.orientation.w = pc_quat[3];
+
+}
+
+bool SphereDiscretization::areQuaternionClose(tf2::Quaternion q1, tf2::Quaternion q2)
+{
+     double dot = q1.dot(q2);
+     if(dot<0)
+	return false;
+     else
+	return true;
+}
+
+
+
+tf2::Quaternion SphereDiscretization::inverseSignQuaternion(tf2::Quaternion q)
+{
+    tf2::Quaternion q_inv(-q[0], -q[1], -q[2], -q[3]);
+    return q_inv;
+}
+
+void SphereDiscretization::findOptimalPosebyAverage(const vector<geometry_msgs::Pose> probBasePoses,geometry_msgs::Pose& final_base_pose){
+//This Function has been borrowed from http://wiki.unity3d.com/index.php/Averaging_Quaternions_and_Vectors
+
+    double totalVecX, totalVecY, totalVecZ;
+    double avgVecX, avgVecY, avgVecZ;  
+    vector<tf2::Quaternion> quatCol;
+    for(int i=0;i<probBasePoses.size();++i)
+    {
+      totalVecX += probBasePoses[i].position.x;
+      totalVecY += probBasePoses[i].position.y;
+      totalVecZ += probBasePoses[i].position.z;
+      tf2::Quaternion quats(probBasePoses[i].orientation.x, probBasePoses[i].orientation.y, probBasePoses[i].orientation.z, probBasePoses[i].orientation.w);
+      quatCol.push_back(quats);
+    }
+   
+    avgVecX = totalVecX/double(probBasePoses.size());
+    avgVecY = totalVecY/double(probBasePoses.size());
+    avgVecZ = totalVecZ/double(probBasePoses.size());
+    
+   
+    
+    double totalQuatX, totalQuatY, totalQuatZ, totalQuatW;
+    double avgQuatX, avgQuatY, avgQuatZ, avgQuatW;
+    for(int j=0;j<quatCol.size();++j)
+    {
+      if(!areQuaternionClose(quatCol[0],quatCol[j]))  
+      {
+	
+        tf2::Quaternion quat_new;
+        quat_new = inverseSignQuaternion(quatCol[j]);
+       
+        totalQuatX +=quat_new[0];
+        totalQuatY +=quat_new[1];
+        totalQuatZ +=quat_new[2];
+        totalQuatW +=quat_new[3];
+        }
+      else
+      {
+	totalQuatX +=quatCol[j][0];
+        totalQuatY +=quatCol[j][1];
+        totalQuatZ +=quatCol[j][2];
+        totalQuatW +=quatCol[j][3];
+      }
+    }
+    avgQuatX = totalQuatX/double(probBasePoses.size());
+    avgQuatY = totalQuatY/double(probBasePoses.size());
+    avgQuatZ = totalQuatZ/double(probBasePoses.size());
+    avgQuatW = totalQuatW/double(probBasePoses.size());
+    tf2::Quaternion final_base_quat(avgQuatX,avgQuatY,avgQuatZ,avgQuatW);
+    final_base_quat.normalize();
+
+
+    final_base_pose.position.x = avgVecX;
+    final_base_pose.position.y = avgVecY;
+    final_base_pose.position.z = avgVecZ;
+    final_base_pose.orientation.x = final_base_quat[0];
+    final_base_pose.orientation.y = final_base_quat[1];
+    final_base_pose.orientation.z = final_base_quat[2];
+    final_base_pose.orientation.w = final_base_quat[3];
+ 
+
+}
+
+
+
+void SphereDiscretization::associatePose(multimap<vector<double>, vector<double> >& baseTrnsCol, const vector<geometry_msgs::Pose> grasp_poses, const multimap<vector<double>, vector<double> > PoseColFilter, const float resolution)
+{
+   
+    unsigned char maxDepth = 16;
+    float size_of_box =1.5;
+    SphereDiscretization sd;
+    point3d origin=point3d(0,0,0);
+    OcTree* tree = sd.generateBoxTree(origin, size_of_box, resolution);
+    vector<point3d> spCenter;
+    for (OcTree::leaf_iterator it=tree->begin_leafs(maxDepth), end=tree->end_leafs();it !=end;++it){
+      spCenter.push_back(it.getCoordinate());
+      }
+
+
+    multimap<vector<float>, vector<float> > trns_col;
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
+    for(int i=0;i<grasp_poses.size();++i)
+    {
+      tf2::Vector3 grasp_vec(grasp_poses[i].position.x, grasp_poses[i].position.y, grasp_poses[i].position.z);
+      tf2::Quaternion grasp_quat(grasp_poses[i].orientation.x, grasp_poses[i].orientation.y, grasp_poses[i].orientation.z, grasp_poses[i].orientation.w);
+      grasp_quat.normalize();
+      tf2::Transform grasp_trns;
+      grasp_trns.setOrigin(grasp_vec);
+      grasp_trns.setRotation(grasp_quat);
+
+      for (multimap<vector<double>, vector<double> >::const_iterator it = PoseColFilter.begin();it != PoseColFilter.end();++it)
+      {
+        tf2::Vector3 vec(it->second[0], it->second[1], it->second[2]); 
+	tf2::Quaternion quat(it->second[3], it->second[4], it->second[5], it->second[6]);
+	tf2::Transform trns;
+	trns.setOrigin(vec);
+        trns.setRotation(quat);
+	
+	tf2::Transform new_trns;
+	//new_trns = trns * grasp_trns;
+	new_trns = grasp_trns * trns;
+
+        
+
+        tf2::Vector3 new_trans_vec;
+	tf2::Quaternion new_trans_quat;
+        new_trans_vec = new_trns.getOrigin();
+	new_trans_quat = new_trns.getRotation();
+	new_trans_quat.normalize();
+
+	vector<float> position;
+	position.push_back(new_trans_vec[0]);
+	position.push_back(new_trans_vec[1]);
+	position.push_back(new_trans_vec[2]);
+	vector<float> orientation;
+	orientation.push_back(new_trans_quat[0]);
+	orientation.push_back(new_trans_quat[1]);
+	orientation.push_back(new_trans_quat[2]);
+	orientation.push_back(new_trans_quat[3]);
+	trns_col.insert(pair<vector<float>, vector<float> >(position, orientation));
+
+	pcl::PointXYZ point;
+	point.x = new_trans_vec[0];
+	point.y = new_trans_vec[1];
+	point.z = new_trans_vec[2];
+	cloud->push_back(point);
+      }
+    }
+   
+    //cout<<"Num of poses after creating cloud: "<<trns_col.size()<<endl;
+    pcl::octree::OctreePointCloudSearch<pcl::PointXYZ> octree (resolution);
+    octree.setInputCloud (cloud);
+    octree.addPointsFromInputCloud ();
+    
+    for(int i=0;i<spCenter.size();i++)
+    { 
+      pcl::PointXYZ searchPoint;
+      searchPoint.x = spCenter[i].x();
+      searchPoint.y = spCenter[i].y();
+      searchPoint.z = spCenter[i].z();
+      // Neighbors within voxel search
+
+      std::vector<int> pointIdxVec;
+      octree.voxelSearch (searchPoint, pointIdxVec);
+      if(pointIdxVec.size()>0)
+        {
+	  for (size_t j=0;j<pointIdxVec.size();++j)
+	  {
+	    std::vector<float> base_pos;
+	    base_pos.push_back(cloud->points[pointIdxVec[j]].x);
+	    base_pos.push_back(cloud->points[pointIdxVec[j]].y);
+	    base_pos.push_back(cloud->points[pointIdxVec[j]].z);
+	    multimap<vector<float>, vector<float> >::iterator it1;
+	    for(it1 = trns_col.lower_bound(base_pos); it1 !=trns_col.upper_bound(base_pos); ++it1){
+		vector<double> base_pose;
+	        base_pose.push_back(base_pos[0]);
+	        base_pose.push_back(base_pos[1]);
+	        base_pose.push_back(base_pos[2]);
+	        base_pose.push_back(it1->second[0]); 
+	        base_pose.push_back(it1->second[1]); 
+	        base_pose.push_back(it1->second[2]); 
+	        base_pose.push_back(it1->second[3]); 
+
+	        vector<double>base_sphere;
+	        base_sphere.push_back(searchPoint.x);
+	        base_sphere.push_back(searchPoint.y);
+	        base_sphere.push_back(searchPoint.z);
+		baseTrnsCol.insert(pair<vector<double>, vector<double> >(base_sphere, base_pose));
+	    }
+	  }
+        }
+    }
+}
+
 
 
 };

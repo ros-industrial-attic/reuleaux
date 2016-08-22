@@ -1,36 +1,17 @@
 # reuleaux
-GSoC Project for robot reachability
+=====
+Google Summer of Code Project: Robot reachability and Base Placement
 
-Please read this file before using this package
 
-***This package is constantly updated and still in progress. So please use with caution ***
+[Franz Reuleaux] (https://en.wikipedia.org/wiki/Franz_Reuleaux): *Franz Reuleaux (30 September 1829 -20 August 1905) was a lecturer of the Berlin Royal Technical Academy where he was later appointed as the President. He was often referred as the “father of kinematics”. After becoming a professor at the Swiss Federal Institute of Zurich, he became Rector at Königs Technischen Hochschule Berlin – Charlottenburg. Despite his involvement in German politics he became widely-known as an engineer-scientist, professor and industrial consultant, education reformer and leader of technical elite of Germany. He was also a member of Royal Swiss Acedemy of Sciences.
+Reuleaux relied deeply on the concept of kinematic chain which could be abstracted in kinematic pairs- chains of elementary links. Constraints on each kinematic pairs can lead to constraints on whole machine. He is best remembered for Reuleaux triangle and the development of compact symbolic notion to describe the topology of very wide variety of mechanisms.*
 
-(This package depends on the ikfast package. So please modify and put your own robots ikfast.cpp file location in the kinematics.h file in the include folder before start building)
 
-__map_creator__ 
 
-This package creates two types of maps. 1. Reachability Map, 2. Capability Map
-Both have their own functionalities. To create a reahability map,
+Documentation about Map creation can be found at: [map_creator] (https://github.com/ros-industrial-consortium/reuleaux/tree/master/map_creator)
 
-rosrun map_creator create_reachability_map
+Documentation about Workspace Visualization can be found at: [workspace_visualization] (https://github.com/ros-industrial-consortium/reuleaux/tree/master/workspace_visualization)
 
-the default robot for now is motoman_mh5 and the resolution is 0.035. It will create a new folder called maps in the map_creator package and there you can find a databse file mentioning the robot name and resolution.
-For creating the capability map, the process is almost the same. You have to run
+Documentation about Base Placement Planner can be found at: [Base Placement Plugin] (https://github.com/ros-industrial-consortium/reuleaux/tree/master/base_placement_plugin)
 
-rosrun map_creator create_capability_map
-
-It will also create a new database file mentioning the robot name and resolution
-
-__workspace_visualization__
-
-this package visualizes the reachability map and capability map in rviz. If everything goes right you can have new display panels in rviz with the tab of reachability map and capability map. Select whihch one you would like to visualize. (Dont run both of them at the same time, otherwise the system may hang up)
-
-rosrun map_creator load_reachability_map <map location><map_name>  
-rosrun map_creator load_capability_map <map location><map_name> 
-
-e.g
-
-rosrun map_creator load_reachability_map /home/abhi/Desktop/motoman_mh5_r0.035_reachability.h5
-
-choose the appropriate topic and you should see the maps.
-
+Please refer to [http://wiki.ros.org/reuleaux] (http://wiki.ros.org/reuleaux) for detailed description and instructions.

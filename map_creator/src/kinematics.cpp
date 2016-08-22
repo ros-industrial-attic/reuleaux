@@ -104,7 +104,7 @@ void Kinematics::getPoseFromFK(const std::vector<double> joint_values,  std::vec
      }
 
 
-bool Kinematics::isIKSuccess(std::vector<double> pose, std::vector<double>& joints){
+bool Kinematics::isIKSuccess(std::vector<double> pose, std::vector<double>& joints, int& numOfSolns){
 
 
      #if IK_VERSION > 54
@@ -165,9 +165,11 @@ bool Kinematics::isIKSuccess(std::vector<double> pose, std::vector<double>& join
 #if IK_VERSION > 54
 	// for IKFast 56,61
             unsigned int num_of_solutions = (int)solutions.GetNumSolutions();
+	    numOfSolns =  num_of_solutions;
 #else
             // for IKFast 54
             unsigned int num_of_solutions = (int)vsolutions.size();
+	    numOfSolns =  num_of_solutions;
 #endif
             
             std::vector<IKREAL_TYPE> solvalues(num_of_joints);
@@ -211,4 +213,58 @@ const string Kinematics::getRobotName(){
         return name;
 
 }
+
+
+bool Kinematics::isIkSuccesswithTransformedBase(const geometry_msgs::Pose base_pose, const geometry_msgs::Pose grasp_pose, int& numOfSolns)
+{
+//Creating a transformation out of base pose
+    tf2::Vector3 base_vec(base_pose.position.x, base_pose.position.y, base_pose.position.z);
+    tf2::Quaternion base_quat(base_pose.orientation.x, base_pose.orientation.y, base_pose.orientation.z, base_pose.orientation.w);
+    base_quat.normalize();
+    tf2::Transform base_trns;
+    base_trns.setOrigin(base_vec);
+    base_trns.setRotation(base_quat);
+
+//Inverse of the transformation
+    tf2::Transform base_trns_inv;
+    base_trns_inv = base_trns.inverse();
+
+//Creating a transformation of grasp pose
+    tf2::Vector3 grasp_vec(grasp_pose.position.x, grasp_pose.position.y, grasp_pose.position.z);
+    tf2::Quaternion grasp_quat(grasp_pose.orientation.x, grasp_pose.orientation.y, grasp_pose.orientation.z, grasp_pose.orientation.w);
+    grasp_quat.normalize();
+    tf2::Transform grasp_trns;
+    grasp_trns.setOrigin(grasp_vec);
+    grasp_trns.setRotation(grasp_quat);
+
+//Transforming grasp pose to origin from where we can check for Ik
+    tf2::Transform new_grasp_trns;
+    //new_grasp_trns = grasp_trns * base_trns_inv;
+    new_grasp_trns =  base_trns_inv * grasp_trns;
+//Creating a new grasp pose in the origin co-ordinate
+    vector<double> new_grasp_pos;
+    tf2::Vector3 new_grasp_vec;
+    tf2::Quaternion new_grasp_quat;
+    new_grasp_vec =  new_grasp_trns.getOrigin();
+    new_grasp_quat =  new_grasp_trns.getRotation();
+    new_grasp_quat.normalize();
+    new_grasp_pos.push_back(new_grasp_vec[0]);
+    new_grasp_pos.push_back(new_grasp_vec[1]);
+    new_grasp_pos.push_back(new_grasp_vec[2]);
+    new_grasp_pos.push_back(new_grasp_quat[0]);
+    new_grasp_pos.push_back(new_grasp_quat[1]);
+    new_grasp_pos.push_back(new_grasp_quat[2]);
+    new_grasp_pos.push_back(new_grasp_quat[3]);
+
+//Check the new grasp_pose for Ik
+    Kinematics k;
+    std::vector<double> joints;
+    
+    joints.resize(6);
+    if(k.isIKSuccess(new_grasp_pos, joints, numOfSolns))
+      return true;
+    else
+      return false;
+
+} 
 };
