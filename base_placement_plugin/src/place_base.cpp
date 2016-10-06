@@ -133,7 +133,10 @@ void PlaceBase::setBasePlaceParams(int base_loc_size, int high_score_sp)
 
 void PlaceBase::findbase(std::vector<geometry_msgs::Pose> grasp_poses)
 {
-    /*! The main function that finds the base. First it transforms all the poses form the loaded inverse reachability file with the grasp poses selected by the user. Then by nearest neighbor searching it associates all the poses to the corresponding spheres. By normalization it decides the color of the spheres. Then from the highest scoring spheres it calls the desired methods for finding the final base locations.
+    /*! The main function that finds the base. First it transforms all the poses form the loaded inverse reachability
+     * file with the grasp poses selected by the user. Then by nearest neighbor searching it associates all the poses
+     * to the corresponding spheres. By normalization it decides the color of the spheres. Then from the highest scoring
+     * spheres it calls the desired methods for finding the final base locations.
     */
 
     Q_EMIT basePlacementProcessStarted();
@@ -154,7 +157,7 @@ void PlaceBase::findbase(std::vector<geometry_msgs::Pose> grasp_poses)
         highScoreSp.clear();
         final_base_poses.clear();
         GRASP_POSES_ = grasp_poses;
-	sd.associatePose(baseTrnsCol, grasp_poses, PoseColFilter, res);
+        sd.associatePose(baseTrnsCol, grasp_poses, PoseColFilter, res);
         ROS_INFO("Size of baseTrnsCol dataset: %lu", baseTrnsCol.size());
 
         //Normalization for inverse Reachability Index
@@ -185,8 +188,8 @@ void PlaceBase::findbase(std::vector<geometry_msgs::Pose> grasp_poses)
 	     sphereColor.insert(pair<vector<double>, double>(it->first,double(d)));
 	        }
         }
-	ROS_INFO("Union map has been created. Can now visualize Union Map.");
-	ROS_INFO("Poses in Union Map: %lu", baseTrnsCol.size());
+        ROS_INFO("Union map has been created. Can now visualize Union Map.");
+        ROS_INFO("Poses in Union Map: %lu", baseTrnsCol.size());
         ROS_INFO("Spheres in Union Map: %lu", sphereColor.size());
         
 	multiset<pair<double, vector<double> > > scoreWithSp;

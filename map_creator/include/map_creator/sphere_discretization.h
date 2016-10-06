@@ -114,7 +114,16 @@ public:
     //! Given grasp poses and multimap structure of an inverse reachability map, transforms every pose of the ir map with grasp poses, and calculates nearest neighbor search to associate poses with belonging spheres.
     void associatePose(multimap<vector<double>, vector<double> >& baseTrnsCol, const vector<geometry_msgs::Pose> grasp_poses, const multimap<vector<double>, vector<double> > PoseColFilter, const float resolution);  
 
-
+    //! Compare two vectors, of length 3, for multimap search
+    struct vec_comp_
+    {
+      bool operator()(const vector<float>& v1, const vector<float>& v2) const
+      {
+        // TODO: need to add tolerance as a function of the map resolution; resolution maybe needs to be a class variable but this appears to work fine for now
+        float tol = 0.001;
+        return (fabs(v1[0] - v2[0]) < tol) && (fabs(v1[1] - v2[1]) < tol) && (fabs(v1[2] - v2[2]) < tol);
+      }
+    };
 };
 
    
