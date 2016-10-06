@@ -549,15 +549,17 @@ void SphereDiscretization::associatePose(multimap<vector<double>, vector<double>
     point3d origin=point3d(0,0,0);
     OcTree* tree = sd.generateBoxTree(origin, size_of_box, resolution);
     vector<point3d> spCenter;
-    for (OcTree::leaf_iterator it=tree->begin_leafs(maxDepth), end=tree->end_leafs();it !=end;++it){
+    for (OcTree::leaf_iterator it=tree->begin_leafs(maxDepth), end=tree->end_leafs();it !=end;++it)
+    {
       spCenter.push_back(it.getCoordinate());
-      }
+    }
 
-
-    multimap<vector<float>, vector<float> > trns_col;
+    // create a point cloud which consists of all of the possible base locations for all grasp poses and a list of base pose orientations
+    vector<pair <vector<float>, vector<float> > > trns_col;
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
     for(int i=0;i<grasp_poses.size();++i)
     {
+      // get grasp pose in tf format
       tf2::Vector3 grasp_vec(grasp_poses[i].position.x, grasp_poses[i].position.y, grasp_poses[i].position.z);
       tf2::Quaternion grasp_quat(grasp_poses[i].orientation.x, grasp_poses[i].orientation.y, grasp_poses[i].orientation.z, grasp_poses[i].orientation.w);
       grasp_quat.normalize();
@@ -565,90 +567,86 @@ void SphereDiscretization::associatePose(multimap<vector<double>, vector<double>
       grasp_trns.setOrigin(grasp_vec);
       grasp_trns.setRotation(grasp_quat);
 
+      // iterate through the inverse reach map
       for (multimap<vector<double>, vector<double> >::const_iterator it = PoseColFilter.begin();it != PoseColFilter.end();++it)
       {
         tf2::Vector3 vec(it->second[0], it->second[1], it->second[2]); 
-	tf2::Quaternion quat(it->second[3], it->second[4], it->second[5], it->second[6]);
-	tf2::Transform trns;
-	trns.setOrigin(vec);
+        tf2::Quaternion quat(it->second[3], it->second[4], it->second[5], it->second[6]);
+        tf2::Transform trns;
+        trns.setOrigin(vec);
         trns.setRotation(quat);
 	
-	tf2::Transform new_trns;
-	//new_trns = trns * grasp_trns;
-	new_trns = grasp_trns * trns;
-
-        
+        tf2::Transform new_trns;
+        new_trns = grasp_trns * trns;
 
         tf2::Vector3 new_trans_vec;
-	tf2::Quaternion new_trans_quat;
+        tf2::Quaternion new_trans_quat;
         new_trans_vec = new_trns.getOrigin();
-	new_trans_quat = new_trns.getRotation();
-	new_trans_quat.normalize();
+        new_trans_quat = new_trns.getRotation();
+        new_trans_quat.normalize();
 
-	vector<float> position;
-	position.push_back(new_trans_vec[0]);
-	position.push_back(new_trans_vec[1]);
-	position.push_back(new_trans_vec[2]);
-	vector<float> orientation;
-	orientation.push_back(new_trans_quat[0]);
-	orientation.push_back(new_trans_quat[1]);
-	orientation.push_back(new_trans_quat[2]);
-	orientation.push_back(new_trans_quat[3]);
-	trns_col.insert(pair<vector<float>, vector<float> >(position, orientation));
+        vector<float> position;
+        position.push_back(new_trans_vec[0]);
+        position.push_back(new_trans_vec[1]);
+        position.push_back(new_trans_vec[2]);
+        vector<float> orientation;
+        orientation.push_back(new_trans_quat[0]);
+        orientation.push_back(new_trans_quat[1]);
+        orientation.push_back(new_trans_quat[2]);
+        orientation.push_back(new_trans_quat[3]);
+        trns_col.push_back(pair<vector<float>, vector<float> >(position, orientation));
 
-	pcl::PointXYZ point;
-	point.x = new_trans_vec[0];
-	point.y = new_trans_vec[1];
-	point.z = new_trans_vec[2];
-	cloud->push_back(point);
+        pcl::PointXYZ point;
+        point.x = new_trans_vec[0];
+        point.y = new_trans_vec[1];
+        point.z = new_trans_vec[2];
+        cloud->push_back(point);
       }
-    }
+    }// done creating base pose cloud
    
-    //cout<<"Num of poses after creating cloud: "<<trns_col.size()<<endl;
+    // Create octree for binning the base poses
     pcl::octree::OctreePointCloudSearch<pcl::PointXYZ> octree (resolution);
     octree.setInputCloud (cloud);
-    octree.addPointsFromInputCloud ();
+    octree.addPointsFromInputCloud();
     
+    // add all base poses from cloud to an octree
     for(int i=0;i<spCenter.size();i++)
     { 
       pcl::PointXYZ searchPoint;
       searchPoint.x = spCenter[i].x();
       searchPoint.y = spCenter[i].y();
       searchPoint.z = spCenter[i].z();
-      // Neighbors within voxel search
 
+      // Find all base poses that lie in the given voxel
       std::vector<int> pointIdxVec;
       octree.voxelSearch (searchPoint, pointIdxVec);
       if(pointIdxVec.size()>0)
-        {
-	  for (size_t j=0;j<pointIdxVec.size();++j)
-	  {
-	    std::vector<float> base_pos;
-	    base_pos.push_back(cloud->points[pointIdxVec[j]].x);
-	    base_pos.push_back(cloud->points[pointIdxVec[j]].y);
-	    base_pos.push_back(cloud->points[pointIdxVec[j]].z);
-	    multimap<vector<float>, vector<float> >::iterator it1;
-	    for(it1 = trns_col.lower_bound(base_pos); it1 !=trns_col.upper_bound(base_pos); ++it1){
-		vector<double> base_pose;
-	        base_pose.push_back(base_pos[0]);
-	        base_pose.push_back(base_pos[1]);
-	        base_pose.push_back(base_pos[2]);
-	        base_pose.push_back(it1->second[0]); 
-	        base_pose.push_back(it1->second[1]); 
-	        base_pose.push_back(it1->second[2]); 
-	        base_pose.push_back(it1->second[3]); 
+      {
+        std::vector<double> voxel_pos;
+        voxel_pos.push_back(searchPoint.x);
+        voxel_pos.push_back(searchPoint.y);
+        voxel_pos.push_back(searchPoint.z);
 
-	        vector<double>base_sphere;
-	        base_sphere.push_back(searchPoint.x);
-	        base_sphere.push_back(searchPoint.y);
-	        base_sphere.push_back(searchPoint.z);
-		baseTrnsCol.insert(pair<vector<double>, vector<double> >(base_sphere, base_pose));
-	    }
-	  }
+        // For a given voxel, add all base poses to the multimap for later retreival
+        for (size_t j=0;j<pointIdxVec.size();++j)
+        {
+          // Get the base pose for a given index found in a voxel
+          vector<double> base_pose;
+          base_pose.push_back(voxel_pos[0]);
+          base_pose.push_back(voxel_pos[1]);
+          base_pose.push_back(voxel_pos[2]);
+          vector<float> orientation = trns_col[pointIdxVec[j]].second;
+          base_pose.push_back(double(orientation[0]));
+          base_pose.push_back(double(orientation[1]));
+          base_pose.push_back(double(orientation[2]));
+          base_pose.push_back(double(orientation[3]));
+
+          baseTrnsCol.insert(pair<vector<double>, vector<double> >(voxel_pos, base_pose));
         }
+      }
     }
 }
 
 
 
-};
+}
