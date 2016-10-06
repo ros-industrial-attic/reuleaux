@@ -3,7 +3,6 @@
 
 #ifndef Q_MOC_RUN
 
-
 #include <rviz/message_filter_display.h>
 
 #include <map_creator/capability.h>
@@ -26,20 +25,20 @@ class IntProperty;
 namespace workspace_visualization
 {
 class CapMapVisual;
-class CapMapDisplay: public rviz::MessageFilterDisplay<map_creator::capability>
+class CapMapDisplay : public rviz::MessageFilterDisplay< map_creator::capability >
 {
-Q_OBJECT
+  Q_OBJECT
 public:
   enum Disect
-    {   
-        Full,
-	First_Half,
-	Second_Half,
-	Middle_Slice,
-	End_Slice,
-    };
+  {
+    Full,
+    First_Half,
+    Second_Half,
+    Middle_Slice,
+    End_Slice,
+  };
   CapMapDisplay();
-  virtual ~ CapMapDisplay();
+  virtual ~CapMapDisplay();
 
 protected:
   virtual void onInitialize();
@@ -51,9 +50,8 @@ private Q_SLOTS:
 
 private:
   void processMessage(const map_creator::capability::ConstPtr& msg);
-  std::vector<boost::shared_ptr<CapMapVisual> >visuals_;
+  std::vector< boost::shared_ptr< CapMapVisual > > visuals_;
 
-  
   rviz::ColorProperty* color_property_;
   rviz::FloatProperty* alpha_property_;
   rviz::FloatProperty* radius_property_;
@@ -61,10 +59,7 @@ private:
   rviz::IntProperty* upper_bound_reachability_;
   rviz::BoolProperty* is_byReachability_;
   rviz::EnumProperty* disect_property_;
-
 };
 
-}//end namespace workspace_visualization
-#endif // CAPABILITY_MAP_DISPLAY_H
-
-
+}  // end namespace workspace_visualization
+#endif  // CAPABILITY_MAP_DISPLAY_H
