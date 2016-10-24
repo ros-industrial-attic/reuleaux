@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(map_creator)
 
+set(CMAKE_CXX_COMPILER_ID "--with-cc=/usr/bin/mpicc --with-cxx=/usr/bin/mpicxx -lmpi_cxx")
+set(CMAKE_CXX_COMPILER "/usr/bin/mpic++.openmpi")
+#set(HDF5_ROOT "/usr/lib/x86_64-linux-gnu/hdf5/openmpi")
 
 find_package(catkin REQUIRED COMPONENTS
   visualization_msgs
@@ -13,6 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
 )
 
+find_package(HDF5 REQUIRED)
+
 find_package(octomap REQUIRED)
 
  add_message_files(
@@ -24,12 +29,10 @@ find_package(octomap REQUIRED)
    
  )
 
-
  generate_messages(
    DEPENDENCIES
    geometry_msgs std_msgs
  )
-
 
 catkin_package(
 
@@ -40,13 +43,15 @@ catkin_package(
     kinematics
     hdf5_dataset
     roscpp
-  CATKIN_DEPENDS message_runtime 
+  CATKIN_DEPENDS message_runtime std_msgs geometry_msgs
 )
 
 
+#link_directories(/usr/lib/x86_64-linux-gnu)
+#link_directories(/usr/lib/x86_64-linux-gnu/hdf5/openmpi)
+link_directories(${HDF5_LIBRARY_DIRS})
 
-
-include_directories(include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR} ${PCL_INCLUDE_DIR})
+include_directories(include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS} ${PCL_INCLUDE_DIR})
 
 
 
@@ -70,7 +75,7 @@ target_link_libraries(kinematics
  )
 
 target_link_libraries(hdf5_dataset
-   ${catkin_LIBRARIES}
+   ${catkin_LIBRARIES} ${HDF5_LIBRARIES}
  )
 
 
@@ -106,7 +111,6 @@ target_link_libraries(load_reachability_map -lhdf5 -lhdf5_cpp hdf5_dataset ${cat
 add_executable(load_capability_map src/load_capability_map.cpp)
 add_dependencies(load_capability_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(load_capability_map -lhdf5 -lhdf5_cpp hdf5_dataset ${catkin_LIBRARIES})
-
-
+#target_link_libraries(load_capability_map -lhdf5 -lhdf5_cpp hdf5_dataset #${catkin_LIBRARIES})
 
 
