@@ -28,9 +28,9 @@ namespace sphere_discretization
 class SphereDiscretization
 {
 public:
-  // SphereDiscretization();
+   SphereDiscretization(){}
 
-  //~SphereDiscretization();
+  ~SphereDiscretization(){}
 
   //! Generating a sphere octree by insertRay
   OcTree* generateSphereTree(point3d origin, float radius, float resolution);

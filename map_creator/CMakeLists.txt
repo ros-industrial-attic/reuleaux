@@ -107,6 +107,6 @@ add_executable(load_capability_map src/load_capability_map.cpp)
 add_dependencies(load_capability_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(load_capability_map -lhdf5 -lhdf5_cpp hdf5_dataset ${catkin_LIBRARIES})
 
-
-
+catkin_add_gtest(utest test/utest.cpp)
+target_link_libraries(utest sphere_discretization ${catkin_LIBRARIES})
 
