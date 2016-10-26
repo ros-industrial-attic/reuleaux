@@ -2,9 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 
 project(base_placement_plugin)
 
-#set(CMAKE_CXX_COMPILER_ID "--with-cc=/usr/bin/mpicc --with-cxx=/usr/bin/mpicxx -lmpi_cxx")
-#set(CMAKE_CXX_COMPILER "/usr/bin/mpic++.openmpi")
-#set(CMAKE_CXX_FLAGS "-Wall -g")
 set(HDF5_ROOT "/usr/lib/x86_64-linux-gnu/hdf5/openmpi")
 
 # Load catkin and all dependencies required for this package
@@ -28,7 +25,6 @@ find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
 
 include(${QT_USE_FILE})
 
-#link_directories(/usr/lib/x86_64-linux-gnu)
 link_directories(/usr/lib/x86_64-linux-gnu/hdf5/openmpi)
 
 add_definitions(-DQT_NO_KEYWORDS)
@@ -81,8 +77,6 @@ qt4_wrap_ui(base_placement_plugin_UIS_H ${base_placement_plugin_UIS})
 include_directories(${base_placement_plugin_INCLUDE_DIRECTORIES} ${catkin_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
 add_library(${PROJECT_NAME} ${base_placement_plugin_SRCS} ${base_placement_plugin_MOCS} ${base_placement_plugin_UIS_H}) # ${base_placement_plugin_UIS_H}
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${HDF5_LIBRARIES} yaml-cpp -lhdf5 -lhdf5_cpp hdf5_dataset hdf5_dataset sphere_discretization kinematics)
-#target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY}  yaml-cpp -lhdf5 -lhdf5_cpp hdf5_dataset sphere_discretization kinematics )
-## target_link_libraries(${PROJECT_NAME} yaml-cpp)
 
 find_package(class_loader)
 class_loader_hide_library_symbols(${PROJECT_NAME})
