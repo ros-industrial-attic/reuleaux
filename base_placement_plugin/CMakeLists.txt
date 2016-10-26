@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 2.8.3)
 
 project(base_placement_plugin)
 
-set(HDF5_ROOT "/usr/lib/x86_64-linux-gnu/hdf5/openmpi")
-
 # Load catkin and all dependencies required for this package
 find_package(catkin REQUIRED COMPONENTS
   interactive_markers
