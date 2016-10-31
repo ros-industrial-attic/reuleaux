@@ -41,7 +41,7 @@ TEST(PCATest, TestCase1)
 
   const double DEFAULT_ALLOWED_VARATION = 0.01;
   vector< geometry_msgs::Pose > poses;
-  geometry_msgs::Pose pose1, pose2, final;
+  geometry_msgs::Pose pose, pose1, pose2, final;
 
   pose1.position.x = 0;
   pose1.position.y = 0;
@@ -54,26 +54,41 @@ TEST(PCATest, TestCase1)
   pose1.orientation.w = 1;
 
   poses.push_back(pose1);
-
-  // 90 degree rotation around z-axis (aligned with y-axis)
+  pose = pose1;
+  // 90 degree rotation around y-axis (aligned with z-axis)
   pose1.orientation.x = 0;
-  pose1.orientation.y = 0.887;
+  pose1.orientation.y = 0.707;
   pose1.orientation.z = 0;
-  pose1.orientation.w = 0.462;
+  pose1.orientation.w = 0.707;
 
   poses.push_back(pose1);
 
+  // final pose
   pose2 = pose1;
-  pose2.orientation.x = 0;
-  pose2.orientation.y = 0.462;
-  pose2.orientation.z = 0;
-  pose2.orientation.w = 0.887;
+  pose2.orientation.x = 0.0;
+  pose2.orientation.y = 0.383;
+  pose2.orientation.z = 0.0;
+  pose2.orientation.w = 0.924;
 
   sd.findOptimalPosebyPCA(poses, final);
   EXPECT_NEAR(final.orientation.x, pose2.orientation.x, DEFAULT_ALLOWED_VARATION);
   EXPECT_NEAR(final.orientation.y, pose2.orientation.y, DEFAULT_ALLOWED_VARATION);
   EXPECT_NEAR(final.orientation.z, pose2.orientation.z, DEFAULT_ALLOWED_VARATION);
   EXPECT_NEAR(final.orientation.w, pose2.orientation.w, DEFAULT_ALLOWED_VARATION);
+
+  // 90 degree rotation around y-axis (aligned with z-axis)
+  pose1.orientation.x = 0;
+  pose1.orientation.y = -0.707;
+  pose1.orientation.z = 0;
+  pose1.orientation.w = 0.707;
+
+  poses.push_back(pose1);
+
+  sd.findOptimalPosebyPCA(poses, final);
+  EXPECT_NEAR(final.orientation.x, pose.orientation.x, DEFAULT_ALLOWED_VARATION);
+  EXPECT_NEAR(final.orientation.y, pose.orientation.y, DEFAULT_ALLOWED_VARATION);
+  EXPECT_NEAR(final.orientation.z, pose.orientation.z, DEFAULT_ALLOWED_VARATION);
+  EXPECT_NEAR(final.orientation.w, pose.orientation.w, DEFAULT_ALLOWED_VARATION);
 
 }
 

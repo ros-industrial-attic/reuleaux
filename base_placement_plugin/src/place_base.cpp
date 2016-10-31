@@ -299,6 +299,8 @@ void PlaceBase::findBaseByPCA()
   for (int i = 0; i < ws.WsSpheres.size(); ++i)
   {
     geometry_msgs::Pose final_base_pose;
+    //sd.findOptimalPosebyAverage(ws.WsSpheres[i].poses, final_base_pose);  // Calling the PCA
+
     sd.findOptimalPosebyPCA(ws.WsSpheres[i].poses, final_base_pose);  // Calling the PCA
     final_base_pose.position.x = ws.WsSpheres[i].point.x;
     final_base_pose.position.y = ws.WsSpheres[i].point.y;

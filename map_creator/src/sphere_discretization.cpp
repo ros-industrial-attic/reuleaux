@@ -435,14 +435,27 @@ void SphereDiscretization::poseToEigenVector(const geometry_msgs::Pose pose, Eig
 void SphereDiscretization::findOptimalPosebyPCA(const vector< geometry_msgs::Pose > probBasePoses,
                                                 geometry_msgs::Pose& final_base_pose)
 {
+  Eigen::Matrix4d M;
   Eigen::MatrixXd poseData(7, probBasePoses.size());
   for (int i = 0; i < probBasePoses.size(); ++i)
   {
     Eigen::VectorXd vec(7);
+    Eigen::Vector4d q(probBasePoses[i].orientation.x, probBasePoses[i].orientation.y, probBasePoses[i].orientation.z, probBasePoses[i].orientation.w);
     poseToEigenVector(probBasePoses[i], vec);
     poseData.col(i) << vec;
+    if (i == 0)
+    {
+      Eigen::Matrix4d D((q * q.transpose()));
+      M = D/probBasePoses.size();
+    }
+    else
+    {
+      Eigen::Matrix4d D((q * q.transpose()));
+      M += D/probBasePoses.size();
+    }
   }
 
+  cout << "M" << M << "\n";
   // Mean Centering data
   Eigen::VectorXd featureMeans = poseData.rowwise().mean();
   Eigen::MatrixXd centered = poseData.colwise() - featureMeans;
@@ -452,22 +465,33 @@ void SphereDiscretization::findOptimalPosebyPCA(const vector< geometry_msgs::Pos
   cov = cov / (poseData.cols());
 
   // Computing Eigen vectors and Eigen Values
-  Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eig(cov);
-  Eigen::VectorXd eigenValues = eig.eigenvalues();
+  //Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eig(M);
+  Eigen::EigenSolver< Eigen::MatrixXd > eig(M);
+  //Eigen::VectorXd eigenValues = eig.eigenvalues();
 
-  Eigen::MatrixXd eigenVectors = eig.eigenvectors();
-  Eigen::VectorXd prncplCompnent = eigenVectors.rightCols(1);
+  //Eigen::MatrixXd eigenVectors = eig.eigenvectors();
+  //Eigen::VectorXcd prncplCompnent = eig.eigenvectors().rightCols(1);
+  Eigen::VectorXd::Index idx;
+  Eigen::VectorXd test = eig.eigenvalues().real();
+  cout << "coef: " << test << "\n";
+  int i = test.maxCoeff(&idx);
+  cout << "max coef: " << i << "\n";
+  cout << "index: " << idx << "\n";
+  cout << "es\n" <<eig.eigenvalues() << "\n";
+  //cout << "es\n" <<eig.eigenvalues().max() << "\n";
+  Eigen::Vector4d vector = eig.eigenvectors().col(idx).real();
 
-  tf2::Quaternion pc_quat(prncplCompnent[3], prncplCompnent[4], prncplCompnent[5], prncplCompnent[6]);
+  //tf2::Quaternion pc_quat(prncplCompnent[3], prncplCompnent[4], prncplCompnent[5], prncplCompnent[6]);
+  tf2::Quaternion pc_quat(0,0,0,1);
   pc_quat.normalize();
 
-  final_base_pose.position.x = prncplCompnent[0];
-  final_base_pose.position.y = prncplCompnent[1];
-  final_base_pose.position.z = prncplCompnent[2];
-  final_base_pose.orientation.x = pc_quat[0];
-  final_base_pose.orientation.y = pc_quat[1];
-  final_base_pose.orientation.z = pc_quat[2];
-  final_base_pose.orientation.w = pc_quat[3];
+  final_base_pose.position.x =0;// prncplCompnent[0];
+  final_base_pose.position.y =0;// prncplCompnent[1];
+  final_base_pose.position.z =0;// prncplCompnent[2];
+  final_base_pose.orientation.x = vector[0];
+  final_base_pose.orientation.y = vector[1];
+  final_base_pose.orientation.z = vector[2];
+  final_base_pose.orientation.w = vector[3];
 }
 
 bool SphereDiscretization::areQuaternionClose(tf2::Quaternion q1, tf2::Quaternion q2)
