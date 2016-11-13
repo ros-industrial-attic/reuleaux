@@ -1,5 +1,4 @@
 // The spheres and poses are fused in a single dataset, instead of two datasets for sphere and poses
-
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <octomap/octomap.h>
@@ -19,24 +18,17 @@
 #include <time.h>
 #include <sstream>
 
-// TODO get rid of all the headers that are not needed
-using namespace H5;
-using namespace octomap;
-using namespace std;
-using namespace octomath;
-using namespace sphere_discretization;
-using namespace kinematics;
-
 struct stat st;
 
 typedef vector<std::pair< vector< double >, const vector< double >* > > MultiVector;
 typedef multimap< const vector< double >*, const vector< double >* > MultiMap;
 
 bool isFloat(string s)
+
 {
-  istringstream iss(s);
+  std::istringstream iss(s);
   float dummy;
-  iss >> noskipws >> dummy;
+  iss >> std::noskipws >> dummy;
   return iss && iss.eof();  // Result converted to bool
 }
 
@@ -47,10 +39,10 @@ int main(int argc, char **argv)
   time_t startit, finish;
   time(&startit);
   float resolution = 0.08;
-  Kinematics k;
-  string ext = ".h5";
-  string filename =
-      string(k.getRobotName()) + "_" + "r" + str(boost::format("%d") % resolution) + "_" + "reachability" + "." + "h5";
+  kinematics::Kinematics k;
+  std::string ext = ".h5";
+  std::string filename =
+      std::string(k.getRobotName()) + "_" + "r" + str(boost::format("%d") % resolution) + "_" + "reachability" + "." + "h5";
   if (argc == 2)
   {
     if (!isFloat(argv[1]))
@@ -60,13 +52,13 @@ int main(int argc, char **argv)
       return 0;
     }
     resolution = atof(argv[1]);
-    filename = string(k.getRobotName()) + "_" + "r" + str(boost::format("%d") % resolution) + "_" + "reachability" +
+    filename = std::string(k.getRobotName()) + "_" + "r" + str(boost::format("%d") % resolution) + "_" + "reachability" +
                "." + "h5";
   }
 
   else if (argc == 3)
   {
-    string name;
+    std::string name;
     name = argv[2];
     if (!isFloat(argv[1]) && isFloat(argv[2]))
     {
@@ -105,13 +97,13 @@ int main(int argc, char **argv)
     // TODO resolution will be user argument
     // The center of every voxels are stored in a vector
 
-    SphereDiscretization sd;
+    sphere_discretization::SphereDiscretization sd;
     float r = 1;
-    point3d origin = point3d(0, 0, 0);  // This point will be the base of the robot
-    OcTree *tree = sd.generateBoxTree(origin, r, resolution);
-    std::vector< point3d > newData;
+    octomap::point3d origin = octomap::point3d(0, 0, 0);  // This point will be the base of the robot
+    octomap::OcTree *tree = sd.generateBoxTree(origin, r, resolution);
+    std::vector< octomap::point3d > newData;
     ROS_INFO("Creating the box and discretizing with resolution: %f", resolution);
-    for (OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
+    for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
     {
       newData.push_back(it.getCoordinate());
     }
@@ -129,6 +121,7 @@ int main(int argc, char **argv)
     // If the resolution is 0.01 the programs not responds
 
     float radius = resolution;
+
     vector< vector< double > > SphereCoord;
     SphereCoord.resize( newData.size() );
 
@@ -140,10 +133,11 @@ int main(int argc, char **argv)
       vector< geometry_msgs::Pose > pose;
       sd.convertPointToVector(newData[i], SphereCoord[i]);
 
+
       pose = sd.make_sphere_poses(newData[i], radius);
       for (int j = 0; j < pose.size(); j++)
       {
-        vector< double > point_on_sphere;
+        std::vector< double > point_on_sphere;
         sd.convertPoseToVector(pose[j], point_on_sphere);
 
         PoseCol.push_back( std::make_pair(point_on_sphere, &SphereCoord[i]));
@@ -156,6 +150,7 @@ int main(int argc, char **argv)
     // TODO Support for more than 6DOF robots needs to be implemented.
 
     // Kinematics k;
+
     MultiMap PoseColFilter;
     vector< vector< double > > ikSolutions;
     ikSolutions.reserve( PoseCol.size() );
@@ -214,7 +209,7 @@ int main(int argc, char **argv)
 
     // Creating maps now
 
-    string path(ros::package::getPath("map_creator") + "/maps/");
+    std::string path(ros::package::getPath("map_creator") + "/maps/");
     if (stat(path.c_str(), &st) != 0)
       ROS_INFO("Path does not exist. Creating folder for maps");
     const int dir_err = mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);

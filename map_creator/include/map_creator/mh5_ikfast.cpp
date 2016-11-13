@@ -93,8 +93,6 @@ void dgeev_(const char* jobvl, const char* jobvr, const int* n, double* a, const
             double* vl, const int* ldvl, double* vr, const int* ldvr, double* work, const int* lwork, int* info);
 }
 
-using namespace std;  // necessary to get std math routines
-
 #ifdef IKFAST_NAMESPACE
 namespace IKFAST_NAMESPACE
 {
@@ -504,27 +502,27 @@ public:
   bool ComputeIk(const IkReal* eetrans, const IkReal* eerot, const IkReal* pfree,
                  IkSolutionListBase< IkReal >& solutions)
   {
-    j0 = numeric_limits< IkReal >::quiet_NaN();
+    j0 = std::numeric_limits< IkReal >::quiet_NaN();
     _ij0[0] = -1;
     _ij0[1] = -1;
     _nj0 = -1;
-    j1 = numeric_limits< IkReal >::quiet_NaN();
+    j1 = std::numeric_limits< IkReal >::quiet_NaN();
     _ij1[0] = -1;
     _ij1[1] = -1;
     _nj1 = -1;
-    j2 = numeric_limits< IkReal >::quiet_NaN();
+    j2 = std::numeric_limits< IkReal >::quiet_NaN();
     _ij2[0] = -1;
     _ij2[1] = -1;
     _nj2 = -1;
-    j3 = numeric_limits< IkReal >::quiet_NaN();
+    j3 = std::numeric_limits< IkReal >::quiet_NaN();
     _ij3[0] = -1;
     _ij3[1] = -1;
     _nj3 = -1;
-    j4 = numeric_limits< IkReal >::quiet_NaN();
+    j4 = std::numeric_limits< IkReal >::quiet_NaN();
     _ij4[0] = -1;
     _ij4[1] = -1;
     _nj4 = -1;
-    j5 = numeric_limits< IkReal >::quiet_NaN();
+    j5 = std::numeric_limits< IkReal >::quiet_NaN();
     _ij5[0] = -1;
     _ij5[1] = -1;
     _nj5 = -1;

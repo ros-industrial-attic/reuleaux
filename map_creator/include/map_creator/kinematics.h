@@ -20,8 +20,6 @@
 #define IKREAL_TYPE IKReal  // for IKFast 54
 #endif
 
-using namespace std;
-
 namespace kinematics
 {
 class Kinematics
@@ -36,7 +34,7 @@ public:
 
   bool isIKSuccess(std::vector< double > pose, std::vector< double >& joints, int& numOfSolns);
 
-  const string getRobotName();
+  const std::string getRobotName();
 
   bool isIkSuccesswithTransformedBase(const geometry_msgs::Pose base_pose, const geometry_msgs::Pose grasp_pose,
                                       int& numOfSolns);

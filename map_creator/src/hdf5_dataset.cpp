@@ -6,7 +6,7 @@ namespace hdf5_dataset
 {
 // Hdf5Dataset::Hdf5Dataset(){}
 
-void Hdf5Dataset::h5ToMultiMapPoses(const hid_t dataset, multimap< vector< double >, vector< double > >& PoseColFilter)
+void Hdf5Dataset::h5ToMultiMapPoses(const hid_t dataset, std::multimap< std::vector< double >, std::vector< double > >& PoseColFilter)
 {
   hsize_t dims_out[2], count[2], offset[2];
   hid_t dataspace = H5Dget_space(dataset); /* dataspace handle */
@@ -51,8 +51,8 @@ void Hdf5Dataset::h5ToMultiMapPoses(const hid_t dataset, multimap< vector< doubl
     status = H5Dread(dataset, H5T_NATIVE_DOUBLE, memspace, dataspace, H5P_DEFAULT, data_out);
     for (int i = 0; i < count[0]; i++)
     {
-      vector< double > sphereCenter;
-      vector< double > Poses;
+      std::vector< double > sphereCenter;
+      std::vector< double > Poses;
       for (int j = 0; j < 3; j++)
       {
         sphereCenter.push_back(data_out[i][j]);
@@ -63,12 +63,12 @@ void Hdf5Dataset::h5ToMultiMapPoses(const hid_t dataset, multimap< vector< doubl
         Poses.push_back(data_out[i][k]);
       }
 
-      PoseColFilter.insert(pair< vector< double >, vector< double > >(sphereCenter, Poses));
+      PoseColFilter.insert(std::pair< std::vector< double >, std::vector< double > >(sphereCenter, Poses));
     }
   }
 }
 
-void Hdf5Dataset::h5ToMultiMapSpheres(const hid_t dataset, multimap< vector< double >, double >& SphereCol)
+void Hdf5Dataset::h5ToMultiMapSpheres(const hid_t dataset, std::multimap< std::vector< double >, double >& SphereCol)
 {
   hsize_t dims_out[2], count[2], offset[2], dimsm[2];
   hid_t dataspace = H5Dget_space(dataset); /* dataspace handle */
@@ -89,7 +89,7 @@ void Hdf5Dataset::h5ToMultiMapSpheres(const hid_t dataset, multimap< vector< dou
 
   for (int i = 0; i < count[0]; i++)
   {
-    vector< double > sphereCenter;
+    std::vector< double > sphereCenter;
     double ri;
     for (int j = 0; j < 3; j++)
     {
@@ -101,11 +101,11 @@ void Hdf5Dataset::h5ToMultiMapSpheres(const hid_t dataset, multimap< vector< dou
       ri = data_out[i][k];
     }
 
-    SphereCol.insert(pair< vector< double >, double >(sphereCenter, ri));
+    SphereCol.insert(std::pair< std::vector< double >, double >(sphereCenter, ri));
   }
 }
 
-void Hdf5Dataset::h5ToMultiMapCap(const hid_t dataset, multimap< vector< double >, vector< double > >& sphereColor)
+void Hdf5Dataset::h5ToMultiMapCap(const hid_t dataset, std::multimap< std::vector< double >, std::vector< double > >& sphereColor)
 {
   hsize_t dims_out[2], count[2], offset[2], dimsm[2];
   hid_t dataspace = H5Dget_space(dataset); /* dataspace handle */
@@ -125,8 +125,8 @@ void Hdf5Dataset::h5ToMultiMapCap(const hid_t dataset, multimap< vector< double 
   status = H5Dread(dataset, H5T_NATIVE_DOUBLE, memspace, dataspace, H5P_DEFAULT, data_out);
   for (int i = 0; i < count[0]; i++)
   {
-    vector< double > posAndQuat;
-    vector< double > enumRIAngle;
+    std::vector< double > posAndQuat;
+    std::vector< double > enumRIAngle;
     for (int j = 0; j < 2; j++)
     {
       enumRIAngle.push_back(data_out[i][j]);
@@ -140,7 +140,7 @@ void Hdf5Dataset::h5ToMultiMapCap(const hid_t dataset, multimap< vector< double 
       enumRIAngle.push_back(data_out[i][j]);
     }
 
-    sphereColor.insert(pair< vector< double >, vector< double > >(posAndQuat, enumRIAngle));
+    sphereColor.insert(std::pair< std::vector< double >, std::vector< double > >(posAndQuat, enumRIAngle));
   }
 }
 };

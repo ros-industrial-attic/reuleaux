@@ -4,10 +4,10 @@ namespace sphere_discretization
 {
 // SphereDiscretization::SphereDiscretization(){}
 
-OcTree* SphereDiscretization::generateSphereTree(point3d origin, float radius, float resolution)
+octomap::OcTree* SphereDiscretization::generateSphereTree(octomap::point3d origin, float radius, float resolution)
 {
-  OcTree* tree = new OcTree(resolution);
-  point3d point_on_surface = origin;
+  octomap::OcTree* tree = new octomap::OcTree(resolution);
+  octomap::point3d point_on_surface = origin;
 
   point_on_surface.x() += radius;
   for (int i = 0; i < 360; i++)
@@ -16,7 +16,8 @@ OcTree* SphereDiscretization::generateSphereTree(point3d origin, float radius, f
     {
       if (!tree->insertRay(origin, origin + point_on_surface))
       {
-        cout << "Error while inserting ray from " << origin << " to " << point_on_surface << endl;
+        //cout << "Error while inserting ray from " << origin << " to " << point_on_surface << endl;
+        ROS_ERROR_STREAM("Error while inserting ray from " << origin << " to " << point_on_surface);
       }
       point_on_surface.rotate_IP(0, 0, DEG2RAD(1.));
     }
@@ -25,15 +26,17 @@ OcTree* SphereDiscretization::generateSphereTree(point3d origin, float radius, f
   return tree;
 }
 
-OcTree* SphereDiscretization::generateSphereTree2(point3d origin, float radius, float resolution)
+octomap::OcTree* SphereDiscretization::generateSphereTree2(octomap::point3d origin, float radius, float resolution)
 {
-  OcTree* tree = new OcTree(resolution);
-  point3d point_on_surface = origin;
+  octomap::OcTree* tree = new octomap::OcTree(resolution);
+  octomap::point3d point_on_surface = origin;
   point_on_surface.x() += radius;
   unsigned sphere_beams = 500;
   double angle = 2.0 * M_PI / double(sphere_beams);
+
   Pointcloud p;
   p.reserve(sphere_beams*sphere_beams);
+
   for (unsigned i = 0; i < sphere_beams; i++)
   {
     for (unsigned j = 0; j < sphere_beams; j++)
@@ -47,10 +50,10 @@ OcTree* SphereDiscretization::generateSphereTree2(point3d origin, float radius, 
   return tree;
 }
 
-OcTree* SphereDiscretization::generateBoxTree(point3d origin, float diameter, float resolution)
+octomap::OcTree* SphereDiscretization::generateBoxTree(octomap::point3d origin, float diameter, float resolution)
 {
-  OcTree* tree = new OcTree(resolution / 2);
-  Pointcloud p;
+  octomap::OcTree* tree = new octomap::OcTree(resolution / 2);
+  octomap::Pointcloud p;
   for (float x = origin.x() - diameter * 1.5; x <= origin.x() + diameter * 1.5; x += resolution)
   {
     for (float y = origin.y() - diameter * 1.5; y <= origin.y() + diameter * 1.5; y += resolution)
@@ -58,7 +61,7 @@ OcTree* SphereDiscretization::generateBoxTree(point3d origin, float diameter, fl
       for (float z = origin.z() - diameter * 1.5; z <= origin.z() + diameter * 1.5; z += resolution)
       {
         // tree ->insertRay(origin, point3d(x,y,z));
-        point3d point;
+        octomap::point3d point;
         point.x() = x;
         point.y() = y;
         point.z() = z;
@@ -70,7 +73,7 @@ OcTree* SphereDiscretization::generateBoxTree(point3d origin, float diameter, fl
   return tree;
 };
 
-Pointcloud SphereDiscretization::make_sphere_points(point3d origin, double r)
+octomap::Pointcloud SphereDiscretization::make_sphere_points(octomap::point3d origin, double r)
 {
   Pointcloud spherePoints;
   spherePoints.reserve( 7*7*2 );
@@ -78,7 +81,7 @@ Pointcloud SphereDiscretization::make_sphere_points(point3d origin, double r)
   {
     for (double theta = 0.; theta < M_PI; theta += M_PI / 7.)  // Elevation [0, PI]
     {
-      point3d point;
+      octomap::point3d point;
       point.x() = r * cos(phi) * sin(theta) + origin.x();
       point.y() = r * sin(phi) * sin(theta) + origin.y();
       point.z() = r * cos(theta) + origin.z();
@@ -88,7 +91,7 @@ Pointcloud SphereDiscretization::make_sphere_points(point3d origin, double r)
   return spherePoints;
 }
 
-vector< geometry_msgs::Pose > SphereDiscretization::make_sphere_poses(point3d origin, double r)
+std::vector< geometry_msgs::Pose > SphereDiscretization::make_sphere_poses(octomap::point3d origin, double r)
 {
   vector< geometry_msgs::Pose > pose_Col;
   pose_Col.reserve( 5*5*2 );
@@ -127,14 +130,15 @@ double SphereDiscretization::irand(int min, int max)
   return ((double)rand() / ((double)RAND_MAX + 1.0)) * (max - min) + min;
 }
 
-Pointcloud SphereDiscretization::make_sphere_rand(point3d origin, double r, int sample)
+octomap::Pointcloud SphereDiscretization::make_sphere_rand(octomap::point3d origin, double r, int sample)
 {
   Pointcloud spherePoints;
   spherePoints.reserve(sample);
+
   double theta = 0, phi = 0;
   for (int i = 0; i < sample; i++)
   {
-    point3d point;
+    octomap::point3d point;
     theta = 2 * M_PI * irand(0, 1);
     phi = acos(2 * irand(0, 1) - 1.0);
     point.x() = float(r * cos(theta) * sin(phi) + origin.x());
@@ -146,15 +150,16 @@ Pointcloud SphereDiscretization::make_sphere_rand(point3d origin, double r, int 
   return spherePoints;
 }
 
-Pointcloud SphereDiscretization::make_sphere_Archimedes(point3d origin, double r, int sample)
+octomap::Pointcloud SphereDiscretization::make_sphere_Archimedes(octomap::point3d origin, double r, int sample)
 {
   Pointcloud spherePoints;
   spherePoints.reserve(sample*2);
+
   double theta = 0, phi = 0;
   for (int i = 0; i < sample / 2; i++)
   {
-    point3d point;
-    point3d point2;
+    octomap::point3d point;
+    octomap::point3d point2;
     theta = 2 * M_PI * irand(-1, 1);
     point.z() = r * irand(0, 1) + origin.z();
     point.x() = r * sqrt(1 - point.z() * point.z()) * cos(theta) + origin.x();
@@ -164,12 +169,13 @@ Pointcloud SphereDiscretization::make_sphere_Archimedes(point3d origin, double r
     point2.x() = -point.x();
     spherePoints.push_back(point);
     spherePoints.push_back(point2);
-    cout << point.x() << " " << point.y() << " " << point.z() << endl;
+    //cout << point.x() << " " << point.y() << " " << point.z() << endl;
+    ROS_INFO_STREAM(point.x() << " " << point.y() << " " << point.z());
   }
   return spherePoints;
 }
 
-Pointcloud SphereDiscretization::make_sphere_fibonacci_grid(point3d origin, double r, int sample)
+octomap::Pointcloud SphereDiscretization::make_sphere_fibonacci_grid(octomap::point3d origin, double r, int sample)
 {
   double ng;
   double r_phi = (1.0 + sqrt(5.0)) / 2.0;
@@ -180,8 +186,8 @@ Pointcloud SphereDiscretization::make_sphere_fibonacci_grid(point3d origin, doub
   for (int i = 0; i < sample; i++)
   {
     double i_r8 = (double)(-ng + 1 + 2 * i);
-    point3d point;
-    point3d point2;
+    octomap::point3d point;
+    octomap::point3d point2;
     theta = 2 * r_phi * i_r8 / M_PI;
     double sphi = i_r8 / ng;
     double cphi = sqrt((ng + i_r8) * (ng - i_r8)) / ng;
@@ -206,7 +212,8 @@ double SphereDiscretization::r8_modp(double x, double y)
   double value;
   if (y = 0.0)
   {
-    cerr << "R8-MODP error: called with the y value of " << y << "\n";
+    //cerr << "R8-MODP error: called with the y value of " << y << "\n";
+    ROS_ERROR_STREAM("R8-M0DP error: called with the y value of " << y);
     exit(1);
   }
   value = x - ((double)((int)(x / y))) * y;
@@ -217,7 +224,7 @@ double SphereDiscretization::r8_modp(double x, double y)
   return value;
 }
 
-Pointcloud SphereDiscretization::make_sphere_spiral_points(point3d origin, double r, int sample)
+octomap::Pointcloud SphereDiscretization::make_sphere_spiral_points(octomap::point3d origin, double r, int sample)
 {
   Pointcloud spherePoints;
   spherePoints.reserve(sample);
@@ -226,7 +233,7 @@ Pointcloud SphereDiscretization::make_sphere_spiral_points(point3d origin, doubl
   double sinphi = 0, cosphi = 0;
   for (int i = 0; i < sample; i++)
   {
-    point3d point(0, 0, 0);
+    octomap::point3d point(0, 0, 0);
     cosphi = ((double)(sample - i - 1) * (-1.0) + (double)(i) * (1.0)) / (double)(sample - 1);
     sinphi = sqrt(1.0 - cosphi * cosphi);
     if (i == 0 || i == sample - 1)
@@ -250,12 +257,12 @@ Pointcloud SphereDiscretization::make_sphere_spiral_points(point3d origin, doubl
   return spherePoints;
 }
 
-Pointcloud SphereDiscretization::make_long_lat_grid(point3d origin, double r, int sample, int lat_num, int lon_num)
+octomap::Pointcloud SphereDiscretization::make_long_lat_grid(octomap::point3d origin, double r, int sample, int lat_num, int lon_num)
 {
-  Pointcloud spherePoints;
+  octomap::Pointcloud spherePoints;
 
   double theta = 0, phi = 0;
-  point3d point;
+  octomap::point3d point;
   point.x() = r * sin(phi) * cos(theta) + origin.x();
   point.y() = r * sin(phi) * sin(theta) + origin.y();
   point.z() = r * cos(phi) + origin.y();
@@ -277,12 +284,13 @@ Pointcloud SphereDiscretization::make_long_lat_grid(point3d origin, double r, in
     point.y() = r * sin(phi) * sin(theta) + origin.y();
     point.z() = r * cos(phi) + origin.y();
     sample = sample + 1;
-    cout << point.x() << " " << point.y() << " " << point.z() << endl;
+    //cout << point.x() << " " << point.y() << " " << point.z() << endl;
+    ROS_INFO_STREAM(point.x() << " " << point.y() << " " << point.z());
   }
   return spherePoints;
 }
 
-void SphereDiscretization::convertPointToVector(const point3d point, std::vector< double >& data)
+void SphereDiscretization::convertPointToVector(const octomap::point3d point, std::vector< double >& data)
 {
   data.reserve(3);
   data.push_back(double(point.x()));
@@ -290,14 +298,14 @@ void SphereDiscretization::convertPointToVector(const point3d point, std::vector
   data.push_back(double(point.z()));
 }
 
-void SphereDiscretization::convertVectorToPoint(const std::vector< double > data, point3d& point)
+void SphereDiscretization::convertVectorToPoint(const std::vector< double > data, octomap::point3d &point)
 {
   point.x() = data[0];
   point.y() = data[1];
   point.z() = data[2];
 }
 
-void SphereDiscretization::convertPoseToVector(const geometry_msgs::Pose pose, std::vector< double >& data)
+void SphereDiscretization::convertPoseToVector(const geometry_msgs::Pose pose, std::vector< double > &data)
 {
   data.reserve(7);
   data.push_back(double(pose.position.x));
@@ -309,7 +317,7 @@ void SphereDiscretization::convertPoseToVector(const geometry_msgs::Pose pose, s
   data.push_back(double(pose.orientation.w));
 }
 
-void SphereDiscretization::convertVectorToPose(const std::vector< double > data, geometry_msgs::Pose& pose)
+void SphereDiscretization::convertVectorToPose(const std::vector< double > data, geometry_msgs::Pose &pose)
 {
   pose.position.x = data[0];
   pose.position.y = data[1];
@@ -320,7 +328,7 @@ void SphereDiscretization::convertVectorToPose(const std::vector< double > data,
   pose.orientation.w = data[6];
 }
 
-geometry_msgs::Pose SphereDiscretization::findOptimalPose(const vector< geometry_msgs::Pose > poses, point3d origin)
+geometry_msgs::Pose SphereDiscretization::findOptimalPose(const std::vector< geometry_msgs::Pose > poses, octomap::point3d origin)
 {
   geometry_msgs::Pose optiPose;
   double mydo[] = {0, 0, 0, 0, 0, 0};
@@ -355,7 +363,7 @@ void SphereDiscretization::createConeCloud(const geometry_msgs::Pose pose, const
   float angle = M_PI / opening_angle;
   static const double delta_theta = M_PI / 32.0;
   double theta = 0;
-  point3d origin = point3d(0, 0, 0);
+  octomap::point3d origin = octomap::point3d(0, 0, 0);
   for (float j = 0; j <= angle / 2; j += 0.01)
   {
     for (float k = 0; k <= scale; k += 0.001)
@@ -379,13 +387,13 @@ void SphereDiscretization::createConeCloud(const geometry_msgs::Pose pose, const
   pcl::transformPointCloud(*new_cloud, *cloud, transform);
 }
 
-void SphereDiscretization::poseToPoint(const geometry_msgs::Pose pose, point3d& point)
+void SphereDiscretization::poseToPoint(const geometry_msgs::Pose pose, octomap::point3d &point)
 {
   point.x() = pose.position.x;
   point.y() = pose.position.y;
   point.z() = pose.position.z;
 }
-bool SphereDiscretization::isPointInCloud(pcl::PointCloud< pcl::PointXYZ >::Ptr cloud, point3d point)
+bool SphereDiscretization::isPointInCloud(pcl::PointCloud< pcl::PointXYZ >::Ptr cloud, octomap::point3d point)
 {
   pcl::PointCloud< pcl::PointXYZ >::Ptr cloud_hull(new pcl::PointCloud< pcl::PointXYZ >);
   pcl::ConvexHull< pcl::PointXYZ > chull;
@@ -418,7 +426,7 @@ bool SphereDiscretization::isPointInCloud(pcl::PointCloud< pcl::PointXYZ >::Ptr 
   }
 }
 
-float SphereDiscretization::distanceL2norm(const point3d p1, const point3d p2)
+float SphereDiscretization::distanceL2norm(const octomap::point3d p1, const octomap::point3d p2)
 {
   float dist;
   dist = sqrt((p1.x() - p2.x()) * (p1.x() - p2.x()) + (p1.y() - p2.y()) * (p1.y() - p2.y()) +
@@ -432,7 +440,7 @@ void SphereDiscretization::poseToEigenVector(const geometry_msgs::Pose pose, Eig
       pose.orientation.w;
 }
 
-void SphereDiscretization::findOptimalPosebyPCA(const vector< geometry_msgs::Pose > probBasePoses,
+void SphereDiscretization::findOptimalPosebyPCA(const std::vector< geometry_msgs::Pose > probBasePoses,
                                                 geometry_msgs::Pose& final_base_pose)
 {
   Eigen::Matrix4d M;
@@ -455,7 +463,8 @@ void SphereDiscretization::findOptimalPosebyPCA(const vector< geometry_msgs::Pos
     }
   }
 
-  cout << "M" << M << "\n";
+  //cout << "M" << M << "\n";
+  ROS_INFO_STREAM("M" << M);
   // Mean Centering data
   Eigen::VectorXd featureMeans = poseData.rowwise().mean();
   Eigen::MatrixXd centered = poseData.colwise() - featureMeans;
@@ -473,11 +482,18 @@ void SphereDiscretization::findOptimalPosebyPCA(const vector< geometry_msgs::Pos
   //Eigen::VectorXcd prncplCompnent = eig.eigenvectors().rightCols(1);
   Eigen::VectorXd::Index idx;
   Eigen::VectorXd test = eig.eigenvalues().real();
-  cout << "coef: " << test << "\n";
+  //cout << "coef: " << test << "\n";
+  ROS_INFO_STREAM("coef: " << test);
+
   int i = test.maxCoeff(&idx);
-  cout << "max coef: " << i << "\n";
-  cout << "index: " << idx << "\n";
-  cout << "es\n" <<eig.eigenvalues() << "\n";
+
+  //cout << "max coef: " << i << "\n";
+  ROS_INFO_STREAM("max coef: " << i);
+  //cout << "index: " << idx << "\n";
+  ROS_INFO_STREAM("index: " << idx);
+  //cout << "es\n" <<eig.eigenvalues() << "\n";
+  ROS_INFO_STREAM("es\nn" << eig.eigenvalues());
+
   //cout << "es\n" <<eig.eigenvalues().max() << "\n";
   Eigen::Vector4d vector = eig.eigenvectors().col(idx).real();
 
@@ -509,7 +525,7 @@ tf2::Quaternion SphereDiscretization::inverseSignQuaternion(tf2::Quaternion q)
   return q_inv;
 }
 
-void SphereDiscretization::findOptimalPosebyAverage(const vector< geometry_msgs::Pose > probBasePoses,
+void SphereDiscretization::findOptimalPosebyAverage(const std::vector< geometry_msgs::Pose > probBasePoses,
                                                     geometry_msgs::Pose& final_base_pose)
 {
   // This Function has been borrowed from http://wiki.unity3d.com/index.php/Averaging_Quaternions_and_Vectors
@@ -518,6 +534,7 @@ void SphereDiscretization::findOptimalPosebyAverage(const vector< geometry_msgs:
   double avgVecX, avgVecY, avgVecZ;
   vector< tf2::Quaternion > quatCol;
   quatCol.reserve(probBasePoses.size());
+
   for (int i = 0; i < probBasePoses.size(); ++i)
   {
     totalVecX += probBasePoses[i].position.x;
@@ -570,18 +587,18 @@ void SphereDiscretization::findOptimalPosebyAverage(const vector< geometry_msgs:
   final_base_pose.orientation.w = final_base_quat[3];
 }
 
-void SphereDiscretization::associatePose(multimap< vector< double >, vector< double > >& baseTrnsCol,
-                                         const vector< geometry_msgs::Pose > grasp_poses,
-                                         const multimap< vector< double >, vector< double > > PoseColFilter,
+void SphereDiscretization::associatePose(std::multimap< std::vector< double >, std::vector< double > >& baseTrnsCol,
+                                         const std::vector< geometry_msgs::Pose > grasp_poses,
+                                         const std::multimap< std::vector< double >, std::vector< double > > PoseColFilter,
                                          const float resolution)
 {
   unsigned char maxDepth = 16;
   float size_of_box = 1.5;
   SphereDiscretization sd;
-  point3d origin = point3d(0, 0, 0);
-  OcTree* tree = sd.generateBoxTree(origin, size_of_box, resolution);
-  vector< point3d > spCenter;
-  for (OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
+  octomap::point3d origin = octomap::point3d(0, 0, 0);
+  octomap::OcTree* tree = sd.generateBoxTree(origin, size_of_box, resolution);
+  std::vector< octomap::point3d > spCenter;
+  for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
   {
     spCenter.push_back(it.getCoordinate());
   }
@@ -603,7 +620,7 @@ void SphereDiscretization::associatePose(multimap< vector< double >, vector< dou
     grasp_trns.setRotation(grasp_quat);
 
     // iterate through the inverse reach map
-    for (multimap< vector< double >, vector< double > >::const_iterator it = PoseColFilter.begin();
+    for (std::multimap< std::vector< double >, std::vector< double > >::const_iterator it = PoseColFilter.begin();
          it != PoseColFilter.end(); ++it)
     {
       tf2::Vector3 vec(it->second[0], it->second[1], it->second[2]);
@@ -628,11 +645,12 @@ void SphereDiscretization::associatePose(multimap< vector< double >, vector< dou
       position.push_back(new_trans_vec[2]);
       vector< float > orientation;
       position.reserve(4);
+
       orientation.push_back(new_trans_quat[0]);
       orientation.push_back(new_trans_quat[1]);
       orientation.push_back(new_trans_quat[2]);
       orientation.push_back(new_trans_quat[3]);
-      trns_col.push_back(pair< vector< float >, vector< float > >(position, orientation));
+      trns_col.push_back(std::pair< std::vector< float >, std::vector< float > >(position, orientation));
 
       pcl::PointXYZ point;
       point.x = new_trans_vec[0];
@@ -675,13 +693,13 @@ void SphereDiscretization::associatePose(multimap< vector< double >, vector< dou
         base_pose.push_back(voxel_pos[0]);
         base_pose.push_back(voxel_pos[1]);
         base_pose.push_back(voxel_pos[2]);
-        vector< float > orientation = trns_col[pointIdxVec[j]].second;
+        std::vector< float > orientation = trns_col[pointIdxVec[j]].second;
         base_pose.push_back(double(orientation[0]));
         base_pose.push_back(double(orientation[1]));
         base_pose.push_back(double(orientation[2]));
         base_pose.push_back(double(orientation[3]));
 
-        baseTrnsCol.insert(pair< vector< double >, vector< double > >(voxel_pos, base_pose));
+        baseTrnsCol.insert(std::pair< std::vector< double >, std::vector< double > >(voxel_pos, base_pose));
       }
     }
   }
