@@ -29,6 +29,9 @@ using namespace kinematics;
 
 struct stat st;
 
+typedef vector<std::pair< vector< double >, const vector< double >* > > MultiVector;
+typedef multimap< const vector< double >*, const vector< double >* > MultiMap;
+
 bool isFloat(string s)
 {
   istringstream iss(s);
@@ -126,14 +129,16 @@ int main(int argc, char **argv)
     // If the resolution is 0.01 the programs not responds
 
     float radius = resolution;
-    vector< geometry_msgs::PoseArray > pose_Col;
+    vector< vector< double > > SphereCoord;
+    SphereCoord.resize( newData.size() );
 
-    multimap< vector< double >, vector< double > > PoseCol;
+    MultiVector PoseCol;
+    PoseCol.reserve( newData.size() * 50);
+
     for (int i = 0; i < newData.size(); i++)
     {
       vector< geometry_msgs::Pose > pose;
-      vector< double > sphere_coord;
-      sd.convertPointToVector(newData[i], sphere_coord);
+      sd.convertPointToVector(newData[i], SphereCoord[i]);
 
       pose = sd.make_sphere_poses(newData[i], radius);
       for (int j = 0; j < pose.size(); j++)
@@ -141,7 +146,7 @@ int main(int argc, char **argv)
         vector< double > point_on_sphere;
         sd.convertPoseToVector(pose[j], point_on_sphere);
 
-        PoseCol.insert(pair< vector< double >, vector< double > >(point_on_sphere, sphere_coord));
+        PoseCol.push_back( std::make_pair(point_on_sphere, &SphereCoord[i]));
       }
     }
 
@@ -151,16 +156,18 @@ int main(int argc, char **argv)
     // TODO Support for more than 6DOF robots needs to be implemented.
 
     // Kinematics k;
-    multimap< vector< double >, vector< double > > PoseColFilter;
+    MultiMap PoseColFilter;
     vector< vector< double > > ikSolutions;
-    for (multimap< vector< double >, vector< double > >::iterator it = PoseCol.begin(); it != PoseCol.end(); ++it)
+    ikSolutions.reserve( PoseCol.size() );
+
+    for (MultiVector::iterator it = PoseCol.begin(); it != PoseCol.end(); ++it)
     {
       std::vector< double > joints;
       joints.resize(6);
       int solns;
       if (k.isIKSuccess(it->first, joints, solns))
       {
-        PoseColFilter.insert(pair< vector< double >, vector< double > >(it->second, it->first));
+        PoseColFilter.insert( std::make_pair( it->second, &(it->first)));
         ikSolutions.push_back(joints);
         // cout<<it->first[0]<<" "<<it->first[1]<<" "<<it->first[2]<<" "<<it->first[3]<<" "<<it->first[4]<<"
         // "<<it->first[5]<<" "<<it->first[6]<<endl;
@@ -175,25 +182,29 @@ int main(int argc, char **argv)
     // TODO there are several maps are implemented. We can get rid of few maps and run large loops. The complexity of
     // accessing map is Olog(n)
 
-    map< vector< double >, double > sphereColor;
+    map< const vector< double >*, double > sphereColor;
     vector< vector< double > > poseReach;
 
-    for (multimap< vector< double >, vector< double > >::iterator it = PoseColFilter.begin(); it != PoseColFilter.end();
-         ++it)
+    for (MultiMap::iterator it = PoseColFilter.begin(); it != PoseColFilter.end(); ++it)
     {
+      const vector<double>* sphere_coord    = it->first;
+      const vector<double>* point_on_sphere = it->second;
+
       // Reachability Index D=R/N*100;
-      float d = float(PoseColFilter.count(it->first)) / (PoseCol.size() / newData.size()) * 100;
-      sphereColor.insert(pair< vector< double >, double >(it->first, double(d)));
+      float d = float(PoseColFilter.count(sphere_coord)) / (PoseCol.size() / newData.size()) * 100;
+      sphereColor.insert( std::make_pair(it->first, double(d)));
 
       // poseReach.push_back(it->second);
       vector< double > poseAndSphere;
-      for (int i = 0; i < (it->first).size(); i++)
+      poseAndSphere.reserve( sphere_coord->size() + point_on_sphere->size());
+
+      for (int i = 0; i < sphere_coord->size(); i++)
       {
-        poseAndSphere.push_back((it->first)[i]);
+        poseAndSphere.push_back((*it->first)[i]);
       }
-      for (int j = 0; j < (it->second).size(); j++)
+      for (int j = 0; j < point_on_sphere->size(); j++)
       {
-        poseAndSphere.push_back((it->second)[j]);
+        poseAndSphere.push_back((*it->second)[j]);
       }
 
       poseReach.push_back(poseAndSphere);
@@ -381,11 +392,11 @@ int main(int argc, char **argv)
     dims2[1] = SY;
     double dset2_data[SX][SY];
 
-    for (map< vector< double >, double >::iterator it = sphereColor.begin(); it != sphereColor.end(); ++it)
+    for (map< const vector< double >*, double >::iterator it = sphereColor.begin(); it != sphereColor.end(); ++it)
     {
       for (int j = 0; j < SY - 1; j++)
       {
-        dset2_data[distance(sphereColor.begin(), it)][j] = it->first[j];
+        dset2_data[distance(sphereColor.begin(), it)][j] = (*it->first)[j];
       }
       for (int j = 3; j < SY; j++)
       {
