@@ -33,6 +33,7 @@ OcTree* SphereDiscretization::generateSphereTree2(point3d origin, float radius, 
   unsigned sphere_beams = 500;
   double angle = 2.0 * M_PI / double(sphere_beams);
   Pointcloud p;
+  p.reserve(sphere_beams*sphere_beams);
   for (unsigned i = 0; i < sphere_beams; i++)
   {
     for (unsigned j = 0; j < sphere_beams; j++)
@@ -72,6 +73,7 @@ OcTree* SphereDiscretization::generateBoxTree(point3d origin, float diameter, fl
 Pointcloud SphereDiscretization::make_sphere_points(point3d origin, double r)
 {
   Pointcloud spherePoints;
+  spherePoints.reserve( 7*7*2 );
   for (double phi = 0.; phi < 2 * M_PI; phi += M_PI / 7.)  // Azimuth [0, 2PI]
   {
     for (double theta = 0.; theta < M_PI; theta += M_PI / 7.)  // Elevation [0, PI]
@@ -89,6 +91,7 @@ Pointcloud SphereDiscretization::make_sphere_points(point3d origin, double r)
 vector< geometry_msgs::Pose > SphereDiscretization::make_sphere_poses(point3d origin, double r)
 {
   vector< geometry_msgs::Pose > pose_Col;
+  pose_Col.reserve( 5*5*2 );
   geometry_msgs::Pose pose;
   // TODO Most of the robots have a roll joint as their final joint which can move 0 to 2pi. So if a pose is reachable,
   // then the discretization of roll poses are also reachable. It will increase the data, so we have to decide if we
@@ -127,6 +130,7 @@ double SphereDiscretization::irand(int min, int max)
 Pointcloud SphereDiscretization::make_sphere_rand(point3d origin, double r, int sample)
 {
   Pointcloud spherePoints;
+  spherePoints.reserve(sample);
   double theta = 0, phi = 0;
   for (int i = 0; i < sample; i++)
   {
@@ -145,6 +149,7 @@ Pointcloud SphereDiscretization::make_sphere_rand(point3d origin, double r, int 
 Pointcloud SphereDiscretization::make_sphere_Archimedes(point3d origin, double r, int sample)
 {
   Pointcloud spherePoints;
+  spherePoints.reserve(sample*2);
   double theta = 0, phi = 0;
   for (int i = 0; i < sample / 2; i++)
   {
@@ -169,6 +174,7 @@ Pointcloud SphereDiscretization::make_sphere_fibonacci_grid(point3d origin, doub
   double ng;
   double r_phi = (1.0 + sqrt(5.0)) / 2.0;
   Pointcloud spherePoints;
+  spherePoints.reserve(sample*2);
   ng = double(sample);
   double theta = 0, phi = 0;
   for (int i = 0; i < sample; i++)
@@ -214,6 +220,7 @@ double SphereDiscretization::r8_modp(double x, double y)
 Pointcloud SphereDiscretization::make_sphere_spiral_points(point3d origin, double r, int sample)
 {
   Pointcloud spherePoints;
+  spherePoints.reserve(sample);
 
   double theta = 0, phi = 0;
   double sinphi = 0, cosphi = 0;
@@ -277,6 +284,7 @@ Pointcloud SphereDiscretization::make_long_lat_grid(point3d origin, double r, in
 
 void SphereDiscretization::convertPointToVector(const point3d point, std::vector< double >& data)
 {
+  data.reserve(3);
   data.push_back(double(point.x()));
   data.push_back(double(point.y()));
   data.push_back(double(point.z()));
@@ -291,6 +299,7 @@ void SphereDiscretization::convertVectorToPoint(const std::vector< double > data
 
 void SphereDiscretization::convertPoseToVector(const geometry_msgs::Pose pose, std::vector< double >& data)
 {
+  data.reserve(7);
   data.push_back(double(pose.position.x));
   data.push_back(double(pose.position.y));
   data.push_back(double(pose.position.z));
@@ -484,6 +493,7 @@ void SphereDiscretization::findOptimalPosebyAverage(const vector< geometry_msgs:
   double totalVecX, totalVecY, totalVecZ;
   double avgVecX, avgVecY, avgVecZ;
   vector< tf2::Quaternion > quatCol;
+  quatCol.reserve(probBasePoses.size());
   for (int i = 0; i < probBasePoses.size(); ++i)
   {
     totalVecX += probBasePoses[i].position.x;
@@ -555,6 +565,7 @@ void SphereDiscretization::associatePose(multimap< vector< double >, vector< dou
   // create a point cloud which consists of all of the possible base locations for all grasp poses and a list of base
   // pose orientations
   vector< pair< vector< float >, vector< float > > > trns_col;
+  trns_col.reserve(grasp_poses.size());
   pcl::PointCloud< pcl::PointXYZ >::Ptr cloud(new pcl::PointCloud< pcl::PointXYZ >);
   for (int i = 0; i < grasp_poses.size(); ++i)
   {
@@ -587,10 +598,12 @@ void SphereDiscretization::associatePose(multimap< vector< double >, vector< dou
       new_trans_quat.normalize();
 
       vector< float > position;
+      position.reserve(3);
       position.push_back(new_trans_vec[0]);
       position.push_back(new_trans_vec[1]);
       position.push_back(new_trans_vec[2]);
       vector< float > orientation;
+      position.reserve(4);
       orientation.push_back(new_trans_quat[0]);
       orientation.push_back(new_trans_quat[1]);
       orientation.push_back(new_trans_quat[2]);
@@ -624,6 +637,7 @@ void SphereDiscretization::associatePose(multimap< vector< double >, vector< dou
     if (pointIdxVec.size() > 0)
     {
       std::vector< double > voxel_pos;
+      voxel_pos.reserve(3);
       voxel_pos.push_back(searchPoint.x);
       voxel_pos.push_back(searchPoint.y);
       voxel_pos.push_back(searchPoint.z);
@@ -633,6 +647,7 @@ void SphereDiscretization::associatePose(multimap< vector< double >, vector< dou
       {
         // Get the base pose for a given index found in a voxel
         vector< double > base_pose;
+        base_pose.reserve(3);
         base_pose.push_back(voxel_pos[0]);
         base_pose.push_back(voxel_pos[1]);
         base_pose.push_back(voxel_pos[2]);
