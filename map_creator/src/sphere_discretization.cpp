@@ -34,7 +34,7 @@ octomap::OcTree* SphereDiscretization::generateSphereTree2(octomap::point3d orig
   unsigned sphere_beams = 500;
   double angle = 2.0 * M_PI / double(sphere_beams);
 
-  Pointcloud p;
+  octomap::Pointcloud p;
   p.reserve(sphere_beams*sphere_beams);
 
   for (unsigned i = 0; i < sphere_beams; i++)
@@ -75,7 +75,7 @@ octomap::OcTree* SphereDiscretization::generateBoxTree(octomap::point3d origin, 
 
 octomap::Pointcloud SphereDiscretization::make_sphere_points(octomap::point3d origin, double r)
 {
-  Pointcloud spherePoints;
+  octomap::Pointcloud spherePoints;
   spherePoints.reserve( 7*7*2 );
   for (double phi = 0.; phi < 2 * M_PI; phi += M_PI / 7.)  // Azimuth [0, 2PI]
   {
@@ -93,7 +93,7 @@ octomap::Pointcloud SphereDiscretization::make_sphere_points(octomap::point3d or
 
 std::vector< geometry_msgs::Pose > SphereDiscretization::make_sphere_poses(octomap::point3d origin, double r)
 {
-  vector< geometry_msgs::Pose > pose_Col;
+  std::vector< geometry_msgs::Pose > pose_Col;
   pose_Col.reserve( 5*5*2 );
   geometry_msgs::Pose pose;
   // TODO Most of the robots have a roll joint as their final joint which can move 0 to 2pi. So if a pose is reachable,
@@ -132,7 +132,7 @@ double SphereDiscretization::irand(int min, int max)
 
 octomap::Pointcloud SphereDiscretization::make_sphere_rand(octomap::point3d origin, double r, int sample)
 {
-  Pointcloud spherePoints;
+  octomap::Pointcloud spherePoints;
   spherePoints.reserve(sample);
 
   double theta = 0, phi = 0;
@@ -152,7 +152,7 @@ octomap::Pointcloud SphereDiscretization::make_sphere_rand(octomap::point3d orig
 
 octomap::Pointcloud SphereDiscretization::make_sphere_Archimedes(octomap::point3d origin, double r, int sample)
 {
-  Pointcloud spherePoints;
+  octomap::Pointcloud spherePoints;
   spherePoints.reserve(sample*2);
 
   double theta = 0, phi = 0;
@@ -179,7 +179,7 @@ octomap::Pointcloud SphereDiscretization::make_sphere_fibonacci_grid(octomap::po
 {
   double ng;
   double r_phi = (1.0 + sqrt(5.0)) / 2.0;
-  Pointcloud spherePoints;
+  octomap::Pointcloud spherePoints;
   spherePoints.reserve(sample*2);
   ng = double(sample);
   double theta = 0, phi = 0;
@@ -226,7 +226,7 @@ double SphereDiscretization::r8_modp(double x, double y)
 
 octomap::Pointcloud SphereDiscretization::make_sphere_spiral_points(octomap::point3d origin, double r, int sample)
 {
-  Pointcloud spherePoints;
+  octomap::Pointcloud spherePoints;
   spherePoints.reserve(sample);
 
   double theta = 0, phi = 0;
@@ -532,7 +532,7 @@ void SphereDiscretization::findOptimalPosebyAverage(const std::vector< geometry_
 
   double totalVecX, totalVecY, totalVecZ;
   double avgVecX, avgVecY, avgVecZ;
-  vector< tf2::Quaternion > quatCol;
+  std::vector< tf2::Quaternion > quatCol;
   quatCol.reserve(probBasePoses.size());
 
   for (int i = 0; i < probBasePoses.size(); ++i)
@@ -605,7 +605,7 @@ void SphereDiscretization::associatePose(std::multimap< std::vector< double >, s
 
   // create a point cloud which consists of all of the possible base locations for all grasp poses and a list of base
   // pose orientations
-  vector< pair< vector< float >, vector< float > > > trns_col;
+  std::vector< std::pair< std::vector< float >, std::vector< float > > > trns_col;
   trns_col.reserve(grasp_poses.size());
   pcl::PointCloud< pcl::PointXYZ >::Ptr cloud(new pcl::PointCloud< pcl::PointXYZ >);
   for (int i = 0; i < grasp_poses.size(); ++i)
@@ -638,12 +638,12 @@ void SphereDiscretization::associatePose(std::multimap< std::vector< double >, s
       new_trans_quat = new_trns.getRotation();
       new_trans_quat.normalize();
 
-      vector< float > position;
+      std::vector< float > position;
       position.reserve(3);
       position.push_back(new_trans_vec[0]);
       position.push_back(new_trans_vec[1]);
       position.push_back(new_trans_vec[2]);
-      vector< float > orientation;
+      std::vector< float > orientation;
       position.reserve(4);
 
       orientation.push_back(new_trans_quat[0]);
@@ -688,7 +688,7 @@ void SphereDiscretization::associatePose(std::multimap< std::vector< double >, s
       for (size_t j = 0; j < pointIdxVec.size(); ++j)
       {
         // Get the base pose for a given index found in a voxel
-        vector< double > base_pose;
+        std::vector< double > base_pose;
         base_pose.reserve(3);
         base_pose.push_back(voxel_pos[0]);
         base_pose.push_back(voxel_pos[1]);
