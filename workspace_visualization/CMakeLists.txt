@@ -4,8 +4,10 @@ project(workspace_visualization)
 
 find_package(catkin REQUIRED COMPONENTS
     rviz
+    map_creator
 )
-catkin_package(INCLUDE_DIRS  )
+
+catkin_package(INCLUDE_DIRS)
 include_directories(include ${catkin_INCLUDE_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
 
