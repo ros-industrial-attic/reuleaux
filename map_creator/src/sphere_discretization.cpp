@@ -463,47 +463,17 @@ void SphereDiscretization::findOptimalPosebyPCA(const std::vector< geometry_msgs
     }
   }
 
-  //cout << "M" << M << "\n";
-  ROS_INFO_STREAM("M" << M);
-  // Mean Centering data
-  Eigen::VectorXd featureMeans = poseData.rowwise().mean();
-  Eigen::MatrixXd centered = poseData.colwise() - featureMeans;
-
-  // Computing covariance matrix
-  Eigen::MatrixXd cov = centered * centered.adjoint();
-  cov = cov / (poseData.cols());
-
-  // Computing Eigen vectors and Eigen Values
-  //Eigen::SelfAdjointEigenSolver< Eigen::MatrixXd > eig(M);
   Eigen::EigenSolver< Eigen::MatrixXd > eig(M);
-  //Eigen::VectorXd eigenValues = eig.eigenvalues();
-
-  //Eigen::MatrixXd eigenVectors = eig.eigenvectors();
-  //Eigen::VectorXcd prncplCompnent = eig.eigenvectors().rightCols(1);
   Eigen::VectorXd::Index idx;
   Eigen::VectorXd test = eig.eigenvalues().real();
-  //cout << "coef: " << test << "\n";
-  ROS_INFO_STREAM("coef: " << test);
 
   int i = test.maxCoeff(&idx);
-
-  //cout << "max coef: " << i << "\n";
-  ROS_INFO_STREAM("max coef: " << i);
-  //cout << "index: " << idx << "\n";
-  ROS_INFO_STREAM("index: " << idx);
-  //cout << "es\n" <<eig.eigenvalues() << "\n";
-  ROS_INFO_STREAM("es\nn" << eig.eigenvalues());
-
-  //cout << "es\n" <<eig.eigenvalues().max() << "\n";
   Eigen::Vector4d vector = eig.eigenvectors().col(idx).real();
 
-  //tf2::Quaternion pc_quat(prncplCompnent[3], prncplCompnent[4], prncplCompnent[5], prncplCompnent[6]);
-  tf2::Quaternion pc_quat(0,0,0,1);
-  pc_quat.normalize();
+  final_base_pose.position.x =0;
+  final_base_pose.position.y =0;
+  final_base_pose.position.z =0;
 
-  final_base_pose.position.x =0;// prncplCompnent[0];
-  final_base_pose.position.y =0;// prncplCompnent[1];
-  final_base_pose.position.z =0;// prncplCompnent[2];
   final_base_pose.orientation.x = vector[0];
   final_base_pose.orientation.y = vector[1];
   final_base_pose.orientation.z = vector[2];

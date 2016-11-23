@@ -40,7 +40,7 @@ TEST(PCATest, TestCase1)
   sphere_discretization::SphereDiscretization sd;
 
   const double DEFAULT_ALLOWED_VARATION = 0.01;
-  vector< geometry_msgs::Pose > poses;
+  std::vector< geometry_msgs::Pose > poses;
   geometry_msgs::Pose pose, pose1, pose2, final;
 
   pose1.position.x = 0;
