@@ -1,5 +1,4 @@
 // The inverse reachability map depends on the reachability map. It is an inversion of the poses to the base location
-
 #include <ros/ros.h>
 #include <ros/package.h>
 
@@ -29,13 +28,6 @@
 #include <string>
 #include <time.h>
 
-using namespace H5;
-using namespace octomap;
-using namespace std;
-using namespace octomath;
-using namespace sphere_discretization;
-using namespace kinematics;
-using namespace hdf5_dataset;
 struct stat st;
 
 int main(int argc, char **argv)
@@ -45,9 +37,9 @@ int main(int argc, char **argv)
   // ros::Publisher workspace_pub = n.advertise<map_creator::WorkSpace>("reachability_map", 1);
   time_t startit, finish;
   time(&startit);
-  Kinematics k;
-  string filename;
-  string ext = ".h5";
+  kinematics::Kinematics k;
+  std::string filename;
+  std::string ext = ".h5";
   const char *FILE;
   if (argc < 2)
   {
@@ -68,12 +60,12 @@ int main(int argc, char **argv)
     attr = H5Aopen(sphere_dataset, "Resolution", H5P_DEFAULT);
     herr_t ret = H5Aread(attr, H5T_NATIVE_FLOAT, &res);
     filename =
-        string(k.getRobotName()) + "_" + "r" + str(boost::format("%d") % res) + "_" + "Inv_reachability" + "." + "h5";
+        str(boost::format("%s_r%d_Inv_reachability.h5") % k.getRobotName() % res);
   }
 
   else if (argc == 3)
   {
-    string name;
+    std::string name;
     name = argv[2];
     if (name.find(ext) == std::string::npos)
     {
@@ -97,14 +89,14 @@ int main(int argc, char **argv)
     poses_group = H5Gopen(file, "/Poses", H5P_DEFAULT);
     poses_dataset = H5Dopen(poses_group, "poses_dataset", H5P_DEFAULT);
 
-    multimap< vector< double >, vector< double > > PoseColFilter;
-    Hdf5Dataset hd5;
+    std::multimap< std::vector< double >, std::vector< double > > PoseColFilter;
+    hdf5_dataset::Hdf5Dataset hd5;
     hd5.h5ToMultiMapPoses(poses_dataset, PoseColFilter);
 
     // Sphere dataset
     sphere_group = H5Gopen(file, "/Spheres", H5P_DEFAULT);
     sphere_dataset = H5Dopen(sphere_group, "sphere_dataset", H5P_DEFAULT);
-    multimap< vector< double >, double > SphereCol;
+    std::multimap< std::vector< double >, double > SphereCol;
     hd5.h5ToMultiMapSpheres(sphere_dataset, SphereCol);
 
     // Resolution Attribute
@@ -118,18 +110,18 @@ int main(int argc, char **argv)
     unsigned char minDepth = 0;
     float size_of_box = 1.5;
     float resolution = res;
-    SphereDiscretization sd;
+    sphere_discretization::SphereDiscretization sd;
 
-    point3d origin = point3d(0, 0, 0);  // As these map is independent of any task points, it is centered around origin.
+    octomap::point3d origin = octomap::point3d(0, 0, 0);  // As these map is independent of any task points, it is centered around origin.
                                         // For dependent maps, the whole map will be transformed to that certain task
                                         // point
-    OcTree *tree = sd.generateBoxTree(origin, size_of_box, resolution);
-    vector< point3d > newData;
+    octomap::OcTree *tree = sd.generateBoxTree(origin, size_of_box, resolution);
+    std::vector< octomap::point3d > newData;
 
-    vector< geometry_msgs::Pose > pose;
+    std::vector< geometry_msgs::Pose > pose;
     pose = sd.make_sphere_poses(origin, resolution);  // calculating number of points on a sphere by discretization
 
-    for (OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
+    for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
     {
       newData.push_back(it.getCoordinate());
     }
@@ -142,8 +134,8 @@ int main(int argc, char **argv)
     // extracted and compared with voxel centers by Nighbors within voxel search
 
     pcl::PointCloud< pcl::PointXYZ >::Ptr cloud(new pcl::PointCloud< pcl::PointXYZ >);
-    multimap< vector< float >, vector< float > > trns_col;
-    for (multimap< vector< double >, vector< double > >::iterator it = PoseColFilter.begin(); it != PoseColFilter.end();
+    std::multimap< std::vector< float >, std::vector< float > > trns_col;
+    for (std::multimap< std::vector< double >, std::vector< double > >::iterator it = PoseColFilter.begin(); it != PoseColFilter.end();
          ++it)
     {
       tf2::Vector3 vec(it->second[0], it->second[1], it->second[2]);
@@ -160,17 +152,17 @@ int main(int argc, char **argv)
       inv_trans_quat = trns_inv.getRotation();
       inv_trans_quat.normalize();
 
-      vector< float > position;
+      std::vector< float > position;
       position.push_back(inv_trans_vec[0]);
       position.push_back(inv_trans_vec[1]);
       position.push_back(inv_trans_vec[2]);
-      vector< float > orientation;
+      std::vector< float > orientation;
       orientation.push_back(inv_trans_quat[0]);
       orientation.push_back(inv_trans_quat[1]);
       orientation.push_back(inv_trans_quat[2]);
       orientation.push_back(inv_trans_quat[3]);
 
-      trns_col.insert(pair< vector< float >, vector< float > >(position, orientation));
+      trns_col.insert(std::pair< std::vector< float >, std::vector< float > >(position, orientation));
 
       pcl::PointXYZ point;
       point.x = inv_trans_vec[0];
@@ -179,12 +171,12 @@ int main(int argc, char **argv)
       cloud->push_back(point);
     }
 
-    multimap< vector< double >, vector< double > > baseTrnsCol;
+    std::multimap< std::vector< double >, std::vector< double > > baseTrnsCol;
     pcl::octree::OctreePointCloudSearch< pcl::PointXYZ > octree(resolution);
     octree.setInputCloud(cloud);
     octree.addPointsFromInputCloud();
     std::vector< pcl::PointXYZ > base_sp;
-    std::vector< vector< float > > base_position;
+    std::vector< std::vector< float > > base_position;
     for (int i = 0; i < newData.size(); i++)
     {
       pcl::PointXYZ searchPoint;
@@ -206,10 +198,10 @@ int main(int argc, char **argv)
           base_pos.push_back(cloud->points[pointIdxVec[j]].z);
 
           base_position.push_back(base_pos);
-          multimap< vector< float >, vector< float > >::iterator it1;
+          std::multimap< std::vector< float >, std::vector< float > >::iterator it1;
           for (it1 = trns_col.lower_bound(base_pos); it1 != trns_col.upper_bound(base_pos); ++it1)
           {
-            vector< double > base_pose;
+            std::vector< double > base_pose;
             base_pose.push_back(base_pos[0]);
             base_pose.push_back(base_pos[1]);
             base_pose.push_back(base_pos[2]);
@@ -218,28 +210,28 @@ int main(int argc, char **argv)
             base_pose.push_back(it1->second[2]);
             base_pose.push_back(it1->second[3]);
 
-            vector< double > base_sphere;
+            std::vector< double > base_sphere;
             base_sphere.push_back(searchPoint.x);
             base_sphere.push_back(searchPoint.y);
             base_sphere.push_back(searchPoint.z);
 
-            baseTrnsCol.insert(pair< vector< double >, vector< double > >(base_sphere, base_pose));
+            baseTrnsCol.insert(std::pair< std::vector< double >, std::vector< double > >(base_sphere, base_pose));
           }
         }
         base_sp.push_back(searchPoint);
       }
     }
 
-    vector< vector< double > > poseReach;
-    map< vector< double >, double > sphereColor;
-    for (multimap< vector< double >, vector< double > >::iterator it = baseTrnsCol.begin(); it != baseTrnsCol.end();
+    std::vector< std::vector< double > > poseReach;
+    std::map< std::vector< double >, double > sphereColor;
+    for (std::multimap< std::vector< double >, std::vector< double > >::iterator it = baseTrnsCol.begin(); it != baseTrnsCol.end();
          ++it)
     {
       float d = (float(baseTrnsCol.count(it->first)) / pose.size()) * 100;
 
-      sphereColor.insert(pair< vector< double >, double >(it->first, double(d)));
+      sphereColor.insert(std::pair< std::vector< double >, double >(it->first, double(d)));
 
-      vector< double > poseAndSphere;
+      std::vector< double > poseAndSphere;
       for (int i = 0; i < (it->first).size(); i++)
       {
         poseAndSphere.push_back((it->first)[i]);
@@ -258,7 +250,7 @@ int main(int argc, char **argv)
     ROS_INFO("All the poses have Processed. Now saving data to a inverse Reachability Map.");
 
     // Creating maps now
-    string path(ros::package::getPath("map_creator") + "/Inv_maps/");
+    std::string path(ros::package::getPath("map_creator") + "/Inv_maps/");
     if (stat(path.c_str(), &st) != 0)
       ROS_INFO("Path does not exist. Creating folder for maps");
     const int dir_err = mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
@@ -426,7 +418,7 @@ int main(int argc, char **argv)
     dims2[1] = SY;
     double dset2_data[SX][SY];
 
-    for (map< vector< double >, double >::iterator it = sphereColor.begin(); it != sphereColor.end(); ++it)
+    for (std::map< std::vector< double >, double >::iterator it = sphereColor.begin(); it != sphereColor.end(); ++it)
     {
       for (int j = 0; j < SY - 1; j++)
       {

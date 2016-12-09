@@ -19,12 +19,6 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Vector3.h>
 
-using namespace std;
-using namespace octomap;
-using namespace octomath;
-using namespace sphere_discretization;
-using namespace kinematics;
-
 PlaceBase::PlaceBase(QObject *parent)
 {
   init();
@@ -137,7 +131,7 @@ void PlaceBase::findbase(std::vector< geometry_msgs::Pose > grasp_poses)
     }
     else
     {
-      SphereDiscretization sd;
+      sphere_discretization::SphereDiscretization sd;
       baseTrnsCol.clear();
       sphereColor.clear();
       highScoreSp.clear();
@@ -148,15 +142,15 @@ void PlaceBase::findbase(std::vector< geometry_msgs::Pose > grasp_poses)
 
       // Normalization for inverse Reachability Index
 
-      vector< int > poseCount;
-      for (multimap< vector< double >, vector< double > >::iterator it = baseTrnsCol.begin(); it != baseTrnsCol.end();
+      std::vector< int > poseCount;
+      for (std::multimap< std::vector< double >, std::vector< double > >::iterator it = baseTrnsCol.begin(); it != baseTrnsCol.end();
            ++it)
       {
         int num = baseTrnsCol.count(it->first);
         poseCount.push_back(num);
       }
 
-      vector< int >::const_iterator it;
+      std::vector< int >::const_iterator it;
       it = max_element(poseCount.begin(), poseCount.end());
       int max_number = *it;
       // cout<<"Maximum number of poses in a voxel: "<<max_number<<endl;
@@ -166,27 +160,27 @@ void PlaceBase::findbase(std::vector< geometry_msgs::Pose > grasp_poses)
       // cout<<"Minimum number of poses in a voxel: "<<min_number<<endl;
 
       // Colors of spheres are determined by index
-      for (multimap< vector< double >, vector< double > >::iterator it = baseTrnsCol.begin(); it != baseTrnsCol.end();
+      for (std::multimap< std::vector< double >, std::vector< double > >::iterator it = baseTrnsCol.begin(); it != baseTrnsCol.end();
            ++it)
       {
         float d = ((float(baseTrnsCol.count(it->first)) - min_number) / (max_number - min_number)) * 100;
         if (d > 1)
         {
-          sphereColor.insert(pair< vector< double >, double >(it->first, double(d)));
+          sphereColor.insert(std::pair< std::vector< double >, double >(it->first, double(d)));
         }
       }
       ROS_INFO("Union map has been created. Can now visualize Union Map.");
       ROS_INFO("Poses in Union Map: %lu", baseTrnsCol.size());
       ROS_INFO("Spheres in Union Map: %lu", sphereColor.size());
 
-      multiset< pair< double, vector< double > > > scoreWithSp;
-      for (map< vector< double >, double >::iterator it = sphereColor.begin(); it != sphereColor.end(); ++it)
+      std::multiset< std::pair< double, std::vector< double > > > scoreWithSp;
+      for (std::map< std::vector< double >, double >::iterator it = sphereColor.begin(); it != sphereColor.end(); ++it)
       {
-        scoreWithSp.insert(pair< double, vector< double > >(it->second, it->first));
+        scoreWithSp.insert(std::pair< double, std::vector< double > >(it->second, it->first));
       }
       // ROS_INFO("Numer of Spheres : %lu",scoreWithSp.size());
 
-      for (multiset< pair< double, vector< double > > >::reverse_iterator it = scoreWithSp.rbegin();
+      for (std::multiset< std::pair< double, std::vector< double > > >::reverse_iterator it = scoreWithSp.rbegin();
            it != scoreWithSp.rend(); ++it)
       {
         highScoreSp.push_back(it->second);
@@ -246,7 +240,7 @@ void PlaceBase::BasePlaceMethodHandler()
   }
 }
 
-void PlaceBase::OuputputVizHandler(vector< geometry_msgs::Pose > po)
+void PlaceBase::OuputputVizHandler(std::vector< geometry_msgs::Pose > po)
 {
   /* Switch cases for selecting output type for visualization
   */
@@ -272,9 +266,9 @@ void PlaceBase::findBaseByPCA()
    * orientations from all the poses correspond to that sphere. One pose from one sphere.
   */
   ROS_INFO("Finding optimal base pose by PCA.");
-  SphereDiscretization sd;
+  sphere_discretization::SphereDiscretization sd;
 
-  vector< geometry_msgs::Pose > probBasePoses;
+  std::vector< geometry_msgs::Pose > probBasePoses;
   map_creator::WorkSpace ws;
   for (int i = 0; i < BASE_LOC_SIZE_; ++i)
   {
@@ -282,11 +276,11 @@ void PlaceBase::findBaseByPCA()
     wss.point.x = highScoreSp[i][0];
     wss.point.y = highScoreSp[i][1];
     wss.point.z = highScoreSp[i][2];
-    vector< double > basePose;
+    std::vector< double > basePose;
     basePose.push_back(highScoreSp[i][0]);
     basePose.push_back(highScoreSp[i][1]);
     basePose.push_back(highScoreSp[i][2]);
-    multimap< vector< double >, vector< double > >::iterator it;
+    std::multimap< std::vector< double >, std::vector< double > >::iterator it;
     for (it = baseTrnsCol.lower_bound(basePose); it != baseTrnsCol.upper_bound(basePose); ++it)
     {
       geometry_msgs::Pose pp;
@@ -299,6 +293,8 @@ void PlaceBase::findBaseByPCA()
   for (int i = 0; i < ws.WsSpheres.size(); ++i)
   {
     geometry_msgs::Pose final_base_pose;
+    //sd.findOptimalPosebyAverage(ws.WsSpheres[i].poses, final_base_pose);  // Calling the PCA
+
     sd.findOptimalPosebyPCA(ws.WsSpheres[i].poses, final_base_pose);  // Calling the PCA
     final_base_pose.position.x = ws.WsSpheres[i].point.x;
     final_base_pose.position.y = ws.WsSpheres[i].point.y;
@@ -315,15 +311,15 @@ void PlaceBase::findBaseByGraspReachabilityScore()
 
   */
   ROS_INFO("Finding optimal base pose by GraspReachabilityScore.");
-  SphereDiscretization sd;
-  Kinematics k;
+  sphere_discretization::SphereDiscretization sd;
+  kinematics::Kinematics k;
 
-  vector< geometry_msgs::Pose > probBasePoses;
+  std::vector< geometry_msgs::Pose > probBasePoses;
 
   int numofSp = HIGH_SCORE_SP_;  // From how many spheres we are collecting all the poses
   for (int i = 0; i < numofSp; ++i)
   {
-    multimap< vector< double >, vector< double > >::iterator it;
+    std::multimap< std::vector< double >, std::vector< double > >::iterator it;
     for (it = baseTrnsCol.lower_bound(highScoreSp[i]); it != baseTrnsCol.upper_bound(highScoreSp[i]); ++it)
     {
       geometry_msgs::Pose pp;
@@ -334,7 +330,7 @@ void PlaceBase::findBaseByGraspReachabilityScore()
 
   ROS_INFO_STREAM("Size of Probable Base poses: " << probBasePoses.size() << " with Spheres: " << numofSp);
 
-  multiset< pair< int, vector< double > > > basePoseWithHits;
+  std::multiset< std::pair< int, std::vector< double > > > basePoseWithHits;
   for (int i = 0; i < probBasePoses.size(); ++i)
   {
     int numofHits = 0;
@@ -343,12 +339,12 @@ void PlaceBase::findBaseByGraspReachabilityScore()
       int nsolns = 0;
       numofHits += k.isIkSuccesswithTransformedBase(probBasePoses[i], GRASP_POSES_[j], nsolns);
     }
-    vector< double > baseP;
+    std::vector< double > baseP;
     sd.convertPoseToVector(probBasePoses[i], baseP);
-    basePoseWithHits.insert(pair< int, vector< double > >(numofHits, baseP));
+    basePoseWithHits.insert(std::pair< int, std::vector< double > >(numofHits, baseP));
   }
-  vector< geometry_msgs::Pose > final_base_loc;
-  for (multiset< pair< int, vector< double > > >::iterator it = basePoseWithHits.begin(); it != basePoseWithHits.end();
+  std::vector< geometry_msgs::Pose > final_base_loc;
+  for (std::multiset< std::pair< int, std::vector< double > > >::iterator it = basePoseWithHits.begin(); it != basePoseWithHits.end();
        ++it)
   {
     if ((it->first) >= GRASP_POSES_.size())
@@ -375,14 +371,14 @@ void PlaceBase::findBaseByIKSolutionScore()
 
   */
   ROS_INFO("Finding optimal base pose by GraspReachabilityScore.");
-  SphereDiscretization sd;
-  Kinematics k;
+  sphere_discretization::SphereDiscretization sd;
+  kinematics::Kinematics k;
 
-  vector< geometry_msgs::Pose > probBasePoses;
+  std::vector< geometry_msgs::Pose > probBasePoses;
   int numofSp = HIGH_SCORE_SP_;  // From how many spheres we are collecting all the poses
   for (int i = 0; i < numofSp; ++i)
   {
-    multimap< vector< double >, vector< double > >::iterator it;
+    std::multimap< std::vector< double >, std::vector< double > >::iterator it;
     for (it = baseTrnsCol.lower_bound(highScoreSp[i]); it != baseTrnsCol.upper_bound(highScoreSp[i]); ++it)
     {
       geometry_msgs::Pose pp;
@@ -394,7 +390,7 @@ void PlaceBase::findBaseByIKSolutionScore()
   ROS_INFO("Size of Probable Base poses: %lu with %d Spheres", probBasePoses.size(), numofSp);
   // ROS_INFO_STREAM("Size of Probable Base poses: "<<probBasePoses.size());
   // ROS_INFO_STREAM(" with Spheres: "<<numofSp);
-  multiset< pair< double, vector< double > > > basePoseWithHits;
+  std::multiset< std::pair< double, std::vector< double > > > basePoseWithHits;
   int max_solns = GRASP_POSES_.size() * 8;
   int min_solns = 0;
   for (int i = 0; i < probBasePoses.size(); ++i)
@@ -407,13 +403,13 @@ void PlaceBase::findBaseByIKSolutionScore()
       numofHits += k.isIkSuccesswithTransformedBase(probBasePoses[i], GRASP_POSES_[j], nsolns);
       solns += nsolns;
     }
-    vector< double > baseP;
+    std::vector< double > baseP;
     sd.convertPoseToVector(probBasePoses[i], baseP);
     double basePlaceScore = (double(solns) - double(min_solns)) / (double(max_solns) - double(min_solns));
-    basePoseWithHits.insert(pair< double, vector< double > >(basePlaceScore, baseP));
+    basePoseWithHits.insert(std::pair< double, std::vector< double > >(basePlaceScore, baseP));
   }
-  vector< geometry_msgs::Pose > final_base_loc;
-  for (multiset< pair< double, vector< double > > >::iterator it = basePoseWithHits.begin();
+  std::vector< geometry_msgs::Pose > final_base_loc;
+  for (std::multiset< std::pair< double, std::vector< double > > >::iterator it = basePoseWithHits.begin();
        it != basePoseWithHits.end(); ++it)
   {
     geometry_msgs::Pose final_base;
@@ -430,7 +426,7 @@ void PlaceBase::findBaseByIKSolutionScore()
   }
 }
 
-void PlaceBase::showBaseLocationsbyArrow(vector< geometry_msgs::Pose > po)
+void PlaceBase::showBaseLocationsbyArrow(std::vector< geometry_msgs::Pose > po)
 {
   /* Visualizing base solutions as arrow. Arrows are pointing towards Y direction.(for now)
    Have to move it towards z direction
@@ -475,7 +471,7 @@ void PlaceBase::showBaseLocationsbyArrow(vector< geometry_msgs::Pose > po)
   // ROS_INFO("Marker size: %lu",  markerArr.markers.size());
 }
 
-void PlaceBase::showBaseLocationsbyRobotModel(vector< geometry_msgs::Pose > po)
+void PlaceBase::showBaseLocationsbyRobotModel(std::vector< geometry_msgs::Pose > po)
 {
   /* Slot for visualizing base solutions as robot model.
   This can be done by loading a robot model from urdf as mentioned in urdf_tutorial
@@ -566,7 +562,7 @@ void PlaceBase::ShowUnionMap(bool show_map)
     ws.header.frame_id = "/base_link";
     ws.resolution = res;
 
-    for (multimap< vector< double >, double >::iterator it = sphereColor.begin(); it != sphereColor.end(); ++it)
+    for (std::multimap< std::vector< double >, double >::iterator it = sphereColor.begin(); it != sphereColor.end(); ++it)
     {
       map_creator::WsSphere wss;
       wss.point.x = it->first[0];
@@ -574,7 +570,7 @@ void PlaceBase::ShowUnionMap(bool show_map)
       wss.point.z = it->first[2];
       wss.ri = it->second;
 
-      multimap< vector< double >, vector< double > >::iterator it1;
+      std::multimap< std::vector< double >, std::vector< double > >::iterator it1;
       for (it1 = baseTrnsCol.lower_bound(it->first); it1 != baseTrnsCol.upper_bound(it->first); ++it1)
       {
         geometry_msgs::Pose pp;

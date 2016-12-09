@@ -6,7 +6,6 @@
 #define IKREAL_TYPE IKReal  // for IKFast 54
 #endif
 
-using namespace std;
 IKREAL_TYPE eerot[9], eetrans[3];
 namespace kinematics
 {
@@ -210,14 +209,14 @@ bool Kinematics::isIKSuccess(std::vector< double > pose, std::vector< double >& 
 #endif
 }
 
-const string Kinematics::getRobotName()
+const std::string Kinematics::getRobotName()
 {
   const char* hash = GetKinematicsHash();
   ;
 
-  string part = hash;
+  std::string part = hash;
   part.erase(0, 22);
-  string name = part.substr(0, part.find(" "));
+  std::string name = part.substr(0, part.find(" "));
   return name;
 }
 
@@ -251,7 +250,7 @@ bool Kinematics::isIkSuccesswithTransformedBase(const geometry_msgs::Pose base_p
   // new_grasp_trns = grasp_trns * base_trns_inv;
   new_grasp_trns = base_trns_inv * grasp_trns;
   // Creating a new grasp pose in the origin co-ordinate
-  vector< double > new_grasp_pos;
+  std::vector< double > new_grasp_pos;
   tf2::Vector3 new_grasp_vec;
   tf2::Quaternion new_grasp_quat;
   new_grasp_vec = new_grasp_trns.getOrigin();

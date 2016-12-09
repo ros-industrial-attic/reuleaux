@@ -6,10 +6,6 @@
 #include "H5Cpp.h"
 #include <hdf5.h>
 
-using namespace H5;
-using namespace std;
-using namespace hdf5_dataset;
-
 #define CAP_DATASETNAME "capability_dataset"
 #define CAP_GROUPNAME "/Capability"
 #define RANK_OUT 2
@@ -41,8 +37,8 @@ int main(int argc, char **argv)
 
     cap_group = H5Gopen(file, CAP_GROUPNAME, H5P_DEFAULT);
     cap_dataset = H5Dopen(cap_group, CAP_DATASETNAME, H5P_DEFAULT);
-    multimap< vector< double >, vector< double > > sphereColor;
-    Hdf5Dataset hd5;
+    std::multimap< std::vector< double >, std::vector< double > > sphereColor;
+    hdf5_dataset::Hdf5Dataset hd5;
     hd5.h5ToMultiMapCap(cap_dataset, sphereColor);
 
     // Resolution Attribute
@@ -63,7 +59,7 @@ int main(int argc, char **argv)
     cp.header.frame_id = "/base_link";
     cp.resolution = res;
 
-    for (multimap< vector< double >, vector< double > >::iterator it = sphereColor.begin(); it != sphereColor.end();
+    for (std::multimap< std::vector< double >, std::vector< double > >::iterator it = sphereColor.begin(); it != sphereColor.end();
          ++it)
     {
       map_creator::capShape cpSp;

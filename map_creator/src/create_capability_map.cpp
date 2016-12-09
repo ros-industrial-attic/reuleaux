@@ -1,5 +1,3 @@
-
-
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <octomap/octomap.h>
@@ -16,20 +14,13 @@
 #include <time.h>
 #include <sstream>
 
-using namespace H5;
-using namespace octomap;
-using namespace std;
-using namespace octomath;
-using namespace sphere_discretization;
-using namespace kinematics;
-
 struct stat st;
 
-bool isFloat(string s)
+bool isFloat(std::string s)
 {
-  istringstream iss(s);
+  std::istringstream iss(s);
   float dummy;
-  iss >> noskipws >> dummy;
+  iss >> std::noskipws >> dummy;
   return iss && iss.eof();  // Result converted to bool
 }
 
@@ -40,10 +31,10 @@ int main(int argc, char **argv)
   time_t startit, finish;
   time(&startit);
   float resolution = 0.08;
-  Kinematics k;
-  string ext = ".h5";
-  string filename =
-      string(k.getRobotName()) + "_" + "r" + str(boost::format("%d") % resolution) + "_" + "capability" + "." + "h5";
+  kinematics::Kinematics k;
+  std::string ext = ".h5";
+  std::string filename =
+      str(boost::format("%s_r%d_capability.h5") % k.getRobotName() % resolution);
   if (argc == 2)
   {
     if (!isFloat(argv[1]))
@@ -54,12 +45,12 @@ int main(int argc, char **argv)
     }
     resolution = atof(argv[1]);
     filename =
-        string(k.getRobotName()) + "_" + "r" + str(boost::format("%d") % resolution) + "_" + "capability" + "." + "h5";
+        str(boost::format("%s_r%d_capability.h5") % k.getRobotName() % resolution);
   }
 
   else if (argc == 3)
   {
-    string name;
+    std::string name;
     name = argv[2];
     if (!isFloat(argv[1]) && isFloat(argv[2]))
     {
@@ -97,14 +88,14 @@ int main(int argc, char **argv)
     // TODO resolution will be user argument
     // The center of every voxels are stored in a vector
 
-    SphereDiscretization sd;
+    sphere_discretization::SphereDiscretization sd;
     float r = 1;
 
-    point3d origin = point3d(0, 0, 0);  // This point will be the base of the robot
-    OcTree *tree = sd.generateBoxTree(origin, r, resolution);
-    std::vector< point3d > newData;
+    octomap::point3d origin = octomap::point3d(0, 0, 0);  // This point will be the base of the robot
+    octomap::OcTree *tree = sd.generateBoxTree(origin, r, resolution);
+    std::vector< octomap::point3d > newData;
     ROS_INFO("Creating the box and discretizing with resolution: %f", resolution);
-    for (OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
+    for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
     {
       newData.push_back(it.getCoordinate());
     }
@@ -114,20 +105,20 @@ int main(int argc, char **argv)
 
     float radius = resolution;
 
-    multimap< vector< double >, vector< double > > PoseCol;
+    std::multimap< std::vector< double >, std::vector< double > > PoseCol;
     for (int i = 0; i < newData.size(); i++)
     {
-      vector< geometry_msgs::Pose > pose;
-      vector< double > sphere_coord;
+      std::vector< geometry_msgs::Pose > pose;
+      std::vector< double > sphere_coord;
       sd.convertPointToVector(newData[i], sphere_coord);
 
       pose = sd.make_sphere_poses(newData[i], radius);
       for (int j = 0; j < pose.size(); j++)
       {
-        vector< double > point_on_sphere;
+        std::vector< double > point_on_sphere;
         sd.convertPoseToVector(pose[j], point_on_sphere);
 
-        PoseCol.insert(pair< vector< double >, vector< double > >(point_on_sphere, sphere_coord));
+        PoseCol.insert(std::pair< std::vector< double >, std::vector< double > >(point_on_sphere, sphere_coord));
       }
     }
 
@@ -136,19 +127,19 @@ int main(int argc, char **argv)
     // the robot dancing with the joint solutions in a parallel thread
     // TODO Support for more than 6DOF robots needs to be implemented.
 
-    Kinematics k;
-    multimap< vector< double >, vector< double > > PoseColFilter;
-    multimap< vector< double >, vector< double > > PoseCol2;
-    vector< vector< double > > ikSolutions;
-    for (multimap< vector< double >, vector< double > >::iterator it = PoseCol.begin(); it != PoseCol.end(); ++it)
+    kinematics::Kinematics k;
+    std::multimap< std::vector< double >, std::vector< double > > PoseColFilter;
+    std::multimap< std::vector< double >, std::vector< double > > PoseCol2;
+    std::vector< std::vector< double > > ikSolutions;
+    for (std::multimap< std::vector< double >, std::vector< double > >::iterator it = PoseCol.begin(); it != PoseCol.end(); ++it)
     {
       std::vector< double > joints;
       joints.resize(6);
-      PoseCol2.insert(pair< vector< double >, vector< double > >(it->second, it->first));
+      PoseCol2.insert(std::pair< std::vector< double >, std::vector< double > >(it->second, it->first));
       int solns;
       if (k.isIKSuccess(it->first, joints, solns))
       {
-        PoseColFilter.insert(pair< vector< double >, vector< double > >(it->second, it->first));
+        PoseColFilter.insert(std::pair< std::vector< double >, std::vector< double > >(it->second, it->first));
         ikSolutions.push_back(joints);
       }
     }
@@ -160,16 +151,16 @@ int main(int argc, char **argv)
     // the visualizer.
     // TODO there are several maps are implemented. We can get rid of few maps and run large loops. The complexity of
     // accessing map is Olog(n)
-    vector< vector< double > > capability_data;
-    map< vector< double >, double > sphereColor;
-    vector< vector< double > > poseReach;
-    for (multimap< vector< double >, vector< double > >::iterator it = PoseColFilter.begin(); it != PoseColFilter.end();
+    std::vector< std::vector< double > > capability_data;
+    std::map< std::vector< double >, double > sphereColor;
+    std::vector< std::vector< double > > poseReach;
+    for (std::multimap< std::vector< double >, std::vector< double > >::iterator it = PoseColFilter.begin(); it != PoseColFilter.end();
          ++it)
     {
       // Reachability Index D=R/N*100;
 
       float d = float(PoseColFilter.count(it->first)) / (PoseCol.size() / newData.size()) * 100;
-      sphereColor.insert(pair< vector< double >, double >(it->first, double(d)));
+      sphereColor.insert(std::pair< std::vector< double >, double >(it->first, double(d)));
       poseReach.push_back(it->second);
     }
 
@@ -180,7 +171,7 @@ int main(int argc, char **argv)
     ROS_INFO("All the outer spheres are checked for optimal pose and optimal openning angles for cone representation. "
              "May take some time.");
     int i = 0;
-    for (map< vector< double >, double >::iterator it = sphereColor.begin(); it != sphereColor.end();
+    for (std::map< std::vector< double >, double >::iterator it = sphereColor.begin(); it != sphereColor.end();
          ++it)  // for all the spheres in workspace
     {
       i += 1;
@@ -188,19 +179,19 @@ int main(int argc, char **argv)
 
       if (it->second <= 20)  // All the spheres that have reachability less or equal to 20
       {
-        point3d sphereCenter;
+        octomap::point3d sphereCenter;
         sd.convertVectorToPoint(it->first, sphereCenter);  // center of sphere
 
-        vector< geometry_msgs::Pose > reachPoseofSphere;
-        vector< point3d > reachPoints;
+        std::vector< geometry_msgs::Pose > reachPoseofSphere;
+        std::vector< octomap::point3d > reachPoints;
 
-        multimap< vector< double >, vector< double > >::iterator it1;  // Looking for poses of those spheres
+        std::multimap< std::vector< double >, std::vector< double > >::iterator it1;  // Looking for poses of those spheres
         for (it1 = PoseColFilter.lower_bound(it->first); it1 != PoseColFilter.upper_bound(it->first); ++it1)
         {
           geometry_msgs::Pose pp;
           sd.convertVectorToPose(it1->second, pp);  // found poses for spheres
 
-          point3d posPoint;
+          octomap::point3d posPoint;
           sd.poseToPoint(pp, posPoint);  // only positions are taken from thoses poses
 
           reachPoseofSphere.push_back(pp);  // poses in a vector
@@ -221,12 +212,13 @@ int main(int argc, char **argv)
         optiPose.orientation.w = optimal_pose_pca.orientation.w;
 
         double SFE = 0.0;
-        map< double, double > angleSFE;
+        std::map< double, double > angleSFE;
         for (double angle = 2; angle <= 10.0; angle += 0.5)
         {
           pcl::PointCloud< pcl::PointXYZ >::Ptr cloud(new pcl::PointCloud< pcl::PointXYZ >);
           sd.createConeCloud(optiPose, angle, 0.5, cloud);
-          cout << "cloud size: " << cloud->size() << endl;
+          //cout << "cloud size: " << cloud->size() << endl;
+          ROS_INFO_STREAM("cloud size: " << cloud->size());
           double r_poses = 0.0;  // Pose that are reachable but not in cone
           for (int j = 0; j < reachPoints.size(); j++)
           {
@@ -236,12 +228,12 @@ int main(int argc, char **argv)
 
           double R_poses = reachPoints.size();  // Total number of filtered pose in that sphere
 
-          multimap< vector< double >, vector< double > >::iterator it2;
-          vector< point3d > reachPointsSphere;
+          std::multimap< std::vector< double >, std::vector< double > >::iterator it2;
+          std::vector< octomap::point3d > reachPointsSphere;
           for (it2 = PoseCol2.lower_bound(it->first); it2 != PoseCol2.upper_bound(it->first); ++it2)
           {
             geometry_msgs::Pose pp;
-            point3d posPoint;
+            octomap::point3d posPoint;
             sd.convertVectorToPose(it2->second, pp);
             sd.poseToPoint(pp, posPoint);
             reachPointsSphere.push_back(posPoint);
@@ -254,9 +246,9 @@ int main(int argc, char **argv)
                 v_poses += 1;
           }
           SFE = (r_poses + v_poses) / R_poses;
-          angleSFE.insert(pair< double, double >(SFE, angle));
+          angleSFE.insert(std::pair< double, double >(SFE, angle));
         }
-        vector< double > capability;
+        std::vector< double > capability;
         capability.push_back(1.0);  // Enum for cone
         capability.push_back(it->second);  // Reachability index
         capability.push_back(optiPose.position.x);  // Position x,y,z
@@ -272,7 +264,7 @@ int main(int argc, char **argv)
 
       else
       {
-        vector< double > capability_sp;
+        std::vector< double > capability_sp;
         capability_sp.push_back(2.0);
         capability_sp.push_back(it->second);
         capability_sp.push_back(it->first[0]);

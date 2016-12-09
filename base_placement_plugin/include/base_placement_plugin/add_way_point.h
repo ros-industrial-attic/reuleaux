@@ -51,7 +51,6 @@ class StringProperty;
 class BoolProperty;
 }
 
-using namespace visualization_msgs;
 namespace base_placement_plugin
 {
 /*!
@@ -81,17 +80,17 @@ public:
 
 private:
   //! Function for creating a way-point marker
-  Marker makeWayPoint(InteractiveMarker& msg);
+  visualization_msgs::Marker makeWayPoint(visualization_msgs::InteractiveMarker& msg);
   //! Function to create the InteractionArrow Marker
-  Marker makeInterArrow(InteractiveMarker& msg);
+  visualization_msgs::Marker makeInterArrow(visualization_msgs::InteractiveMarker& msg);
   //! Create controls for each different marker. Here we have control for the defaulot starting control ArrowMarkers
-  InteractiveMarkerControl& makeArrowControlDefault(InteractiveMarker& msg);
+  visualization_msgs::InteractiveMarkerControl& makeArrowControlDefault(visualization_msgs::InteractiveMarker& msg);
   //! 6DOF control for the Ingteractive Markers
-  InteractiveMarkerControl& makeArrowControlDetails(InteractiveMarker& msg);
+  visualization_msgs::InteractiveMarkerControl& makeArrowControlDetails(visualization_msgs::InteractiveMarker& msg);
 
   //! The box control can be used as a pointer to a certain 3D location and when clicked it will add a arrow to that
   // location.
-  InteractiveMarkerControl& makeInteractiveMarkerControl(InteractiveMarker& msg_box);
+  visualization_msgs::InteractiveMarkerControl& makeInteractiveMarkerControl(visualization_msgs::InteractiveMarker& msg_box);
   //! Function to handle the entries made from the Way-Points interactive markers Menu.
   virtual void changeMarkerControlAndPose(std::string marker_name, bool set_control);
 

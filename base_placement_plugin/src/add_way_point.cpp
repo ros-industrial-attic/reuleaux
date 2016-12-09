@@ -1,4 +1,3 @@
-
 #include <base_placement_plugin/add_way_point.h>
 
 namespace base_placement_plugin
@@ -278,14 +277,14 @@ void AddWayPoint::pointPoseUpdated(const tf::Transform& point_pos, const char* m
   server->applyChanges();
 }
 
-Marker AddWayPoint::makeWayPoint(InteractiveMarker& msg)
+visualization_msgs::Marker AddWayPoint::makeWayPoint(visualization_msgs::InteractiveMarker& msg)
 {
   /*! Define a type and properties of a Marker for the Way-Point.
       This will be use as a base to define the shape, color and scale of the InteractiveMarker for the Way-Points.
   */
-  Marker marker;
+  visualization_msgs::Marker marker;
 
-  marker.type = Marker::ARROW;
+  marker.type = visualization_msgs::Marker::ARROW;
   marker.scale = WAY_POINT_SCALE_CONTROL;
 
   marker.color = WAY_POINT_COLOR;
@@ -293,21 +292,21 @@ Marker AddWayPoint::makeWayPoint(InteractiveMarker& msg)
   return marker;
 }
 
-InteractiveMarkerControl& AddWayPoint::makeArrowControlDefault(InteractiveMarker& msg)
+visualization_msgs::InteractiveMarkerControl& AddWayPoint::makeArrowControlDefault(visualization_msgs::InteractiveMarker& msg)
 {
-  InteractiveMarkerControl control_menu;
+  visualization_msgs::InteractiveMarkerControl control_menu;
   control_menu.always_visible = true;
 
-  control_menu.interaction_mode = InteractiveMarkerControl::MENU;
+  control_menu.interaction_mode = visualization_msgs::InteractiveMarkerControl::MENU;
 
   control_menu.name = "menu_select";
   msg.controls.push_back(control_menu);
   control_menu.markers.push_back(makeWayPoint(msg));
 
-  InteractiveMarkerControl control_move3d;
+  visualization_msgs::InteractiveMarkerControl control_move3d;
   control_move3d.always_visible = true;
 
-  control_move3d.interaction_mode = InteractiveMarkerControl::MOVE_ROTATE_3D;
+  control_move3d.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D;
   control_move3d.name = "move";
   control_move3d.markers.push_back(makeWayPoint(msg));
   msg.controls.push_back(control_move3d);
@@ -315,17 +314,17 @@ InteractiveMarkerControl& AddWayPoint::makeArrowControlDefault(InteractiveMarker
   return msg.controls.back();
 }
 
-InteractiveMarkerControl& AddWayPoint::makeArrowControlDetails(InteractiveMarker& msg)
+visualization_msgs::InteractiveMarkerControl& AddWayPoint::makeArrowControlDetails(visualization_msgs::InteractiveMarker& msg)
 {
-  InteractiveMarkerControl control_menu;
+  visualization_msgs::InteractiveMarkerControl control_menu;
   control_menu.always_visible = true;
 
-  control_menu.interaction_mode = InteractiveMarkerControl::MENU;
+  control_menu.interaction_mode = visualization_msgs::InteractiveMarkerControl::MENU;
   control_menu.name = "menu_select";
   msg.controls.push_back(control_menu);
   control_menu.markers.push_back(makeWayPoint(msg));
 
-  InteractiveMarkerControl control_view_details;
+  visualization_msgs::InteractiveMarkerControl control_view_details;
   control_view_details.always_visible = true;
   //*************rotate and move around the x-axis********************
   control_view_details.orientation.w = 1;
@@ -334,11 +333,11 @@ InteractiveMarkerControl& AddWayPoint::makeArrowControlDetails(InteractiveMarker
   control_view_details.orientation.z = 0;
 
   control_view_details.name = "rotate_x";
-  control_view_details.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control_view_details.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
   msg.controls.push_back(control_view_details);
 
   control_view_details.name = "move_x";
-  control_view_details.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+  control_view_details.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
   msg.controls.push_back(control_view_details);
   //*****************************************************************
 
@@ -349,11 +348,11 @@ InteractiveMarkerControl& AddWayPoint::makeArrowControlDetails(InteractiveMarker
   control_view_details.orientation.z = 0;
 
   control_view_details.name = "rotate_z";
-  control_view_details.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control_view_details.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
   msg.controls.push_back(control_view_details);
 
   control_view_details.name = "move_z";
-  control_view_details.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+  control_view_details.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
   msg.controls.push_back(control_view_details);
   //*****************************************************************
 
@@ -364,12 +363,12 @@ InteractiveMarkerControl& AddWayPoint::makeArrowControlDetails(InteractiveMarker
   control_view_details.orientation.z = 1;
 
   control_view_details.name = "rotate_y";
-  control_view_details.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control_view_details.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
 
   msg.controls.push_back(control_view_details);
 
   control_view_details.name = "move_y";
-  control_view_details.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+  control_view_details.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
   msg.controls.push_back(control_view_details);
   control_view_details.markers.push_back(makeWayPoint(msg));
 
@@ -384,7 +383,7 @@ void AddWayPoint::makeArrow(const tf::Transform& point_pos, int count_arrow)  //
   /*! Function for adding a new Way-Point in the RViz scene and here we send the signal to notify the RQT Widget that a
    * new Way-Point has been added.
   */
-  InteractiveMarker int_marker;
+  visualization_msgs::InteractiveMarker int_marker;
 
   ROS_INFO_STREAM("Markers frame is: " << target_frame_);
 
@@ -452,7 +451,7 @@ void AddWayPoint::changeMarkerControlAndPose(std::string marker_name, bool set_c
   /*! Handling the events from the clicked Menu Items for the Control of the Way-Point.
       Here the user can change the control either to freely move the Way-Point or get the 6DOF pose control option.
   */
-  InteractiveMarker int_marker;
+  visualization_msgs::InteractiveMarker int_marker;
   server->get(marker_name, int_marker);
 
   if (set_control)
@@ -505,15 +504,15 @@ void AddWayPoint::pointDeleted(std::string marker_name)
   server->applyChanges();
 }
 
-Marker AddWayPoint::makeInterArrow(InteractiveMarker& msg)
+visualization_msgs::Marker AddWayPoint::makeInterArrow(visualization_msgs::InteractiveMarker& msg)
 {
   /*! Define the Marker Arrow which the user can add new Way-Points with.
 
    */
   // define a marker
-  Marker marker;
+  visualization_msgs::Marker marker;
 
-  marker.type = Marker::ARROW;
+  marker.type = visualization_msgs::Marker::ARROW;
   marker.scale = ARROW_INTER_SCALE_CONTROL;
 
   // make the markers with interesting color
@@ -522,20 +521,20 @@ Marker AddWayPoint::makeInterArrow(InteractiveMarker& msg)
   return marker;
 }
 
-InteractiveMarkerControl& AddWayPoint::makeInteractiveMarkerControl(InteractiveMarker& msg)
+visualization_msgs::InteractiveMarkerControl& AddWayPoint::makeInteractiveMarkerControl(visualization_msgs::InteractiveMarker& msg)
 {
   /*! Set the User Interactive Marker with 6DOF control.
   */
   // //control for button interaction
-  InteractiveMarkerControl control_button;
+  visualization_msgs::InteractiveMarkerControl control_button;
   control_button.always_visible = true;
-  control_button.interaction_mode = InteractiveMarkerControl::BUTTON;
+  control_button.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
   control_button.name = "button_interaction";
   control_button.markers.push_back(makeInterArrow(msg));
 
   msg.controls.push_back(control_button);
   // server.reset( new interactive_markers::InteractiveMarkerServer("base_placement_plugin","",false));
-  InteractiveMarkerControl control_inter_arrow;
+  visualization_msgs::InteractiveMarkerControl control_inter_arrow;
   control_inter_arrow.always_visible = true;
   //*************rotate and move around the x-axis********************
   control_inter_arrow.orientation.w = 1;
@@ -544,11 +543,11 @@ InteractiveMarkerControl& AddWayPoint::makeInteractiveMarkerControl(InteractiveM
   control_inter_arrow.orientation.z = 0;
 
   control_inter_arrow.name = "rotate_x";
-  control_inter_arrow.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
   msg.controls.push_back(control_inter_arrow);
 
   control_inter_arrow.name = "move_x";
-  control_inter_arrow.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+  control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
   msg.controls.push_back(control_inter_arrow);
   //*****************************************************************
 
@@ -559,11 +558,11 @@ InteractiveMarkerControl& AddWayPoint::makeInteractiveMarkerControl(InteractiveM
   control_inter_arrow.orientation.z = 0;
 
   control_inter_arrow.name = "rotate_z";
-  control_inter_arrow.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
   msg.controls.push_back(control_inter_arrow);
 
   control_inter_arrow.name = "move_z";
-  control_inter_arrow.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+  control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
   msg.controls.push_back(control_inter_arrow);
   //*****************************************************************
 
@@ -574,11 +573,11 @@ InteractiveMarkerControl& AddWayPoint::makeInteractiveMarkerControl(InteractiveM
   control_inter_arrow.orientation.z = 1;
 
   control_inter_arrow.name = "rotate_y";
-  control_inter_arrow.interaction_mode = InteractiveMarkerControl::ROTATE_AXIS;
+  control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
   msg.controls.push_back(control_inter_arrow);
 
   control_inter_arrow.name = "move_y";
-  control_inter_arrow.interaction_mode = InteractiveMarkerControl::MOVE_AXIS;
+  control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
   msg.controls.push_back(control_inter_arrow);
   //*****************************************************************
   control_inter_arrow.markers.push_back(makeInterArrow(msg));
@@ -591,7 +590,7 @@ void AddWayPoint::makeInteractiveMarker()
   /*! Create the User Interactive Marker and update the RViz enviroment.
 
   */
-  InteractiveMarker inter_arrow_marker_;
+  visualization_msgs::InteractiveMarker inter_arrow_marker_;
   inter_arrow_marker_.header.frame_id = target_frame_;
   inter_arrow_marker_.scale = ARROW_INTERACTIVE_SCALE;
 
