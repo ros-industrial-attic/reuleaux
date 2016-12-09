@@ -44,9 +44,9 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "workspace");
   ros::NodeHandle n;
-  time_t startit, finish;
-  time(&startit);
-  float resolution = 0.08;
+  ros::Time startit = ros::Time::now();
+
+  float resolution = 0.06;
   Kinematics k;
   string ext = ".h5";
   string filename =
@@ -429,8 +429,8 @@ int main(int argc, char **argv)
     H5Gclose(group_spheres);
 
     H5Fclose(file);
-    time(&finish);
-    double dif = difftime(finish, startit);
+
+	double dif = ros::Duration( ros::Time::now() - startit).toSec();
     ROS_INFO("Elasped time is %.2lf seconds.", dif);
     ROS_INFO("Completed");
     ros::spinOnce();
