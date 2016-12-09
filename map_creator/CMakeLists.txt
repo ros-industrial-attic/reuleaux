@@ -15,21 +15,19 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(octomap REQUIRED)
 
- add_message_files(
-   FILES
-   capShape.msg
-   capability.msg
-   WsSphere.msg
-   WorkSpace.msg
-   
- )
+add_message_files(
+ FILES
+ capShape.msg
+ capability.msg
+ WsSphere.msg
+ WorkSpace.msg
+ 
+)
 
-
- generate_messages(
-   DEPENDENCIES
-   geometry_msgs std_msgs
- )
-
+generate_messages(
+ DEPENDENCIES
+ geometry_msgs std_msgs
+)
 
 catkin_package(
 
@@ -43,49 +41,36 @@ catkin_package(
   CATKIN_DEPENDS message_runtime 
 )
 
-
-
-
 include_directories(include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR} ${PCL_INCLUDE_DIR})
 
+add_library(sphere_discretization
+ src/sphere_discretization.cpp
+)
+add_library(kinematics
+ src/kinematics.cpp
+)
+add_library(hdf5_dataset
+ src/hdf5_dataset.cpp
+)
 
-
- add_library(sphere_discretization
-   src/sphere_discretization.cpp
-   )
-
- add_library(kinematics
-   src/kinematics.cpp
-   )
- add_library(hdf5_dataset
-   src/hdf5_dataset.cpp
-   )
-
-
- target_link_libraries(sphere_discretization 
-   ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES} ${PCL_LIBRARY_DIRS}
- )
+target_link_libraries(sphere_discretization 
+ ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES} ${PCL_LIBRARY_DIRS}
+)
 target_link_libraries(kinematics
-   ${catkin_LIBRARIES}
- )
-
+ ${catkin_LIBRARIES}
+)
 target_link_libraries(hdf5_dataset
-   ${catkin_LIBRARIES}
- )
+ ${catkin_LIBRARIES}
+)
 
-
-
- install(TARGETS sphere_discretization kinematics hdf5_dataset
-   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-   
- )
-
-
+install(TARGETS sphere_discretization kinematics hdf5_dataset
+ ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+ 
+)
 install(DIRECTORY include/${PROJECT_NAME}/
-   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
- )
-
+ DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
 
 add_executable(create_reachability_map src/create_reachability_map.cpp)
 add_dependencies(create_reachability_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -107,6 +92,7 @@ add_executable(load_capability_map src/load_capability_map.cpp)
 add_dependencies(load_capability_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(load_capability_map -lhdf5 -lhdf5_cpp hdf5_dataset ${catkin_LIBRARIES})
 
-catkin_add_gtest(utest test/utest.cpp)
-target_link_libraries(utest sphere_discretization ${catkin_LIBRARIES})
-
+if(CATKIN_ENABLE_TESTING)
+  catkin_add_gtest(utest test/utest.cpp)
+  target_link_libraries(utest sphere_discretization ${catkin_LIBRARIES})
+endif()

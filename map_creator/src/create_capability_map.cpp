@@ -34,7 +34,7 @@ int main(int argc, char **argv)
   kinematics::Kinematics k;
   std::string ext = ".h5";
   std::string filename =
-      std::string(k.getRobotName()) + "_" + "r" + str(boost::format("%d") % resolution) + "_" + "capability" + "." + "h5";
+      str(boost::format("%s_r%d_capability.h5") % k.getRobotName() % resolution);
   if (argc == 2)
   {
     if (!isFloat(argv[1]))
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
     }
     resolution = atof(argv[1]);
     filename =
-        std::string(k.getRobotName()) + "_" + "r" + str(boost::format("%d") % resolution) + "_" + "capability" + "." + "h5";
+        str(boost::format("%s_r%d_capability.h5") % k.getRobotName() % resolution);
   }
 
   else if (argc == 3)

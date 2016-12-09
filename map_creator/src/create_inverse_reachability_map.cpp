@@ -60,7 +60,7 @@ int main(int argc, char **argv)
     attr = H5Aopen(sphere_dataset, "Resolution", H5P_DEFAULT);
     herr_t ret = H5Aread(attr, H5T_NATIVE_FLOAT, &res);
     filename =
-        std::string(k.getRobotName()) + "_" + "r" + str(boost::format("%d") % res) + "_" + "Inv_reachability" + "." + "h5";
+        str(boost::format("%s_r%d_Inv_reachability.h5") % k.getRobotName() % res);
   }
 
   else if (argc == 3)
