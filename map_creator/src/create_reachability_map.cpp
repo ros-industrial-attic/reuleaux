@@ -131,13 +131,11 @@ int main(int argc, char **argv)
       static std::vector< geometry_msgs::Pose > pose;
       sd.convertPointToVector(newData[i], SphereCoord[i]);
 
-
       sd.make_sphere_poses(newData[i], radius, pose);
       for (int j = 0; j < pose.size(); j++)
       {
         static std::vector< double > point_on_sphere;
         sd.convertPoseToVector(pose[j], point_on_sphere);
-
         PoseCol.push_back( std::make_pair(point_on_sphere, &SphereCoord[i]));
       }
     }
@@ -155,8 +153,7 @@ int main(int argc, char **argv)
 
     for (MultiVector::iterator it = PoseCol.begin(); it != PoseCol.end(); ++it)
     {
-      std::vector< double > joints;
-      joints.resize(6);
+      static std::vector< double > joints(6);
       int solns;
       if (k.isIKSuccess(it->first, joints, solns))
       {
@@ -187,17 +184,16 @@ int main(int argc, char **argv)
       float d = float(PoseColFilter.count(sphere_coord)) / (PoseCol.size() / newData.size()) * 100;
       sphereColor.insert( std::make_pair(it->first, double(d)));
 
-      // poseReach.push_back(it->second);
-      std::vector< double > poseAndSphere;
-      poseAndSphere.reserve( sphere_coord->size() + point_on_sphere->size());
+      // poseReach.push_back(it->second)
+      static std::vector< double > poseAndSphere(10);
 
-      for (int i = 0; i < sphere_coord->size(); i++)
+      for (int i = 0; i < 3; i++)
       {
-        poseAndSphere.push_back((*it->first)[i]);
+        poseAndSphere[i]=((*it->first)[i]);
       }
-      for (int j = 0; j < point_on_sphere->size(); j++)
+      for (int j = 0; j < 7; j++)
       {
-        poseAndSphere.push_back((*it->second)[j]);
+        poseAndSphere[3+j]=((*it->second)[j]);
       }
 
       poseReach.push_back(poseAndSphere);

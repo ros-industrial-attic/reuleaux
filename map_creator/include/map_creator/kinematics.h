@@ -32,11 +32,11 @@ public:
   float NORM(float a, float b, float c, float d);
   void getPoseFromFK(const std::vector< double > joint_values, std::vector< double >& pose);
 
-  bool isIKSuccess(std::vector< double > pose, std::vector< double >& joints, int& numOfSolns);
+  bool isIKSuccess(const std::vector<double> &pose, std::vector<double> &joints, int& numOfSolns);
 
   const std::string getRobotName();
 
-  bool isIkSuccesswithTransformedBase(const geometry_msgs::Pose base_pose, const geometry_msgs::Pose grasp_pose,
+  bool isIkSuccesswithTransformedBase(const geometry_msgs::Pose& base_pose, const geometry_msgs::Pose& grasp_pose,
                                       int& numOfSolns);
 };
 }

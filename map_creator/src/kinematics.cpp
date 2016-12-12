@@ -109,7 +109,7 @@ void Kinematics::getPoseFromFK(const std::vector< double > joint_values, std::ve
   pose.push_back(q0);
 }
 
-bool Kinematics::isIKSuccess(std::vector< double > pose, std::vector< double >& joints, int& numOfSolns)
+bool Kinematics::isIKSuccess(const std::vector< double >& pose, std::vector< double >& joints, int& numOfSolns)
 {
 #if IK_VERSION > 54
   // for IKFast 56,61
@@ -175,7 +175,7 @@ bool Kinematics::isIKSuccess(std::vector< double > pose, std::vector< double >& 
   numOfSolns = num_of_solutions;
 #endif
 
-  std::vector< IKREAL_TYPE > solvalues(num_of_joints);
+  joints.resize(num_of_joints);
 
 #if IK_VERSION > 54
   // for IKFast 56,61
@@ -188,9 +188,14 @@ bool Kinematics::isIKSuccess(std::vector< double > pose, std::vector< double >& 
     // cout<<"Found ik solutions: "<< num_of_solutions<<endl;
     const IkSolutionBase< IKREAL_TYPE >& sol = solutions.GetSolution(1);
     int this_sol_free_params = (int)sol.GetFree().size();
-    std::vector< IKREAL_TYPE > vsolfree(this_sol_free_params);
-    sol.GetSolution(&solvalues[0], vsolfree.size() > 0 ? &vsolfree[0] : NULL);
-    joints = solvalues;
+    if( this_sol_free_params <= 0){
+      sol.GetSolution(&joints[0], NULL);
+    }
+    else{
+      static std::vector< IKREAL_TYPE > vsolfree;
+      vsolfree.resize(this_sol_free_params);
+      sol.GetSolution(&joints[0], &vsolfree[0]);
+    }
     return true;
   }
 #else
@@ -212,7 +217,6 @@ bool Kinematics::isIKSuccess(std::vector< double > pose, std::vector< double >& 
 const std::string Kinematics::getRobotName()
 {
   const char* hash = GetKinematicsHash();
-  ;
 
   std::string part = hash;
   part.erase(0, 22);
@@ -220,8 +224,8 @@ const std::string Kinematics::getRobotName()
   return name;
 }
 
-bool Kinematics::isIkSuccesswithTransformedBase(const geometry_msgs::Pose base_pose,
-                                                const geometry_msgs::Pose grasp_pose, int& numOfSolns)
+bool Kinematics::isIkSuccesswithTransformedBase(const geometry_msgs::Pose& base_pose,
+                                                const geometry_msgs::Pose& grasp_pose, int& numOfSolns)
 {
   // Creating a transformation out of base pose
   tf2::Vector3 base_vec(base_pose.position.x, base_pose.position.y, base_pose.position.z);
