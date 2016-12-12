@@ -101,6 +101,12 @@ int main(int argc, char **argv)
     octomap::OcTree *tree = sd.generateBoxTree(origin, r, resolution);
     std::vector< octomap::point3d > newData;
     ROS_INFO("Creating the box and discretizing with resolution: %f", resolution);
+    int sphere_count = 0;
+    for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
+    {
+      sphere_count++;
+    }
+    newData.reserve(sphere_count);
     for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
     {
       newData.push_back(it.getCoordinate());

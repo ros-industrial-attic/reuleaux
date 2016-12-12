@@ -131,7 +131,7 @@ void SphereDiscretization::make_sphere_poses(const octomap::point3d& origin, dou
   // have to use it. The robot whose final roll joint cannot move 0 to 2pi, we have to use it.
   // for (double rot = 0.; rot < 2*M_PI; rot += M_PI/6){
 
-  for (int index = 0; index < MAX_INDEX; index++)  // Azimuth [0, 2PI]
+  for (int index = 0; index < MAX_INDEX; index++)
   {
     pose.position.x = r * position_vector[index].x + origin.x();
     pose.position.y = r * position_vector[index].y + origin.y();
