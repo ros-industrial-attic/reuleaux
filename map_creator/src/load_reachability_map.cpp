@@ -6,10 +6,6 @@
 #include "H5Cpp.h"
 #include <hdf5.h>
 
-using namespace H5;
-using namespace std;
-using namespace hdf5_dataset;
-
 #define POSES_DATASETNAME "poses_dataset"
 #define SPHERE_DATASETNAME "sphere_dataset"
 #define POSE_GROUPNAME "/Poses"
@@ -48,15 +44,15 @@ int main(int argc, char **argv)
     poses_group = H5Gopen(file, POSE_GROUPNAME, H5P_DEFAULT);
     poses_dataset = H5Dopen(poses_group, POSES_DATASETNAME, H5P_DEFAULT);
 
-    multimap< vector< double >, vector< double > > PoseColFilter;
-    Hdf5Dataset hd5;
+    std::multimap< std::vector< double >, std::vector< double > > PoseColFilter;
+    hdf5_dataset::Hdf5Dataset hd5;
     hd5.h5ToMultiMapPoses(poses_dataset, PoseColFilter);
 
     // Sphere dataset
     sphere_group = H5Gopen(file, SPHERE_GROUPNAME, H5P_DEFAULT);
     sphere_dataset = H5Dopen(sphere_group, SPHERE_DATASETNAME, H5P_DEFAULT);
 
-    multimap< vector< double >, double > SphereCol;
+    std::multimap< std::vector< double >, double > SphereCol;
     hd5.h5ToMultiMapSpheres(sphere_dataset, SphereCol);
 
     // Resolution Attribute
@@ -79,7 +75,7 @@ int main(int argc, char **argv)
     ws.header.frame_id = "/base_link";
     ws.resolution = res;
 
-    for (multimap< vector< double >, double >::iterator it = SphereCol.begin(); it != SphereCol.end(); ++it)
+    for (std::multimap< std::vector< double >, double >::iterator it = SphereCol.begin(); it != SphereCol.end(); ++it)
     {
       map_creator::WsSphere wss;
       wss.point.x = it->first[0];
@@ -87,7 +83,7 @@ int main(int argc, char **argv)
       wss.point.z = it->first[2];
       wss.ri = it->second;
 
-      multimap< vector< double >, vector< double > >::iterator it1;
+      std::multimap< std::vector< double >, std::vector< double > >::iterator it1;
       for (it1 = PoseColFilter.lower_bound(it->first); it1 != PoseColFilter.upper_bound(it->first); ++it1)
       {
         geometry_msgs::Pose pp;

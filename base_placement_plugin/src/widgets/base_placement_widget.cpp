@@ -6,8 +6,6 @@
 
 #include <H5Cpp.h>
 #include <hdf5.h>
-using namespace hdf5_dataset;
-using namespace std;
 
 namespace base_placement_plugin
 {
@@ -599,7 +597,7 @@ void BasePlacementWidget::loadReachabilityFile()
 
     ROS_INFO_STREAM("Opening the file: " << fileName.toStdString());
 
-    string fileh5 = fileName.toStdString();
+    std::string fileh5 = fileName.toStdString();
     const char* FILE = fileh5.c_str();
     hid_t file, poses_group, poses_dataset, sphere_group, sphere_dataset, attr;
     file = H5Fopen(FILE, H5F_ACC_RDONLY, H5P_DEFAULT);
@@ -609,14 +607,14 @@ void BasePlacementWidget::loadReachabilityFile()
     poses_group = H5Gopen(file, "/Poses", H5P_DEFAULT);
     poses_dataset = H5Dopen(poses_group, "poses_dataset", H5P_DEFAULT);
 
-    multimap< vector< double >, vector< double > > PoseColFilter;
-    Hdf5Dataset hd5;
+    std::multimap< std::vector< double >, std::vector< double > > PoseColFilter;
+    hdf5_dataset::Hdf5Dataset hd5;
     hd5.h5ToMultiMapPoses(poses_dataset, PoseColFilter);
 
     // Sphere dataset
     sphere_group = H5Gopen(file, "/Spheres", H5P_DEFAULT);
     sphere_dataset = H5Dopen(sphere_group, "sphere_dataset", H5P_DEFAULT);
-    multimap< vector< double >, double > SphereCol;
+    std::multimap< std::vector< double >, double > SphereCol;
     hd5.h5ToMultiMapSpheres(sphere_dataset, SphereCol);
 
     // Resolution Attribute
