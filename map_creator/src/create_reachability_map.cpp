@@ -128,14 +128,14 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < newData.size(); i++)
     {
-      std::vector< geometry_msgs::Pose > pose;
+      static std::vector< geometry_msgs::Pose > pose;
       sd.convertPointToVector(newData[i], SphereCoord[i]);
 
 
-      pose = sd.make_sphere_poses(newData[i], radius);
+      sd.make_sphere_poses(newData[i], radius, pose);
       for (int j = 0; j < pose.size(); j++)
       {
-        std::vector< double > point_on_sphere;
+        static std::vector< double > point_on_sphere;
         sd.convertPoseToVector(pose[j], point_on_sphere);
 
         PoseCol.push_back( std::make_pair(point_on_sphere, &SphereCoord[i]));

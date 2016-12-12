@@ -119,7 +119,7 @@ int main(int argc, char **argv)
     std::vector< octomap::point3d > newData;
 
     std::vector< geometry_msgs::Pose > pose;
-    pose = sd.make_sphere_poses(origin, resolution);  // calculating number of points on a sphere by discretization
+    sd.make_sphere_poses(origin, resolution, pose);  // calculating number of points on a sphere by discretization
 
     for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
     {

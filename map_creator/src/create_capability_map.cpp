@@ -106,19 +106,20 @@ int main(int argc, char **argv)
     float radius = resolution;
 
     std::multimap< std::vector< double >, std::vector< double > > PoseCol;
-    for (int i = 0; i < newData.size(); i++)
     {
       std::vector< geometry_msgs::Pose > pose;
       std::vector< double > sphere_coord;
-      sd.convertPointToVector(newData[i], sphere_coord);
-
-      pose = sd.make_sphere_poses(newData[i], radius);
-      for (int j = 0; j < pose.size(); j++)
+      std::vector< double > point_on_sphere;
+      for (int i = 0; i < newData.size(); i++)
       {
-        std::vector< double > point_on_sphere;
-        sd.convertPoseToVector(pose[j], point_on_sphere);
+        sd.convertPointToVector(newData[i], sphere_coord);
 
-        PoseCol.insert(std::pair< std::vector< double >, std::vector< double > >(point_on_sphere, sphere_coord));
+        sd.make_sphere_poses(newData[i], radius, pose);
+        for (int j = 0; j < pose.size(); j++)
+        {
+          sd.convertPoseToVector(pose[j], point_on_sphere);
+          PoseCol.insert(std::make_pair(point_on_sphere, sphere_coord));
+        }
       }
     }
 

@@ -143,6 +143,7 @@ void PlaceBase::findbase(std::vector< geometry_msgs::Pose > grasp_poses)
       // Normalization for inverse Reachability Index
 
       std::vector< int > poseCount;
+	  poseCount.reserve(baseTrnsCol.size());
       for (std::multimap< std::vector< double >, std::vector< double > >::iterator it = baseTrnsCol.begin(); it != baseTrnsCol.end();
            ++it)
       {
