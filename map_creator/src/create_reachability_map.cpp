@@ -189,11 +189,11 @@ int main(int argc, char **argv)
 
       for (int i = 0; i < 3; i++)
       {
-        poseAndSphere[i]=((*it->first)[i]);
+        poseAndSphere[i]=((*sphere_coord)[i]);
       }
       for (int j = 0; j < 7; j++)
       {
-        poseAndSphere[3+j]=((*it->second)[j]);
+        poseAndSphere[3+j]=((*point_on_sphere)[j]);
       }
 
       poseReach.push_back(poseAndSphere);

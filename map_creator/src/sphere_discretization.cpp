@@ -94,20 +94,36 @@ octomap::Pointcloud SphereDiscretization::make_sphere_points(const octomap::poin
 
 void SphereDiscretization::make_sphere_poses(const octomap::point3d& origin, double r, std::vector< geometry_msgs::Pose >& pose_Col)
 {
-  pose_Col.reserve( 5*5*2 );
-  pose_Col.clear();
-
   const double DELTA = M_PI / 5.;
-  static boost::array<double,10> Cos;
-  static boost::array<double,10> Sin;
+  static boost::array<geometry_msgs::Vector3,10> position_vector;
+  static boost::array<tf2::Quaternion,10> quaternion;
   static bool initialized = false;
+  static int MAX_INDEX = 0;
   if( !initialized ){
-    for (int i=0; i< 10; i++){
-      Cos[i] = cos(i*DELTA);
-      Sin[i] = sin(i*DELTA);
-    }
+
     initialized=true;
+
+    unsigned index = 0;
+    for (double phi = 0; phi < 2*M_PI; phi += DELTA)  // Azimuth [0, 2PI]
+    {
+      for (double theta = 0; theta < M_PI; theta += DELTA)  // Elevation [0, PI]
+      {
+        position_vector[index].x = cos(phi) * sin(theta);
+        position_vector[index].y = sin(phi) * sin(theta);
+        position_vector[index].z = cos(theta);
+
+        tf2::Quaternion quat;
+        quat.setRPY(0, ((M_PI / 2) + theta), phi);
+        // quat=quat*quat2;
+        quat.normalize();
+        quaternion[index] = quat;
+        index++;
+      }
+    }
+    MAX_INDEX = index;
   }
+  pose_Col.reserve( MAX_INDEX );
+  pose_Col.clear();
 
   geometry_msgs::Pose pose;
   // TODO Most of the robots have a roll joint as their final joint which can move 0 to 2pi. So if a pose is reachable,
@@ -115,25 +131,17 @@ void SphereDiscretization::make_sphere_poses(const octomap::point3d& origin, dou
   // have to use it. The robot whose final roll joint cannot move 0 to 2pi, we have to use it.
   // for (double rot = 0.; rot < 2*M_PI; rot += M_PI/6){
 
-  for (int phi = 0; phi < 10; phi ++)  // Azimuth [0, 2PI]
+  for (int index = 0; index < MAX_INDEX; index++)  // Azimuth [0, 2PI]
   {
-    for (int theta = 0; theta < 5; theta ++)  // Elevation [0, PI]
-    {
-      pose.position.x = r * Cos[phi] * Sin[theta] + origin.x();
-      pose.position.y = r * Sin[phi] * Sin[theta] + origin.y();
-      pose.position.z = r * Cos[theta] + origin.z();
-      tf2::Quaternion quat;
-      // tf2::Quaternion quat2;
-      // quat2.setRPY(M_PI/6,0,0);
-      quat.setRPY(0, ((M_PI / 2) + theta*DELTA), phi);
-      // quat=quat*quat2;
-      quat.normalize();
-      pose.orientation.x = quat.x();
-      pose.orientation.y = quat.y();
-      pose.orientation.z = quat.z();
-      pose.orientation.w = quat.w();
-      pose_Col.push_back(pose);
-    }
+    pose.position.x = r * position_vector[index].x + origin.x();
+    pose.position.y = r * position_vector[index].y + origin.y();
+    pose.position.z = r * position_vector[index].z + origin.z();
+    const tf2::Quaternion& quat = quaternion[index];
+    pose.orientation.x = quat.x();
+    pose.orientation.y = quat.y();
+    pose.orientation.z = quat.z();
+    pose.orientation.w = quat.w();
+    pose_Col.push_back(pose);
   }
 }
 
