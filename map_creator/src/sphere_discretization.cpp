@@ -4,7 +4,7 @@ namespace sphere_discretization
 {
 // SphereDiscretization::SphereDiscretization(){}
 
-octomap::OcTree* SphereDiscretization::generateSphereTree(octomap::point3d origin, float radius, float resolution)
+octomap::OcTree* SphereDiscretization::generateSphereTree(const octomap::point3d& origin, float radius, float resolution)
 {
   octomap::OcTree* tree = new octomap::OcTree(resolution);
   octomap::point3d point_on_surface = origin;
@@ -26,7 +26,7 @@ octomap::OcTree* SphereDiscretization::generateSphereTree(octomap::point3d origi
   return tree;
 }
 
-octomap::OcTree* SphereDiscretization::generateSphereTree2(octomap::point3d origin, float radius, float resolution)
+octomap::OcTree* SphereDiscretization::generateSphereTree2(const octomap::point3d& origin, float radius, float resolution)
 {
   octomap::OcTree* tree = new octomap::OcTree(resolution);
   octomap::point3d point_on_surface = origin;
@@ -50,7 +50,7 @@ octomap::OcTree* SphereDiscretization::generateSphereTree2(octomap::point3d orig
   return tree;
 }
 
-octomap::OcTree* SphereDiscretization::generateBoxTree(octomap::point3d origin, float diameter, float resolution)
+octomap::OcTree* SphereDiscretization::generateBoxTree(const octomap::point3d& origin, float diameter, float resolution)
 {
   octomap::OcTree* tree = new octomap::OcTree(resolution / 2);
   octomap::Pointcloud p;
@@ -73,7 +73,7 @@ octomap::OcTree* SphereDiscretization::generateBoxTree(octomap::point3d origin, 
   return tree;
 };
 
-octomap::Pointcloud SphereDiscretization::make_sphere_points(octomap::point3d origin, double r)
+octomap::Pointcloud SphereDiscretization::make_sphere_points(const octomap::point3d& origin, double r)
 {
   octomap::Pointcloud spherePoints;
   spherePoints.reserve( 7*7*2 );
@@ -91,38 +91,56 @@ octomap::Pointcloud SphereDiscretization::make_sphere_points(octomap::point3d or
   return spherePoints;
 }
 
-std::vector< geometry_msgs::Pose > SphereDiscretization::make_sphere_poses(octomap::point3d origin, double r)
+
+void SphereDiscretization::make_sphere_poses(const octomap::point3d& origin, double r, std::vector< geometry_msgs::Pose >& pose_Col)
 {
-  std::vector< geometry_msgs::Pose > pose_Col;
-  pose_Col.reserve( 5*5*2 );
+  const double DELTA = M_PI / 5.;
+  const unsigned MAX_INDEX = (2 * 5 * 5);
+  static std::vector<geometry_msgs::Vector3> position_vector(MAX_INDEX);
+  static std::vector<tf2::Quaternion> quaternion(MAX_INDEX);
+  static bool initialized = false;
+
+  if( !initialized ){
+    initialized=true;
+    unsigned index = 0;
+    for (double phi = 0; phi < 2*M_PI; phi += DELTA)  // Azimuth [0, 2PI]
+    {
+      for (double theta = 0; theta < M_PI; theta += DELTA)  // Elevation [0, PI]
+      {
+        position_vector[index].x = cos(phi) * sin(theta);
+        position_vector[index].y = sin(phi) * sin(theta);
+        position_vector[index].z = cos(theta);
+
+        tf2::Quaternion quat;
+        quat.setRPY(0, ((M_PI / 2) + theta), phi);
+        // quat=quat*quat2;
+        quat.normalize();
+        quaternion[index] = quat;
+        index++;
+      }
+    }
+  }
+  pose_Col.reserve( MAX_INDEX );
+  pose_Col.clear();
+
   geometry_msgs::Pose pose;
   // TODO Most of the robots have a roll joint as their final joint which can move 0 to 2pi. So if a pose is reachable,
   // then the discretization of roll poses are also reachable. It will increase the data, so we have to decide if we
   // have to use it. The robot whose final roll joint cannot move 0 to 2pi, we have to use it.
   // for (double rot = 0.; rot < 2*M_PI; rot += M_PI/6){
 
-  for (double phi = 0.; phi < 2 * M_PI; phi += M_PI / 5.)  // Azimuth [0, 2PI]
+  for (int index = 0; index < MAX_INDEX; index++)
   {
-    for (double theta = 0.; theta < M_PI; theta += M_PI / 5.)  // Elevation [0, PI]
-    {
-      pose.position.x = r * cos(phi) * sin(theta) + origin.x();
-      pose.position.y = r * sin(phi) * sin(theta) + origin.y();
-      pose.position.z = r * cos(theta) + origin.z();
-      tf2::Quaternion quat;
-      // tf2::Quaternion quat2;
-      // quat2.setRPY(M_PI/6,0,0);
-      quat.setRPY(0, ((M_PI / 2) + theta), phi);
-      // quat=quat*quat2;
-      quat.normalize();
-      pose.orientation.x = quat.x();
-      pose.orientation.y = quat.y();
-      pose.orientation.z = quat.z();
-      pose.orientation.w = quat.w();
-      pose_Col.push_back(pose);
-    }
+    pose.position.x = r * position_vector[index].x + origin.x();
+    pose.position.y = r * position_vector[index].y + origin.y();
+    pose.position.z = r * position_vector[index].z + origin.z();
+    const tf2::Quaternion& quat = quaternion[index];
+    pose.orientation.x = quat.x();
+    pose.orientation.y = quat.y();
+    pose.orientation.z = quat.z();
+    pose.orientation.w = quat.w();
+    pose_Col.push_back(pose);
   }
-  //}
-  return pose_Col;
 }
 
 double SphereDiscretization::irand(int min, int max)
@@ -224,7 +242,7 @@ double SphereDiscretization::r8_modp(double x, double y)
   return value;
 }
 
-octomap::Pointcloud SphereDiscretization::make_sphere_spiral_points(octomap::point3d origin, double r, int sample)
+octomap::Pointcloud SphereDiscretization::make_sphere_spiral_points(const octomap::point3d& origin, double r, int sample)
 {
   octomap::Pointcloud spherePoints;
   spherePoints.reserve(sample);
@@ -257,7 +275,7 @@ octomap::Pointcloud SphereDiscretization::make_sphere_spiral_points(octomap::poi
   return spherePoints;
 }
 
-octomap::Pointcloud SphereDiscretization::make_long_lat_grid(octomap::point3d origin, double r, int sample, int lat_num, int lon_num)
+octomap::Pointcloud SphereDiscretization::make_long_lat_grid(const octomap::point3d& origin, double r, int sample, int lat_num, int lon_num)
 {
   octomap::Pointcloud spherePoints;
 
@@ -292,10 +310,10 @@ octomap::Pointcloud SphereDiscretization::make_long_lat_grid(octomap::point3d or
 
 void SphereDiscretization::convertPointToVector(const octomap::point3d point, std::vector< double >& data)
 {
-  data.reserve(3);
-  data.push_back(double(point.x()));
-  data.push_back(double(point.y()));
-  data.push_back(double(point.z()));
+  data.resize(3);
+  data[0]=(double(point.x()));
+  data[1]=(double(point.y()));
+  data[2]=(double(point.z()));
 }
 
 void SphereDiscretization::convertVectorToPoint(const std::vector< double > data, octomap::point3d &point)
@@ -305,19 +323,19 @@ void SphereDiscretization::convertVectorToPoint(const std::vector< double > data
   point.z() = data[2];
 }
 
-void SphereDiscretization::convertPoseToVector(const geometry_msgs::Pose pose, std::vector< double > &data)
+void SphereDiscretization::convertPoseToVector(const geometry_msgs::Pose& pose, std::vector< double > &data)
 {
-  data.reserve(7);
-  data.push_back(double(pose.position.x));
-  data.push_back(double(pose.position.y));
-  data.push_back(double(pose.position.z));
-  data.push_back(double(pose.orientation.x));
-  data.push_back(double(pose.orientation.y));
-  data.push_back(double(pose.orientation.z));
-  data.push_back(double(pose.orientation.w));
+  data.resize(7);
+  data[0]=(double(pose.position.x));
+  data[1]=(double(pose.position.y));
+  data[2]=(double(pose.position.z));
+  data[3]=(double(pose.orientation.x));
+  data[4]=(double(pose.orientation.y));
+  data[5]=(double(pose.orientation.z));
+  data[6]=(double(pose.orientation.w));
 }
 
-void SphereDiscretization::convertVectorToPose(const std::vector< double > data, geometry_msgs::Pose &pose)
+void SphereDiscretization::convertVectorToPose(const std::vector< double >& data, geometry_msgs::Pose &pose)
 {
   pose.position.x = data[0];
   pose.position.y = data[1];
@@ -328,7 +346,7 @@ void SphereDiscretization::convertVectorToPose(const std::vector< double > data,
   pose.orientation.w = data[6];
 }
 
-geometry_msgs::Pose SphereDiscretization::findOptimalPose(const std::vector< geometry_msgs::Pose > poses, octomap::point3d origin)
+geometry_msgs::Pose SphereDiscretization::findOptimalPose(const std::vector< geometry_msgs::Pose >& poses, const octomap::point3d& origin)
 {
   geometry_msgs::Pose optiPose;
   double mydo[] = {0, 0, 0, 0, 0, 0};
@@ -356,7 +374,7 @@ geometry_msgs::Pose SphereDiscretization::findOptimalPose(const std::vector< geo
   return optiPose;
 }
 
-void SphereDiscretization::createConeCloud(const geometry_msgs::Pose pose, const double opening_angle,
+void SphereDiscretization::createConeCloud(const geometry_msgs::Pose& pose, const double opening_angle,
                                            const double scale, pcl::PointCloud< pcl::PointXYZ >::Ptr cloud)
 {
   pcl::PointCloud< pcl::PointXYZ >::Ptr new_cloud(new pcl::PointCloud< pcl::PointXYZ >);
@@ -387,7 +405,7 @@ void SphereDiscretization::createConeCloud(const geometry_msgs::Pose pose, const
   pcl::transformPointCloud(*new_cloud, *cloud, transform);
 }
 
-void SphereDiscretization::poseToPoint(const geometry_msgs::Pose pose, octomap::point3d &point)
+void SphereDiscretization::poseToPoint(const geometry_msgs::Pose& pose, octomap::point3d &point)
 {
   point.x() = pose.position.x;
   point.y() = pose.position.y;
@@ -426,21 +444,20 @@ bool SphereDiscretization::isPointInCloud(pcl::PointCloud< pcl::PointXYZ >::Ptr 
   }
 }
 
-float SphereDiscretization::distanceL2norm(const octomap::point3d p1, const octomap::point3d p2)
+float SphereDiscretization::distanceL2norm(const octomap::point3d& p1, const octomap::point3d& p2)
 {
-  float dist;
-  dist = sqrt((p1.x() - p2.x()) * (p1.x() - p2.x()) + (p1.y() - p2.y()) * (p1.y() - p2.y()) +
+  return sqrt((p1.x() - p2.x()) * (p1.x() - p2.x()) +
+              (p1.y() - p2.y()) * (p1.y() - p2.y()) +
               (p1.z() - p2.z()) * (p1.z() - p2.z()));
-  return dist;
 }
 
-void SphereDiscretization::poseToEigenVector(const geometry_msgs::Pose pose, Eigen::VectorXd& vec)
+void SphereDiscretization::poseToEigenVector(const geometry_msgs::Pose& pose, Eigen::VectorXd& vec)
 {
   vec << pose.position.x, pose.position.y, pose.position.z, pose.orientation.x, pose.orientation.y, pose.orientation.z,
       pose.orientation.w;
 }
 
-void SphereDiscretization::findOptimalPosebyPCA(const std::vector< geometry_msgs::Pose > probBasePoses,
+void SphereDiscretization::findOptimalPosebyPCA(const std::vector< geometry_msgs::Pose >& probBasePoses,
                                                 geometry_msgs::Pose& final_base_pose)
 {
   Eigen::Matrix4d M;
@@ -480,19 +497,15 @@ void SphereDiscretization::findOptimalPosebyPCA(const std::vector< geometry_msgs
   final_base_pose.orientation.w = vector[3];
 }
 
-bool SphereDiscretization::areQuaternionClose(tf2::Quaternion q1, tf2::Quaternion q2)
+bool SphereDiscretization::areQuaternionClose(const tf2::Quaternion& q1, const tf2::Quaternion& q2)
 {
   double dot = q1.dot(q2);
-  if (dot < 0)
-    return false;
-  else
-    return true;
+  return (dot >= 0);
 }
 
-tf2::Quaternion SphereDiscretization::inverseSignQuaternion(tf2::Quaternion q)
+tf2::Quaternion SphereDiscretization::inverseSignQuaternion(const tf2::Quaternion& q)
 {
-  tf2::Quaternion q_inv(-q[0], -q[1], -q[2], -q[3]);
-  return q_inv;
+  return tf2::Quaternion(-q[0], -q[1], -q[2], -q[3]);
 }
 
 void SphereDiscretization::findOptimalPosebyAverage(const std::vector< geometry_msgs::Pose > probBasePoses,
@@ -558,8 +571,8 @@ void SphereDiscretization::findOptimalPosebyAverage(const std::vector< geometry_
 }
 
 void SphereDiscretization::associatePose(std::multimap< std::vector< double >, std::vector< double > >& baseTrnsCol,
-                                         const std::vector< geometry_msgs::Pose > grasp_poses,
-                                         const std::multimap< std::vector< double >, std::vector< double > > PoseColFilter,
+                                         const std::vector< geometry_msgs::Pose >& grasp_poses,
+                                         const std::multimap< std::vector< double >, std::vector< double > >& PoseColFilter,
                                          const float resolution)
 {
   unsigned char maxDepth = 16;

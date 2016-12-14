@@ -35,9 +35,9 @@ int main(int argc, char **argv)
 {
   ros::init(argc, argv, "workspace");
   ros::NodeHandle n;
-  time_t startit, finish;
-  time(&startit);
-  float resolution = 0.08;
+  ros::Time startit = ros::Time::now();
+
+  float resolution = 0.06;
   kinematics::Kinematics k;
   std::string ext = ".h5";
   std::string filename =
@@ -101,6 +101,12 @@ int main(int argc, char **argv)
     octomap::OcTree *tree = sd.generateBoxTree(origin, r, resolution);
     std::vector< octomap::point3d > newData;
     ROS_INFO("Creating the box and discretizing with resolution: %f", resolution);
+    int sphere_count = 0;
+    for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
+    {
+      sphere_count++;
+    }
+    newData.reserve(sphere_count);
     for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
     {
       newData.push_back(it.getCoordinate());
@@ -128,16 +134,14 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < newData.size(); i++)
     {
-      std::vector< geometry_msgs::Pose > pose;
+      static std::vector< geometry_msgs::Pose > pose;
       sd.convertPointToVector(newData[i], SphereCoord[i]);
 
-
-      pose = sd.make_sphere_poses(newData[i], radius);
+      sd.make_sphere_poses(newData[i], radius, pose);
       for (int j = 0; j < pose.size(); j++)
       {
-        std::vector< double > point_on_sphere;
+        static std::vector< double > point_on_sphere;
         sd.convertPoseToVector(pose[j], point_on_sphere);
-
         PoseCol.push_back( std::make_pair(point_on_sphere, &SphereCoord[i]));
       }
     }
@@ -155,8 +159,7 @@ int main(int argc, char **argv)
 
     for (MultiVector::iterator it = PoseCol.begin(); it != PoseCol.end(); ++it)
     {
-      std::vector< double > joints;
-      joints.resize(6);
+      static std::vector< double > joints(6);
       int solns;
       if (k.isIKSuccess(it->first, joints, solns))
       {
@@ -187,17 +190,16 @@ int main(int argc, char **argv)
       float d = float(PoseColFilter.count(sphere_coord)) / (PoseCol.size() / newData.size()) * 100;
       sphereColor.insert( std::make_pair(it->first, double(d)));
 
-      // poseReach.push_back(it->second);
-      std::vector< double > poseAndSphere;
-      poseAndSphere.reserve( sphere_coord->size() + point_on_sphere->size());
+      // poseReach.push_back(it->second)
+      static std::vector< double > poseAndSphere(10);
 
-      for (int i = 0; i < sphere_coord->size(); i++)
+      for (int i = 0; i < 3; i++)
       {
-        poseAndSphere.push_back((*it->first)[i]);
+        poseAndSphere[i]=((*sphere_coord)[i]);
       }
-      for (int j = 0; j < point_on_sphere->size(); j++)
+      for (int j = 0; j < 7; j++)
       {
-        poseAndSphere.push_back((*it->second)[j]);
+        poseAndSphere[3+j]=((*point_on_sphere)[j]);
       }
 
       poseReach.push_back(poseAndSphere);
@@ -422,8 +424,8 @@ int main(int argc, char **argv)
     H5Gclose(group_spheres);
 
     H5Fclose(file);
-    time(&finish);
-    double dif = difftime(finish, startit);
+
+	double dif = ros::Duration( ros::Time::now() - startit).toSec();
     ROS_INFO("Elasped time is %.2lf seconds.", dif);
     ROS_INFO("Completed");
     ros::spinOnce();
