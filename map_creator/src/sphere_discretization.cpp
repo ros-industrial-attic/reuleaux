@@ -95,14 +95,13 @@ octomap::Pointcloud SphereDiscretization::make_sphere_points(const octomap::poin
 void SphereDiscretization::make_sphere_poses(const octomap::point3d& origin, double r, std::vector< geometry_msgs::Pose >& pose_Col)
 {
   const double DELTA = M_PI / 5.;
-  static boost::array<geometry_msgs::Vector3,10> position_vector;
-  static boost::array<tf2::Quaternion,10> quaternion;
+  const unsigned MAX_INDEX = (2 * 5 * 5);
+  static std::vector<geometry_msgs::Vector3> position_vector(MAX_COUNT);
+  static std::vector<tf2::Quaternion> quaternion(MAX_COUNT);
   static bool initialized = false;
-  static int MAX_INDEX = 0;
+
   if( !initialized ){
-
     initialized=true;
-
     unsigned index = 0;
     for (double phi = 0; phi < 2*M_PI; phi += DELTA)  // Azimuth [0, 2PI]
     {
@@ -120,7 +119,6 @@ void SphereDiscretization::make_sphere_poses(const octomap::point3d& origin, dou
         index++;
       }
     }
-    MAX_INDEX = index;
   }
   pose_Col.reserve( MAX_INDEX );
   pose_Col.clear();
