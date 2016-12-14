@@ -96,8 +96,8 @@ void SphereDiscretization::make_sphere_poses(const octomap::point3d& origin, dou
 {
   const double DELTA = M_PI / 5.;
   const unsigned MAX_INDEX = (2 * 5 * 5);
-  static std::vector<geometry_msgs::Vector3> position_vector(MAX_COUNT);
-  static std::vector<tf2::Quaternion> quaternion(MAX_COUNT);
+  static std::vector<geometry_msgs::Vector3> position_vector(MAX_INDEX);
+  static std::vector<tf2::Quaternion> quaternion(MAX_INDEX);
   static bool initialized = false;
 
   if( !initialized ){
