@@ -3,18 +3,17 @@
 #include <octomap/octomap.h>
 #include <octomap/MapCollection.h>
 #include <octomap/math/Utils.h>
-#include <map_creator/sphere_discretization.h>
-#include <map_creator/kinematics.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <ctime>
-#include "H5Cpp.h"
-#include <hdf5.h>
 #include <string>
 #include <time.h>
 #include <sstream>
+#include <map_creator/sphere_discretization.h>
+#include <map_creator/kinematics.h>
+#include<map_creator/hdf5_dataset.h>
 
-struct stat st;
+//struct stat st;
 
 bool isFloat(std::string s)
 {
@@ -176,7 +175,7 @@ int main(int argc, char **argv)
          ++it)  // for all the spheres in workspace
     {
       i += 1;
-      // ROS_INFO ("Processing sphere: %d", i);
+      ROS_INFO ("Processing sphere: %d", i);
 
       if (it->second <= 20)  // All the spheres that have reachability less or equal to 20
       {
@@ -219,7 +218,7 @@ int main(int argc, char **argv)
           pcl::PointCloud< pcl::PointXYZ >::Ptr cloud(new pcl::PointCloud< pcl::PointXYZ >);
           sd.createConeCloud(optiPose, angle, 0.5, cloud);
           //cout << "cloud size: " << cloud->size() << endl;
-          ROS_INFO_STREAM("cloud size: " << cloud->size());
+          //ROS_INFO_STREAM("cloud size: " << cloud->size());
           double r_poses = 0.0;  // Pose that are reachable but not in cone
           for (int j = 0; j < reachPoints.size(); j++)
           {
@@ -252,6 +251,7 @@ int main(int argc, char **argv)
         std::vector< double > capability;
         capability.push_back(1.0);  // Enum for cone
         capability.push_back(it->second);  // Reachability index
+        capability.push_back(angleSFE.begin()->second);  // Optimal cone angle
         capability.push_back(optiPose.position.x);  // Position x,y,z
         capability.push_back(optiPose.position.y);
         capability.push_back(optiPose.position.z);
@@ -259,7 +259,6 @@ int main(int argc, char **argv)
         capability.push_back(optiPose.orientation.y);
         capability.push_back(optiPose.orientation.z);
         capability.push_back(optiPose.orientation.w);
-        capability.push_back(angleSFE.begin()->second);  // Optimal cone angle
         capability_data.push_back(capability);
       }
 
@@ -268,6 +267,7 @@ int main(int argc, char **argv)
         std::vector< double > capability_sp;
         capability_sp.push_back(2.0);
         capability_sp.push_back(it->second);
+        capability_sp.push_back(0.0);
         capability_sp.push_back(it->first[0]);
         capability_sp.push_back(it->first[1]);
         capability_sp.push_back(it->first[2]);
@@ -275,90 +275,16 @@ int main(int argc, char **argv)
         capability_sp.push_back(0.0);
         capability_sp.push_back(0.0);
         capability_sp.push_back(1.0);
-        capability_sp.push_back(0.0);
         capability_data.push_back(capability_sp);
       }
     }
     ROS_INFO("Capability map is created, saving data to database.");
 
-    // Starting database
-
-    /*string path(ros::package::getPath("map_creator")+"/maps/");
-    if (stat(path.c_str(),&st)!=0)
-  ROS_INFO("Path does not exist. Creating folder for maps");
-  const int dir_err = mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-        if (1 == dir_err)
-  {
-        ROS_INFO("Error creating directory");
-        exit(1);
-  }
-
-    time_t currentTime;
-    struct tm *localTime;
-    time( &currentTime );
-    localTime = localtime( &currentTime );
-
-    int Day    = localTime->tm_mday;
-    int Month  = localTime->tm_mon + 1;
-    int Year   = localTime->tm_year + 1900;
-    int Hour   = localTime->tm_hour;
-    int Min    = localTime->tm_min;
-    int Sec    = localTime->tm_sec;
-    //Creating all the file and group ids and the default file name
-
-    //string filename;
-    //filename=string(k.getRobotName())+"_"+boost::lexical_cast<std::string>(Hour)+":"+boost::lexical_cast<std::string>(Min)+"_"+boost::lexical_cast<std::string>(Month)+":"+boost::lexical_cast<std::string>(Day)+":"+boost::lexical_cast<std::string>(Year)+"_"+"r"+str(
-boost::format("%d") % resolution)+"_"+"sd"+"_"+"rot"+"_"+"capability"+"."+"h5";
-
-    //filename=string(k.getRobotName())+"_"+"r"+str( boost::format("%d") % resolution)+"_"+"capability"+"."+"h5";
-
-    const char * filepath = path.c_str();
-    const char * name = filename.c_str();
-    char fullpath[100];
-    strcpy(fullpath,filepath);
-    strcat(fullpath,name);
-    ROS_INFO("Saving map %s",filename.c_str());
-    hid_t file, group_capability;
-    file = H5Fcreate(fullpath, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-    group_capability = H5Gcreate(file,"/Capability",H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-    hid_t capability_dataset, capability_dataspace;
-    const int SX = capability_data.size();
-    const int SY = 10;
-    hsize_t dims2[2];               // dataset dimensions
-    dims2[0] = SX;
-    dims2[1] = SY;
-    double dset2_data[SX][SY];
-    for(int i=0;i<capability_data.size();i++){
-  for(int j=0;j<capability_data[i].size();j++){
-    dset2_data[i][j] = capability_data[i][j];
-  }
-    }
-    capability_dataspace = H5Screate_simple(2, dims2, NULL);
-    capability_dataset = H5Dcreate2(group_capability,"capability_dataset",H5T_NATIVE_DOUBLE, capability_dataspace,
-H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-
-    H5Dwrite(capability_dataset, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT,
-                     dset2_data);
-
-//Creating attribute
-
-    hid_t attr_id;
-    hsize_t attr_dims;
-    float attr_data[1];
-    attr_data[0] = resolution;
-    attr_dims =1;
-    capability_dataspace = H5Screate_simple(1, &attr_dims, NULL);
-    attr_id = H5Acreate2 (capability_dataset, "Resolution", H5T_NATIVE_FLOAT, capability_dataspace, H5P_DEFAULT,
-H5P_DEFAULT);
-    H5Awrite(attr_id, H5T_NATIVE_FLOAT, attr_data);
-    H5Aclose(attr_id);
+    // Saving to database
+    hdf5_dataset::Hdf5Dataset h5(filename);
+    h5.saveCapMapsToDataset(capability_data, resolution);
 
 
-//Closing all
-    H5Sclose(capability_dataspace);
-    H5Dclose(capability_dataset);
-    H5Gclose(group_capability);
-    H5Fclose(file);*/
     time(&finish);
     double dif = difftime(finish, startit);
     ROS_INFO("Elasped time is %.2lf seconds.", dif);
