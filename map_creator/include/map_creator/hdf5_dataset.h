@@ -62,8 +62,7 @@ private:
   hid_t poses_dataset_, sphere_dataset_, capability_dataset_;
   hid_t attr_;
   float res_;
-
-  //void h5ToMultiMapCap(const hid_t dataset, std::multimap< vector< double >, vector< double > >& sphereColor);
+ 
 };
 
 }  // namespace hdf5_dataset
