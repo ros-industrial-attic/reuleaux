@@ -27,10 +27,10 @@ int main(int argc, char **argv)
     hdf5_dataset::Hdf5Dataset h5(argv[1]);
     h5.open();
 
-    MultiMap PoseColFilter;
-    Map SphereCol;
+    MultiMapPtr pose_col_filter;
+    MapVecDoublePtr sphere_col;
     float res;
-    h5.loadMapsFromDataset(PoseColFilter, SphereCol, res);
+    h5.loadMapsFromDataset(pose_col_filter, sphere_col, res);
 
     // Creating messages
     map_creator::WorkSpace ws;
@@ -38,7 +38,7 @@ int main(int argc, char **argv)
     ws.header.frame_id = "/base_link";
     ws.resolution = res;
 
-    for (Map::iterator it = SphereCol.begin(); it != SphereCol.end(); ++it)
+    for (MapVecDoublePtr::iterator it = sphere_col.begin(); it != sphere_col.end(); ++it)
     {
        map_creator::WsSphere wss;
        wss.point.x = (*it->first)[0];
@@ -46,7 +46,7 @@ int main(int argc, char **argv)
        wss.point.z = (*it->first)[2];
        wss.ri = it->second;
 
-       for (MultiMap::iterator it1 = PoseColFilter.lower_bound(it->first); it1 != PoseColFilter.upper_bound(it->first); ++it1)
+       for (MultiMapPtr::iterator it1 = pose_col_filter.lower_bound(it->first); it1 != pose_col_filter.upper_bound(it->first); ++it1)
        {
           geometry_msgs::Pose pp;
           pp.position.x = it1->second->at(0);

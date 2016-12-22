@@ -600,26 +600,30 @@ void BasePlacementWidget::loadReachabilityFile()
     std::string fileh5 = fileName.toStdString();
     const char* FILE = fileh5.c_str();
 
-    multiMap PoseColFilter;
-    map_D sp;
+    MultiMap pose_col_filter;
+    MapVecDouble sp;
     float res;
 
     hdf5_dataset::Hdf5Dataset h5file(FILE);
     h5file.open();
-    h5file.loadMapsFromDataset(PoseColFilter, sp, res);
+    h5file.loadMapsFromDataset(pose_col_filter, sp, res);
 
 
-    std::multimap< std::vector< double >, double > SphereCol;
-    for(map_D::iterator it= sp.begin(); it!=sp.end();++it)
+    std::multimap< std::vector< double >, double > sphere_col;
+    for(MapVecDouble::iterator it= sp.begin(); it!=sp.end();++it)
     {
-      SphereCol.insert(std::pair<std::vector<double>, double> (it->first, it->second));
+      std::vector<double> sphere_coord(3);
+      sphere_coord[0] = it->first[0];
+      sphere_coord[1] = it->first[1];
+      sphere_coord[2] = it->first[2];
+      sphere_col.insert(std::pair<std::vector<double>, double> (sphere_coord, it->second));
     }
 
     //Just checking
    // ROS_INFO("Size of poses dataset: %lu", PoseColFilter.size());
    //ROS_INFO("Size of Sphere dataset: %lu", SphereCol.size());
 
-    Q_EMIT reachabilityData_signal(PoseColFilter, SphereCol, res);
+    Q_EMIT reachabilityData_signal(pose_col_filter, sphere_col, res);
   }
   ui_.tabWidget->setEnabled(true);
   ui_.progressBar->hide();

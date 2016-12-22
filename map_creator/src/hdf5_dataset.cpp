@@ -139,7 +139,7 @@ bool Hdf5Dataset::checkFileName(std::string filename)
   }
 }
 
-bool Hdf5Dataset::saveCapMapsToDataset(Vector &capabilityData, float &resolution)
+bool Hdf5Dataset::saveCapMapsToDataset(VectorOfVectors &capability_data, float &resolution)
 {
   if(!checkPath(this->path_))
   {
@@ -154,17 +154,17 @@ bool Hdf5Dataset::saveCapMapsToDataset(Vector &capabilityData, float &resolution
   hid_t capability_dataspace;
   this->file_ = H5Fcreate(fullpath, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   this->group_capability_ = H5Gcreate(this->file_, "/Capability", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-  const int SX = capabilityData.size();
+  const int SX = capability_data.size();
   const int SY = 10;
   hsize_t dims2[2];               // dataset dimensions
   dims2[0] = SX;
   dims2[1] = SY;
   double dset2_data[SX][SY];
-  for(int i=0;i<capabilityData.size();i++)
+  for(int i=0;i<capability_data.size();i++)
   {
-    for(int j=0;j<capabilityData[i].size();j++)
+    for(int j=0;j<capability_data[i].size();j++)
     {
-      dset2_data[i][j] = capabilityData[i][j];
+      dset2_data[i][j] = capability_data[i][j];
     }
    }
   capability_dataspace = H5Screate_simple(2, dims2, NULL);
@@ -190,7 +190,7 @@ H5P_DEFAULT);
   return 0;
 }
 
-bool Hdf5Dataset::saveReachMapsToDataset(MultiMap &Poses, Map &Spheres, float resolution)
+bool Hdf5Dataset::saveReachMapsToDataset( MultiMapPtr& poses,  MapVecDoublePtr& spheres, float resolution)
 {
   if(!checkPath(this->path_))
   {
@@ -198,22 +198,22 @@ bool Hdf5Dataset::saveReachMapsToDataset(MultiMap &Poses, Map &Spheres, float re
   }
 
   //Creating Multimap to Straight vector<vector<double> > //Can take this function to a new class
-  std::vector< std::vector< double > > poseReach;
-  for (MultiMap::iterator it = Poses.begin(); it != Poses.end(); ++it)
+  std::vector< std::vector< double > > pose_reach;
+  for (MultiMapPtr::iterator it = poses.begin(); it != poses.end(); ++it)
   {
     const std::vector<double>* sphere_coord    = it->first;
     const std::vector<double>* point_on_sphere = it->second;
-    std::vector< double > poseAndSphere(10);
-    //poseAndSphere.reserve( sphere_coord->size() + point_on_sphere->size());
+    std::vector< double > pose_and_sphere(10);
+    //pose_and_sphere.reserve( sphere_coord->size() + point_on_sphere->size());
     for (int i = 0; i < 3; i++)
       {
-        poseAndSphere[i]=((*sphere_coord)[i]);
+        pose_and_sphere[i]=((*sphere_coord)[i]);
       }
     for (int j = 0; j < 7; j++)
       {
-        poseAndSphere[3+j] = ((*point_on_sphere)[j]);
+        pose_and_sphere[3+j] = ((*point_on_sphere)[j]);
       }
-    poseReach.push_back(poseAndSphere);
+    pose_reach.push_back(pose_and_sphere);
    }
 
   const char *filepath = this->path_.c_str();
@@ -229,7 +229,7 @@ bool Hdf5Dataset::saveReachMapsToDataset(MultiMap &Poses, Map &Spheres, float re
   const hsize_t ndims = 2;
   const hsize_t ncols = 10;
 
-  int posSize = Poses.size();
+  int posSize = poses.size();
   int chunk_size;
   int PY = 10;
   if (posSize % 2)
@@ -272,7 +272,7 @@ bool Hdf5Dataset::saveReachMapsToDataset(MultiMap &Poses, Map &Spheres, float re
     {
       for (int j = 0; j < PY; j++)
       {
-        dset1_data[i][j] = poseReach[i][j];
+        dset1_data[i][j] = pose_reach[i][j];
       }
     }
   // Memory dataspace indicating size of the buffer
@@ -301,7 +301,7 @@ bool Hdf5Dataset::saveReachMapsToDataset(MultiMap &Poses, Map &Spheres, float re
     {
       for (int j = 0; j < PY; j++)
       {
-        dset1_data[i - chunk_size][j] = poseReach[i][j];
+        dset1_data[i - chunk_size][j] = pose_reach[i][j];
       }
     }
 
@@ -333,7 +333,7 @@ bool Hdf5Dataset::saveReachMapsToDataset(MultiMap &Poses, Map &Spheres, float re
   // Creating Sphere dataset
   ROS_INFO("Saving spheres in Reachability map");
   hid_t sphere_dataspace;
-  const int SX = Spheres.size();
+  const int SX = spheres.size();
   const int SY = 4;
 
   hsize_t dims2[2];  // dataset dimensions
@@ -341,15 +341,15 @@ bool Hdf5Dataset::saveReachMapsToDataset(MultiMap &Poses, Map &Spheres, float re
   dims2[1] = SY;
   double dset2_data[SX][SY];
 
-  for (Map::iterator it =  Spheres.begin(); it !=Spheres.end(); ++it)
+  for (MapVecDoublePtr::iterator it =  spheres.begin(); it !=spheres.end(); ++it)
     {
       for (int j = 0; j < SY - 1; j++)
       {
-        dset2_data[distance( Spheres.begin(), it)][j] = (*it->first)[j];
+        dset2_data[distance( spheres.begin(), it)][j] = (*it->first)[j];
       }
       for (int j = 3; j < SY; j++)
       {
-        dset2_data[distance( Spheres.begin(), it)][j] = it->second;
+        dset2_data[distance( spheres.begin(), it)][j] = it->second;
       }
     }
   sphere_dataspace = H5Screate_simple(2, dims2, NULL);
@@ -378,7 +378,7 @@ bool Hdf5Dataset::saveReachMapsToDataset(MultiMap &Poses, Map &Spheres, float re
   close();
 }
 
-bool Hdf5Dataset::h5ToVectorCap(Vector &capabilityData)
+bool Hdf5Dataset::h5ToVectorCap(VectorOfVectors &capability_data)
 {
   hsize_t dims_out[2], count[2], offset[2], dimsm[2];
   hid_t dataspace = H5Dget_space(this->capability_dataset_);
@@ -398,17 +398,18 @@ bool Hdf5Dataset::h5ToVectorCap(Vector &capabilityData)
   status = H5Dread(this->capability_dataset_, H5T_NATIVE_DOUBLE, memspace, dataspace, H5P_DEFAULT, data_out);
   for(int i=0; i<count[0]; i++)
   {
-    std::vector<double> capData(10);
+    std::vector<double> cap_data(10);
     for(int j =0; j<10; j++)
     {
-      capData[j] = data_out[i][j];
+      cap_data[j] = data_out[i][j];
     }
-    capabilityData.push_back(capData);
+    capability_data.push_back(cap_data);
   }
   return 0;
 }
 
-bool Hdf5Dataset::h5ToMultiMapPosesAndSpheres(MultiMap& PoseCol, Map& SphereCol)
+
+bool Hdf5Dataset::h5ToMultiMapPosesAndSpheres(MultiMapPtr& pose_col, MapVecDoublePtr& sphere_col)
 {
   //The process of creting typedef MultiMap is little bit tricky.
   //As the data are read from the h5 file as chuck of array, the retrieved sphere addresses comes different for every sphere
@@ -417,22 +418,22 @@ bool Hdf5Dataset::h5ToMultiMapPosesAndSpheres(MultiMap& PoseCol, Map& SphereCol)
   //Otherwise when we will be loading the dataset for visualization or other taks such as inverse map, the comparison between the coordinates of sphere dataset and
   //coordinates of spheres in Poses dataset are going to fail.
 
-  multiMap sphereAndPoses;
-  map_D sps;
-  h5ToMultiMapPoses(sphereAndPoses, sps);
+  MultiMap sphere_and_poses;
+  MapVecDouble sps;
+  h5ToMultiMapPoses(sphere_and_poses, sps);
 
-  map_D SpCol;
-  h5ToMultiMapSpheres(SpCol);
+  MapVecDouble sp_col;
+  h5ToMultiMapSpheres(sp_col);
 
- for(map_D::iterator it=sps.begin(); it!=sps.end();++it)
+ for(MapVecDouble::iterator it=sps.begin(); it!=sps.end();++it)
   {
     //const std::vector<double>* sp = &(it->first);
     std::vector<double>* sp = new std::vector<double>(3);
     (*sp)[0] = (it->first)[0];
     (*sp)[1] = (it->first)[1];
     (*sp)[2] = (it->first)[2];
-    multiMap::iterator it1;
-    for( it1= sphereAndPoses.lower_bound(it->first); it1 != sphereAndPoses.upper_bound(it->first); ++it1)
+    MultiMap::iterator it1;
+    for( it1= sphere_and_poses.lower_bound(it->first); it1 != sphere_and_poses.upper_bound(it->first); ++it1)
     {
       std::vector<double>* ps = new std::vector<double>(7);
       (*ps)[0]=(it1->second[0]);
@@ -442,24 +443,24 @@ bool Hdf5Dataset::h5ToMultiMapPosesAndSpheres(MultiMap& PoseCol, Map& SphereCol)
       (*ps)[4]=(it1->second[4]);
       (*ps)[5]=(it1->second[5]);
       (*ps)[6]=(it1->second[6]);
-       PoseCol.insert(std::make_pair(sp, ps));
+       pose_col.insert(std::make_pair(sp, ps));
       }
 
-    for (map_D::iterator it2 = SpCol.lower_bound(it->first); it2 !=SpCol.upper_bound(it->first); ++it2)
+    for (MapVecDouble::iterator it2 = sp_col.lower_bound(it->first); it2 !=sp_col.upper_bound(it->first); ++it2)
     {
-      SphereCol.insert(std::make_pair(sp, it2->second));
+      sphere_col.insert(std::make_pair(sp, it2->second));
      }
    }
 return 0;
 }
 
-bool Hdf5Dataset::h5ToMultiMapPoses(multiMap &PoseCol)
+bool Hdf5Dataset::h5ToMultiMapPoses(MultiMap& pose_col)
 {
-  map_D sphereCol;
-  h5ToMultiMapPoses(PoseCol, sphereCol);
+  MapVecDouble sphere_col;
+  h5ToMultiMapPoses(pose_col, sphere_col);
 }
 
-bool Hdf5Dataset::h5ToMultiMapPoses(multiMap &PoseCol, map_D &SphereCol)
+bool Hdf5Dataset::h5ToMultiMapPoses(MultiMap& pose_col, MapVecDouble& sphere_col)
 {
   hsize_t dims_out[2], count[2], offset[2];
   hid_t dataspace = H5Dget_space(this->poses_dataset_); /* dataspace handle */
@@ -505,24 +506,24 @@ bool Hdf5Dataset::h5ToMultiMapPoses(multiMap &PoseCol, map_D &SphereCol)
 
     for(int i=0; i<count[0]; i++)
     {
-      std::vector<double> sphereCenter(3);
+      std::vector<double> sphere_center(3);
       std::vector<double> Poses(7);
       for(int j=0; j<3;j++)
       {
-        sphereCenter[j] = data_out[i][j];
+        sphere_center[j] = data_out[i][j];
         }
       for(int k=3;k<10; k++)
       {
         Poses[k-3] = data_out[i][k];
         }
-      PoseCol.insert(std::make_pair(sphereCenter, Poses));
-      SphereCol.insert(std::make_pair(sphereCenter, double(i)));
+      pose_col.insert(std::make_pair(sphere_center, Poses));
+      sphere_col.insert(std::make_pair(sphere_center, double(i)));
       }
   }
 return 0;
 }
 
-bool Hdf5Dataset::h5ToMultiMapSpheres(map_D &SphereCol)
+bool Hdf5Dataset::h5ToMultiMapSpheres(MapVecDouble& sphere_col)
 {
   hsize_t dims_out[2], count[2], offset[2], dimsm[2];
   hid_t dataspace = H5Dget_space(this->sphere_dataset_); // dataspace handle
@@ -542,17 +543,17 @@ bool Hdf5Dataset::h5ToMultiMapSpheres(map_D &SphereCol)
   status = H5Dread(this->sphere_dataset_, H5T_NATIVE_DOUBLE, memspace, dataspace, H5P_DEFAULT, data_out);
   for (int i = 0; i < count[0]; i++)
   {
-    std::vector< double > sphereCenter(3);
+    std::vector< double > sphere_center(3);
     double ri;
     for (int j = 0; j < 3; j++)
     {
-      sphereCenter[j] = data_out[i][j];
+      sphere_center[j] = data_out[i][j];
     }
     for (int k = 3; k < 4; k++)
     {
       ri = data_out[i][k];
     }
-    SphereCol.insert(std::pair< std::vector< double >, double >(sphereCenter, ri));
+    sphere_col.insert(std::pair< std::vector< double >, double >(sphere_center, ri));
    }
   return 0;
 }
@@ -563,41 +564,44 @@ bool Hdf5Dataset::h5ToResolution(float &resolution)
   return 0;
 }
 
-bool Hdf5Dataset::loadMapsFromDataset(MultiMap &Poses, Map &Spheres, float &resolution)
+
+
+bool Hdf5Dataset::loadMapsFromDataset(MultiMapPtr& poses, MapVecDoublePtr& spheres, float &resolution)
 {
-  h5ToMultiMapPosesAndSpheres(Poses, Spheres);
+  h5ToMultiMapPosesAndSpheres(poses, spheres);
   h5ToResolution(resolution);
   close();
   return 0;
 }
 
-bool Hdf5Dataset::loadMapsFromDataset(MultiMap &Poses, Map &Spheres)
+bool Hdf5Dataset::loadMapsFromDataset(MultiMapPtr& poses, MapVecDoublePtr& spheres)
 {
-  h5ToMultiMapPosesAndSpheres(Poses, Spheres);
+  h5ToMultiMapPosesAndSpheres(poses, spheres);
   close();
   return 0;
 }
 
-bool Hdf5Dataset::loadMapsFromDataset(multiMap &Poses, map_D &Spheres)
+
+bool Hdf5Dataset::loadMapsFromDataset(MultiMap& poses, MapVecDouble& spheres)
 {
-  h5ToMultiMapPoses(Poses);
-  h5ToMultiMapSpheres(Spheres);
+  h5ToMultiMapPoses(poses);
+  h5ToMultiMapSpheres(spheres);
   close();
   return 0;
 }
 
-bool Hdf5Dataset::loadMapsFromDataset(multiMap &Poses, map_D &Spheres, float &resolution)
+bool Hdf5Dataset::loadMapsFromDataset(MultiMap& poses, MapVecDouble& spheres, float &resolution)
 {
-  h5ToMultiMapPoses(Poses);
-  h5ToMultiMapSpheres(Spheres);
+  h5ToMultiMapPoses(poses);
+  h5ToMultiMapSpheres(spheres);
   h5ToResolution(resolution);
   close();
   return 0;
 }
 
-bool Hdf5Dataset::loadCapMapFromDataset(Vector &capabilityData, float &resolution)
+bool Hdf5Dataset::loadCapMapFromDataset(VectorOfVectors &capability_data, float &resolution)
 {
-  h5ToVectorCap(capabilityData);
+  h5ToVectorCap(capability_data);
   h5ToResolution(resolution);
   close_cap();
   return 0;

@@ -18,7 +18,7 @@
 //struct stat st;
 
 typedef std::vector<std::pair< std::vector< double >, const std::vector< double >* > > MultiVector;
-typedef std::multimap< const std::vector< double >*, const std::vector< double >* > MultiMap;
+//typedef std::multimap< const std::vector< double >*, const std::vector< double >* > MultiMap;
 
 bool isFloat(std::string s)
 {
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 
   while (ros::ok())
   {
-    unsigned char maxDepth = 16;
+    unsigned char max_depth = 16;
     unsigned char minDepth = 0;
 
     // A box of radius 1 is created. It will be the size of the robot+1.5. Then the box is discretized by voxels of
@@ -98,20 +98,20 @@ int main(int argc, char **argv)
     float r = 1;
     octomap::point3d origin = octomap::point3d(0, 0, 0);  // This point will be the base of the robot
     octomap::OcTree *tree = sd.generateBoxTree(origin, r, resolution);
-    std::vector< octomap::point3d > newData;
+    std::vector< octomap::point3d > new_data;
     ROS_INFO("Creating the box and discretizing with resolution: %f", resolution);
     int sphere_count = 0;
-    for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
+    for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(max_depth), end = tree->end_leafs(); it != end; ++it)
     {
       sphere_count++;
     }
-    newData.reserve(sphere_count);
-    for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(maxDepth), end = tree->end_leafs(); it != end; ++it)
+    new_data.reserve(sphere_count);
+    for (octomap::OcTree::leaf_iterator it = tree->begin_leafs(max_depth), end = tree->end_leafs(); it != end; ++it)
     {
-      newData.push_back(it.getCoordinate());
+      new_data.push_back(it.getCoordinate());
     }
 
-    ROS_INFO("Total no of spheres now: %lu", newData.size());
+    ROS_INFO("Total no of spheres now: %lu", new_data.size());
     ROS_INFO("Please hold ON. Spheres are discretized and all of the poses are checked for Ik solutions. May take some "
              "time");
 
@@ -125,23 +125,23 @@ int main(int argc, char **argv)
 
     float radius = resolution;
 
-    std::vector< std::vector< double > > SphereCoord;
-    SphereCoord.resize( newData.size() );
+    VectorOfVectors sphere_coord;
+    sphere_coord.resize( new_data.size() );
 
-    MultiVector PoseCol;
-    PoseCol.reserve( newData.size() * 50);
+    MultiVector pose_col;
+    pose_col.reserve( new_data.size() * 50);
 
-    for (int i = 0; i < newData.size(); i++)
+    for (int i = 0; i < new_data.size(); i++)
     {
       static std::vector< geometry_msgs::Pose > pose;
-      sd.convertPointToVector(newData[i], SphereCoord[i]);
+      sd.convertPointToVector(new_data[i], sphere_coord[i]);
 
-      sd.make_sphere_poses(newData[i], radius, pose);
+      sd.make_sphere_poses(new_data[i], radius, pose);
       for (int j = 0; j < pose.size(); j++)
       {
         static std::vector< double > point_on_sphere;
         sd.convertPoseToVector(pose[j], point_on_sphere);
-        PoseCol.push_back( std::make_pair(point_on_sphere, &SphereCoord[i]));
+        pose_col.push_back( std::make_pair(point_on_sphere, &sphere_coord[i]));
       }
     }
 
@@ -152,50 +152,50 @@ int main(int argc, char **argv)
 
     // Kinematics k;
 
-    MultiMap PoseColFilter;
-    std::vector< std::vector< double > > ikSolutions;
-    ikSolutions.reserve( PoseCol.size() );
+    MultiMapPtr pose_col_filter;
+    VectorOfVectors ik_solutions;
+    ik_solutions.reserve( pose_col.size() );
 
-    for (MultiVector::iterator it = PoseCol.begin(); it != PoseCol.end(); ++it)
+    for (MultiVector::iterator it = pose_col.begin(); it != pose_col.end(); ++it)
     {
       static std::vector< double > joints(6);
       int solns;
       if (k.isIKSuccess(it->first, joints, solns))
       {
-        PoseColFilter.insert( std::make_pair( it->second, &(it->first)));
-        ikSolutions.push_back(joints);
+        pose_col_filter.insert( std::make_pair( it->second, &(it->first)));
+        ik_solutions.push_back(joints);
         // cout<<it->first[0]<<" "<<it->first[1]<<" "<<it->first[2]<<" "<<it->first[3]<<" "<<it->first[4]<<"
         // "<<it->first[5]<<" "<<it->first[6]<<endl;
       }
     }
 
-    ROS_INFO("Total number of poses: %lu", PoseCol.size());
-    ROS_INFO("Total number of reachable poses: %lu", PoseColFilter.size());
+    ROS_INFO("Total number of poses: %lu", pose_col.size());
+    ROS_INFO("Total number of reachable poses: %lu", pose_col_filter.size());
 
     // The centers of reachable spheres are stored in a map. This data will be utilized in visualizing the spheres in
     // the visualizer.
     // TODO there are several maps are implemented. We can get rid of few maps and run large loops. The complexity of
     // accessing map is Olog(n)
 
-    std::map< const std::vector< double >*, double > sphereColor;
-    std::vector< std::vector< double > > poseReach;
+    MapVecDoublePtr sphere_color;
 
-    for (MultiMap::iterator it = PoseColFilter.begin(); it != PoseColFilter.end(); ++it)
+
+    for (MultiMapPtr::iterator it = pose_col_filter.begin(); it != pose_col_filter.end(); ++it)
     {
       const std::vector<double>* sphere_coord    = it->first;
-      const std::vector<double>* point_on_sphere = it->second;
+      //const std::vector<double>* point_on_sphere = it->second;
 
       // Reachability Index D=R/N*100;
-      float d = float(PoseColFilter.count(sphere_coord)) / (PoseCol.size() / newData.size()) * 100;
-      sphereColor.insert( std::make_pair(it->first, double(d)));
+      float d = float(pose_col_filter.count(sphere_coord)) / (pose_col.size() / new_data.size()) * 100;
+      sphere_color.insert( std::make_pair(it->first, double(d)));
     }
 
-    ROS_INFO("No of spheres reachable: %lu", sphereColor.size());
+    ROS_INFO("No of spheres reachable: %lu", sphere_color.size());
 
     // Creating maps now
 //Saving map to dataset
     hdf5_dataset::Hdf5Dataset h5(filename);
-    h5.saveReachMapsToDataset(PoseColFilter, sphereColor, resolution);
+    h5.saveReachMapsToDataset(pose_col_filter, sphere_color, resolution);
 
     double dif = ros::Duration( ros::Time::now() - startit).toSec();
     ROS_INFO("Elasped time is %.2lf seconds.", dif);

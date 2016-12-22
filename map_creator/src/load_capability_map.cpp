@@ -23,9 +23,9 @@ int main(int argc, char **argv)
     hdf5_dataset::Hdf5Dataset h5(argv[1]);
     h5.open_cap();
 
-    std::vector<std::vector<double> > capData;
+    VectorOfVectors cap_data;
     float resolution;
-    h5.loadCapMapFromDataset(capData, resolution);
+    h5.loadCapMapFromDataset(cap_data, resolution);
 
     // Creating messages
 
@@ -34,20 +34,20 @@ int main(int argc, char **argv)
     cp.header.frame_id = "/base_link";
     cp.resolution = resolution;
 
-    for(std::vector<std::vector<double> >::iterator it = capData.begin(); it != capData.end(); ++it)
+    for(std::vector<std::vector<double> >::iterator it = cap_data.begin(); it != cap_data.end(); ++it)
     {
-      map_creator::capShape cpSp;
-      cpSp.identifier = (*it)[0];
-      cpSp.ri = (*it)[1];
-      cpSp.angleSFE = (*it)[2];
-      cpSp.pose.position.x = (*it)[3];
-      cpSp.pose.position.y = (*it)[4];
-      cpSp.pose.position.z = (*it)[5];
-      cpSp.pose.orientation.x = (*it)[6];
-      cpSp.pose.orientation.x = (*it)[7];
-      cpSp.pose.orientation.x = (*it)[8];
-      cpSp.pose.orientation.x = (*it)[9];
-      cp.capShapes.push_back(cpSp);
+      map_creator::capShape cp_sp;
+      cp_sp.identifier = (*it)[0];
+      cp_sp.ri = (*it)[1];
+      cp_sp.angleSFE = (*it)[2];
+      cp_sp.pose.position.x = (*it)[3];
+      cp_sp.pose.position.y = (*it)[4];
+      cp_sp.pose.position.z = (*it)[5];
+      cp_sp.pose.orientation.x = (*it)[6];
+      cp_sp.pose.orientation.x = (*it)[7];
+      cp_sp.pose.orientation.x = (*it)[8];
+      cp_sp.pose.orientation.x = (*it)[9];
+      cp.capShapes.push_back(cp_sp);
 
     }
     while (ros::ok())
