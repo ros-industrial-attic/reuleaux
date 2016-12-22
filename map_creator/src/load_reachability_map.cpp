@@ -1,15 +1,6 @@
 #include <ros/ros.h>
-
 #include "map_creator/WorkSpace.h"
 #include <map_creator/hdf5_dataset.h>
-
-#include "H5Cpp.h"
-#include <hdf5.h>
-
-#define POSES_DATASETNAME "poses_dataset"
-#define SPHERE_DATASETNAME "sphere_dataset"
-#define POSE_GROUPNAME "/Poses"
-#define SPHERE_GROUPNAME "/Spheres"
 
 int main(int argc, char **argv)
 {
@@ -33,71 +24,42 @@ int main(int argc, char **argv)
 
     int count = 0;
 
-    time_t startit, finish;
-    time(&startit);
-    const char *FILE = argv[1];
-    hid_t file, poses_group, poses_dataset, sphere_group, sphere_dataset, attr;
-    file = H5Fopen(FILE, H5F_ACC_RDONLY, H5P_DEFAULT);
+    hdf5_dataset::Hdf5Dataset h5(argv[1]);
+    h5.open();
 
-    // Poses dataset
-
-    poses_group = H5Gopen(file, POSE_GROUPNAME, H5P_DEFAULT);
-    poses_dataset = H5Dopen(poses_group, POSES_DATASETNAME, H5P_DEFAULT);
-
-    std::multimap< std::vector< double >, std::vector< double > > PoseColFilter;
-    hdf5_dataset::Hdf5Dataset hd5;
-    hd5.h5ToMultiMapPoses(poses_dataset, PoseColFilter);
-
-    // Sphere dataset
-    sphere_group = H5Gopen(file, SPHERE_GROUPNAME, H5P_DEFAULT);
-    sphere_dataset = H5Dopen(sphere_group, SPHERE_DATASETNAME, H5P_DEFAULT);
-
-    std::multimap< std::vector< double >, double > SphereCol;
-    hd5.h5ToMultiMapSpheres(sphere_dataset, SphereCol);
-
-    // Resolution Attribute
+    MultiMapPtr pose_col_filter;
+    MapVecDoublePtr sphere_col;
     float res;
-    attr = H5Aopen(sphere_dataset, "Resolution", H5P_DEFAULT);
-    herr_t ret = H5Aread(attr, H5T_NATIVE_FLOAT, &res);
-
-    // Closing resources
-    H5Aclose(attr);
-    H5Dclose(poses_dataset);
-    H5Dclose(sphere_dataset);
-    H5Gclose(poses_group);
-    H5Gclose(sphere_group);
-    H5Fclose(file);
+    h5.loadMapsFromDataset(pose_col_filter, sphere_col, res);
 
     // Creating messages
-
     map_creator::WorkSpace ws;
     ws.header.stamp = ros::Time::now();
     ws.header.frame_id = "/base_link";
     ws.resolution = res;
 
-    for (std::multimap< std::vector< double >, double >::iterator it = SphereCol.begin(); it != SphereCol.end(); ++it)
+    for (MapVecDoublePtr::iterator it = sphere_col.begin(); it != sphere_col.end(); ++it)
     {
-      map_creator::WsSphere wss;
-      wss.point.x = it->first[0];
-      wss.point.y = it->first[1];
-      wss.point.z = it->first[2];
-      wss.ri = it->second;
+       map_creator::WsSphere wss;
+       wss.point.x = (*it->first)[0];
+       wss.point.y = (*it->first)[1];
+       wss.point.z = (*it->first)[2];
+       wss.ri = it->second;
 
-      std::multimap< std::vector< double >, std::vector< double > >::iterator it1;
-      for (it1 = PoseColFilter.lower_bound(it->first); it1 != PoseColFilter.upper_bound(it->first); ++it1)
-      {
-        geometry_msgs::Pose pp;
-        pp.position.x = it1->second[0];
-        pp.position.y = it1->second[1];
-        pp.position.z = it1->second[2];
-        pp.orientation.x = it1->second[3];
-        pp.orientation.y = it1->second[4];
-        pp.orientation.z = it1->second[5];
-        pp.orientation.w = it1->second[6];
-        wss.poses.push_back(pp);
+       for (MultiMapPtr::iterator it1 = pose_col_filter.lower_bound(it->first); it1 != pose_col_filter.upper_bound(it->first); ++it1)
+       {
+          geometry_msgs::Pose pp;
+          pp.position.x = it1->second->at(0);
+          pp.position.y = it1->second->at(1);
+          pp.position.z = it1->second->at(2);
+          pp.orientation.x = it1->second->at(3);
+          pp.orientation.y = it1->second->at(4);
+          pp.orientation.z = it1->second->at(5);
+          pp.orientation.w = it1->second->at(6);
+          wss.poses.push_back(pp);
+        }
+        ws.WsSpheres.push_back(wss);
       }
-      ws.WsSpheres.push_back(wss);
-    }
 
     while (ros::ok())
     {

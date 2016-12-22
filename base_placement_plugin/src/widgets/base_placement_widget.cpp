@@ -599,34 +599,31 @@ void BasePlacementWidget::loadReachabilityFile()
 
     std::string fileh5 = fileName.toStdString();
     const char* FILE = fileh5.c_str();
-    hid_t file, poses_group, poses_dataset, sphere_group, sphere_dataset, attr;
-    file = H5Fopen(FILE, H5F_ACC_RDONLY, H5P_DEFAULT);
 
-    // Poses dataset
-
-    poses_group = H5Gopen(file, "/Poses", H5P_DEFAULT);
-    poses_dataset = H5Dopen(poses_group, "poses_dataset", H5P_DEFAULT);
-
-    std::multimap< std::vector< double >, std::vector< double > > PoseColFilter;
-    hdf5_dataset::Hdf5Dataset hd5;
-    hd5.h5ToMultiMapPoses(poses_dataset, PoseColFilter);
-
-    // Sphere dataset
-    sphere_group = H5Gopen(file, "/Spheres", H5P_DEFAULT);
-    sphere_dataset = H5Dopen(sphere_group, "sphere_dataset", H5P_DEFAULT);
-    std::multimap< std::vector< double >, double > SphereCol;
-    hd5.h5ToMultiMapSpheres(sphere_dataset, SphereCol);
-
-    // Resolution Attribute
+    MultiMap pose_col_filter;
+    MapVecDouble sp;
     float res;
-    attr = H5Aopen(sphere_dataset, "Resolution", H5P_DEFAULT);
-    herr_t ret = H5Aread(attr, H5T_NATIVE_FLOAT, &res);
 
-    // just checking
-    // ROS_INFO("Size of poses dataset: %lu", PoseColFilter.size());
-    // ROS_INFO("Size of Sphere dataset: %lu", SphereCol.size());
+    hdf5_dataset::Hdf5Dataset h5file(FILE);
+    h5file.open();
+    h5file.loadMapsFromDataset(pose_col_filter, sp, res);
 
-    Q_EMIT reachabilityData_signal(PoseColFilter, SphereCol, res);
+
+    std::multimap< std::vector< double >, double > sphere_col;
+    for(MapVecDouble::iterator it= sp.begin(); it!=sp.end();++it)
+    {
+      std::vector<double> sphere_coord(3);
+      sphere_coord[0] = it->first[0];
+      sphere_coord[1] = it->first[1];
+      sphere_coord[2] = it->first[2];
+      sphere_col.insert(std::pair<std::vector<double>, double> (sphere_coord, it->second));
+    }
+
+    //Just checking
+   // ROS_INFO("Size of poses dataset: %lu", PoseColFilter.size());
+   //ROS_INFO("Size of Sphere dataset: %lu", SphereCol.size());
+
+    Q_EMIT reachabilityData_signal(pose_col_filter, sphere_col, res);
   }
   ui_.tabWidget->setEnabled(true);
   ui_.progressBar->hide();
