@@ -486,15 +486,17 @@ void SphereDiscretization::findOptimalPosebyPCA(const std::vector< geometry_msgs
 
   int i = test.maxCoeff(&idx);
   Eigen::Vector4d vector = eig.eigenvectors().col(idx).real();
+  tf2::Quaternion final_base_quat(vector[0], vector[0], vector[0], vector[0]);
+  final_base_quat.normalize();
 
   final_base_pose.position.x =0;
   final_base_pose.position.y =0;
   final_base_pose.position.z =0;
 
-  final_base_pose.orientation.x = vector[0];
-  final_base_pose.orientation.y = vector[1];
-  final_base_pose.orientation.z = vector[2];
-  final_base_pose.orientation.w = vector[3];
+  final_base_pose.orientation.x = final_base_quat[0];
+  final_base_pose.orientation.y = final_base_quat[1];
+  final_base_pose.orientation.z = final_base_quat[2];
+  final_base_pose.orientation.w =final_base_quat[3];
 }
 
 bool SphereDiscretization::areQuaternionClose(const tf2::Quaternion& q1, const tf2::Quaternion& q2)

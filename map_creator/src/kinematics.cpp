@@ -186,7 +186,7 @@ bool Kinematics::isIKSuccess(const std::vector< double >& pose, std::vector< dou
   else
   {
     // cout<<"Found ik solutions: "<< num_of_solutions<<endl;
-    const IkSolutionBase< IKREAL_TYPE >& sol = solutions.GetSolution(1);
+    const IkSolutionBase< IKREAL_TYPE >& sol = solutions.GetSolution(0);
     int this_sol_free_params = (int)sol.GetFree().size();
     if( this_sol_free_params <= 0){
       sol.GetSolution(&joints[0], NULL);
@@ -225,7 +225,7 @@ const std::string Kinematics::getRobotName()
 }
 
 bool Kinematics::isIkSuccesswithTransformedBase(const geometry_msgs::Pose& base_pose,
-                                                const geometry_msgs::Pose& grasp_pose, int& numOfSolns)
+                                                const geometry_msgs::Pose& grasp_pose, std::vector<double>& joint_soln,int& numOfSolns)
 {
   // Creating a transformation out of base pose
   tf2::Vector3 base_vec(base_pose.position.x, base_pose.position.y, base_pose.position.z);
@@ -270,12 +270,17 @@ bool Kinematics::isIkSuccesswithTransformedBase(const geometry_msgs::Pose& base_
 
   // Check the new grasp_pose for Ik
   Kinematics k;
-  std::vector< double > joints;
+  //std::vector< double > joints;
 
-  joints.resize(6);
-  if (k.isIKSuccess(new_grasp_pos, joints, numOfSolns))
+  //joints.resize(6);
+  if (k.isIKSuccess(new_grasp_pos,  joint_soln, numOfSolns))
     return true;
   else
     return false;
 }
+
+
+
+
+
 };

@@ -1,14 +1,6 @@
 #include <ros/ros.h>
-
 #include "map_creator/capability.h"
 #include <map_creator/hdf5_dataset.h>
-
-#include "H5Cpp.h"
-#include <hdf5.h>
-
-#define CAP_DATASETNAME "capability_dataset"
-#define CAP_GROUPNAME "/Capability"
-#define RANK_OUT 2
 
 int main(int argc, char **argv)
 {
@@ -26,58 +18,38 @@ int main(int argc, char **argv)
     ros::Publisher workspace_pub = n.advertise< map_creator::capability >("capability_map", 1);
 
     ros::Rate loop_rate(10);
+    int count = 0;
 
-    time_t startit, finish;
-    time(&startit);
-    const char *FILE = argv[1];
-    hid_t file, cap_group, cap_dataset, attr;
-    file = H5Fopen(FILE, H5F_ACC_RDONLY, H5P_DEFAULT);
+    hdf5_dataset::Hdf5Dataset h5(argv[1]);
+    h5.open_cap();
 
-    // capability dataset
-
-    cap_group = H5Gopen(file, CAP_GROUPNAME, H5P_DEFAULT);
-    cap_dataset = H5Dopen(cap_group, CAP_DATASETNAME, H5P_DEFAULT);
-    std::multimap< std::vector< double >, std::vector< double > > sphereColor;
-    hdf5_dataset::Hdf5Dataset hd5;
-    hd5.h5ToMultiMapCap(cap_dataset, sphereColor);
-
-    // Resolution Attribute
-    float res;
-    attr = H5Aopen(cap_dataset, "Resolution", H5P_DEFAULT);
-    herr_t ret = H5Aread(attr, H5T_NATIVE_FLOAT, &res);
-
-    // Closing resources
-    H5Aclose(attr);
-    H5Dclose(cap_dataset);
-    H5Gclose(cap_group);
-    H5Fclose(file);
+    VectorOfVectors cap_data;
+    float resolution;
+    h5.loadCapMapFromDataset(cap_data, resolution);
 
     // Creating messages
 
     map_creator::capability cp;
     cp.header.stamp = ros::Time::now();
     cp.header.frame_id = "/base_link";
-    cp.resolution = res;
+    cp.resolution = resolution;
 
-    for (std::multimap< std::vector< double >, std::vector< double > >::iterator it = sphereColor.begin(); it != sphereColor.end();
-         ++it)
+    for(std::vector<std::vector<double> >::iterator it = cap_data.begin(); it != cap_data.end(); ++it)
     {
-      map_creator::capShape cpSp;
-      cpSp.identifier = it->second[0];
-      cpSp.ri = it->second[1];
-      cpSp.angleSFE = it->second[2];
-      cpSp.pose.position.x = it->first[0];
-      cpSp.pose.position.y = it->first[1];
-      cpSp.pose.position.z = it->first[2];
-      cpSp.pose.orientation.x = it->first[3];
-      cpSp.pose.orientation.y = it->first[4];
-      cpSp.pose.orientation.z = it->first[5];
-      cpSp.pose.orientation.w = it->first[6];
-      cp.capShapes.push_back(cpSp);
+      map_creator::capShape cp_sp;
+      cp_sp.identifier = (*it)[0];
+      cp_sp.ri = (*it)[1];
+      cp_sp.angleSFE = (*it)[2];
+      cp_sp.pose.position.x = (*it)[3];
+      cp_sp.pose.position.y = (*it)[4];
+      cp_sp.pose.position.z = (*it)[5];
+      cp_sp.pose.orientation.x = (*it)[6];
+      cp_sp.pose.orientation.x = (*it)[7];
+      cp_sp.pose.orientation.x = (*it)[8];
+      cp_sp.pose.orientation.x = (*it)[9];
+      cp.capShapes.push_back(cp_sp);
+
     }
-
-    int count = 0;
-
     while (ros::ok())
     {
       workspace_pub.publish(cp);
