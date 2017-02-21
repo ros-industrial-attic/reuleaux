@@ -78,11 +78,15 @@ void AddWayPoint::onInitialize()
           SLOT(setAddPointUIStartPos(const tf::Transform)));
   connect(place_base, SIGNAL(basePlacementProcessStarted()), widget_, SLOT(PlaceBaseStartedHandler()));
   connect(place_base, SIGNAL(basePlacementProcessFinished()), widget_, SLOT(PlaceBaseFinishedHandler()));
-  connect(place_base, SIGNAL(basePlacementProcessCompleted()), widget_, SLOT(PlaceBaseCompleted_slot()));
+  connect(place_base, SIGNAL(basePlacementProcessCompleted(double)), widget_, SLOT(PlaceBaseCompleted_slot(double)));
   connect(place_base, SIGNAL(sendBasePlaceMethods_signal(std::vector< std::string >)), widget_,
           SLOT(getBasePlacePlanMethod(std::vector< std::string >)));
   connect(place_base, SIGNAL(sendOuputType_signal(std::vector< std::string >)), widget_,
           SLOT(getOutputType(std::vector< std::string >)));
+  connect(place_base, SIGNAL(sendGroupType_signal(std::vector< std::string >)), widget_,
+          SLOT(getRobotGroups(std::vector< std::string >)));
+
+
 
   // Widget to place base
   connect(widget_, SIGNAL(basePlacementParamsFromUI_signal(int, int)), place_base, SLOT(setBasePlaceParams(int, int)));
@@ -94,6 +98,9 @@ void AddWayPoint::onInitialize()
   connect(widget_, SIGNAL(clearUnionMap_signal(bool)), place_base, SLOT(clearUnionMap(bool)));
   connect(widget_, SIGNAL(SendSelectedMethod(int)), place_base, SLOT(getSelectedMethod(int)));
   connect(widget_, SIGNAL(SendSelectedOpType(int)), place_base, SLOT(getSelectedOpType(int)));
+  connect(widget_, SIGNAL(SendSelectedRobotGroup(int)), place_base, SLOT(getSelectedRobotGroup(int)));
+  connect(widget_, SIGNAL(SendShowUmodel(bool)), place_base, SLOT(getShowUreachModels(bool)));
+  connect(widget_, SIGNAL(SendBasePoses(std::vector<geometry_msgs::Pose>)), place_base, SLOT(getBasePoses(std::vector<geometry_msgs::Pose>)));
 
   // Widget to this
 
@@ -104,6 +111,8 @@ void AddWayPoint::onInitialize()
           SLOT(pointPoseUpdated(const tf::Transform&, const char*)));
   connect(widget_, SIGNAL(saveToFileBtn_press()), this, SLOT(saveWayPointsToFile()));
   connect(widget_, SIGNAL(clearAllPoints_signal()), this, SLOT(clearAllPointsRViz()));
+
+
 
   // This to widget
   connect(this, SIGNAL(addPointRViz(const tf::Transform&, const int)), widget_,

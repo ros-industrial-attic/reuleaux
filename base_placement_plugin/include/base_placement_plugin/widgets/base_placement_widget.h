@@ -14,6 +14,8 @@
 #include <ui_base_placement_widget.h>
 
 #include <base_placement_plugin/add_way_point.h>
+#include<base_placement_plugin/add_robot_base.h>
+
 
 #include <QWidget>
 #include <QTimer>
@@ -51,7 +53,7 @@ namespace widgets
          This Class inherits from the QWidget superclass.
          The concept of the RQT widget is to add the same possabilities as the UI from the RViz enviroment and enabling
  simultanious communication betweet the RViz Enviroment and the RQT GUI.
- *  \author    Risto Kojcev
+ *  \author    Abhijit Makhal
  */
 
 class BasePlacementWidget : public QWidget
@@ -77,8 +79,14 @@ protected:
   //! Definition of an abstract data model.
   QStandardItemModel* pointDataModel;
 
+  QObject* add_robot;
+
+
+
+
   //! Bool value to show/unshow map
   bool show_union_map_;
+  bool show_umodels_;
 
 private:
   QStringList pointList;
@@ -115,6 +123,15 @@ protected Q_SLOTS:
   //! Send a signal to clear the union map
   void clearUnionMapFromUI();
 
+  //! Send a signal if the user wants to start base placement by intution
+  void startUserIntution();
+
+  //!receive the base base waypoints and send them to place base
+  void getWaypoints(std::vector<geometry_msgs::Pose> base_poses);
+
+
+
+
   //! Slot connected to a clear all points button click.
   void clearAllPoints_slot();
   //! Set the start pose of the User Interactive Marker to correspond to the loaded robot base frame.
@@ -127,15 +144,19 @@ protected Q_SLOTS:
   //! Sending base placement parametes
   void sendBasePlacementParamsFromUI();
   //! Set a message showing the process is completed
-  void PlaceBaseCompleted_slot();
+  void PlaceBaseCompleted_slot(double score);
 
   //! Set the Method name ComboBox
   void getBasePlacePlanMethod(std::vector< std::string > methods);
   //! Set the ouput type name in the ComboBox
   void getOutputType(std::vector< std::string > op_types);
+  //! Set the ouput type name in the ComboBox
+  void getRobotGroups(std::vector< std::string > groups);
 
   void selectedMethod(int index);
   void selectedOuputType(int op_index);
+  void selectedRobotGroup(int index);
+  void showUreachModels();
 
 Q_SIGNALS:
 
@@ -165,6 +186,13 @@ Q_SIGNALS:
   void SendSelectedMethod(int index);
   //! Sending selected ouput type
   void SendSelectedOpType(int op_index);
+  //! Sending selected robot group
+  void SendSelectedRobotGroup(int index);
+  //! Sending selected umodel showing method
+  void SendShowUmodel(bool umodel);
+  //!Sending baseposes selected by user
+  void SendBasePoses(std::vector<geometry_msgs::Pose>);
+
 };
 }
 
