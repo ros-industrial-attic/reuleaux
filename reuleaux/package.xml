@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package>
+  <name>reuleaux</name>
+  <version>0.0.0</version>
+  <description>reuleaux metapackage</description>
+  <maintainer email="makhabhi@isu.edu">Abhijit Makhal</maintainer>
+  <author email="makhabhi@isu.edu">Abhijit Makhal</author>
+  <license>Apache 2.0</license>
+  <url type="website">http://wiki.ros.org/reuleaux</url>
+  <url type="repository">https://github.com/ros-industrial-consortium/reuleaux</url>
+  <url type="bugtracker">https://github.com/ros-industrial-consortium/reuleaux/issues</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>base_placement_plugin</run_depend>
+  <run_depend>map_creator</run_depend>
+  <run_depend>workspace_visualization</run_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
