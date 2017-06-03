@@ -85,7 +85,6 @@ add_dependencies(load_capability_map ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catki
 target_link_libraries(load_capability_map  hdf5_dataset ${catkin_LIBRARIES})
 
 
-
 if(CATKIN_ENABLE_TESTING)
   catkin_add_gtest(utest test/utest.cpp)
   target_link_libraries(utest sphere_discretization ${catkin_LIBRARIES})
