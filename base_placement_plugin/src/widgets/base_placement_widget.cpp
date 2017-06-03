@@ -104,7 +104,7 @@ void BasePlacementWidget::showUnionMapFromUI()
 
 void BasePlacementWidget::getRobotGroups(std::vector<std::string> groups)
 {
-  ROS_INFO("Getting the robot groups");
+  //ROS_INFO("Getting the robot groups");
   int robot_group = groups.size();
 
   disconnect(ui_.combo_robotModel, SIGNAL(currentIndexChanged(int)), this, SLOT(selectedRobotGroup(int)));

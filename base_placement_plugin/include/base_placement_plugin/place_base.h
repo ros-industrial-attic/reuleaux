@@ -5,6 +5,7 @@
 
 #include <pluginlib/class_loader.h>
 #include <std_msgs/String.h>
+#include<base_placement_plugin/create_marker.h>
 
 #include<moveit/planning_scene_monitor/planning_scene_monitor.h>
 #include<moveit/move_group_interface/move_group.h>
@@ -159,7 +160,8 @@ protected:
   double calculateScoreForRobotBase(std::vector<geometry_msgs::Pose>& grasp_poses, std::vector<geometry_msgs::Pose>& base_poses);
   double calculateScoreForArmBase(std::vector<geometry_msgs::Pose>& grasp_poses, std::vector<geometry_msgs::Pose>& base_poses);
 
-  void loadRobotModel();
+  bool loadRobotModel();
+  bool checkforRobotModel();
 
   void getRobotGroups(std::vector<std::string>& groups);
 
@@ -208,6 +210,9 @@ protected:
 
   //show unreachable models
   bool show_ureach_models_;
+
+
+  CreateMarker* mark_;
 };
 
 #endif  // PLACE_BASE_H_

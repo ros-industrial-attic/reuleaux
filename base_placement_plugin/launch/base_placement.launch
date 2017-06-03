@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <launch>
 
-<arg name = "moveit_pkg" default="ur5_moveit_config"/>
+<arg name = "moveit_pkg" default="motoman_moveit_config"/>
 
 <!--Launch moveit required pkgs for your robot-->
 <include file="$(find base_placement_plugin)/launch/moveit_pkgs.launch">

@@ -22,18 +22,16 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Vector3.h>
 
-#include<base_placement_plugin/create_marker.h>
+
 #include<visualization_msgs/InteractiveMarker.h>
 #include<interactive_markers/interactive_marker_server.h>
-
-
-
 
 
 PlaceBase::PlaceBase(QObject *parent)
 {
   init();
 }
+
 PlaceBase::~PlaceBase()
 {
 }
@@ -51,9 +49,6 @@ void PlaceBase::BasePlacementHandler(std::vector< geometry_msgs::Pose > waypoint
   ROS_INFO("Starting concurrent process for Base Placement");
   QFuture< void > future = QtConcurrent::run(this, &PlaceBase::findbase, waypoints);
 }
-
-
-
 
 void PlaceBase::initRvizDone()
 {
@@ -101,6 +96,12 @@ void PlaceBase::getSelectedRobotGroup(int group_index)
   */
   selected_group_ = group_names_[group_index];
   ROS_INFO_STREAM("Selected Group: "<<group_names_[group_index]);
+  mark_ = new CreateMarker(selected_group_);
+  if(!mark_->checkEndEffector())
+  {
+    ROS_ERROR_STREAM("Is your selected group is a manipulator?? ");
+    delete mark_;
+  }
 }
 
 void PlaceBase::getSelectedMethod(int index)
@@ -111,32 +112,11 @@ void PlaceBase::getSelectedMethod(int index)
   ROS_INFO_STREAM("selected_method: " << method_names_[index]);
   if(index == 3 || index==4)
   {
-    if(!robot_model_)
+    if(!checkforRobotModel())
     {
-      group_names_.clear();
-      getRobotGroups(group_names_);
-      Q_EMIT sendGroupType_signal(group_names_);
+      ROS_ERROR_STREAM("The base placement method you selected needs robot model to be loaded.");
     }
-   }
-
-}
-
-void PlaceBase::getBasePoses(std::vector<geometry_msgs::Pose> base_poses)
-{
-  final_base_poses_user=base_poses;
-}
-
-void PlaceBase::loadRobotModel()
-{
-  robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
-  robot_model_ = robot_model_loader.getModel();
-}
-
-void PlaceBase::getRobotGroups(std::vector<std::string> &groups)
-{
-  loadRobotModel();
-  groups = robot_model_->getJointModelGroupNames();
-  ROS_INFO("Please select your manipulator group. ");
+  }
 }
 
 void PlaceBase::getSelectedOpType(int op_index)
@@ -147,15 +127,44 @@ void PlaceBase::getSelectedOpType(int op_index)
   ROS_INFO_STREAM("selected visualization method: " << output_type_[op_index]);
   if(selected_op_type_==1 || selected_op_type_==2)
   {
-    if(!robot_model_)
+    if(!checkforRobotModel())
+    {
+      ROS_ERROR_STREAM("The visualization method you selected needs robot model to be loaded.");
+    }
+  }
+}
+
+
+bool PlaceBase::checkforRobotModel()
+{
+  if(!robot_model_)
+  {
+    if(loadRobotModel())
     {
       group_names_.clear();
-      ROS_INFO("Sending the robot groups list");
-      getRobotGroups(group_names_);
+      group_names_ = robot_model_->getJointModelGroupNames();
+      //ROS_INFO("Sending the robot groups list");
       Q_EMIT sendGroupType_signal(group_names_);
+      ROS_INFO("Please select your manipulator group. ");
+      return true;
     }
+   }
+  else
+    return true;
+}
 
-  }
+bool PlaceBase::loadRobotModel()
+{
+  robot_model_loader::RobotModelLoader robot_model_loader("robot_description");
+  if(robot_model_loader.getModel() ==NULL)
+    return false;
+  else
+    robot_model_ = robot_model_loader.getModel();
+}
+
+void PlaceBase::getBasePoses(std::vector<geometry_msgs::Pose> base_poses)
+{
+  final_base_poses_user=base_poses;
 }
 
 void PlaceBase::setBasePlaceParams(int base_loc_size, int high_score_sp)
@@ -416,12 +425,6 @@ bool PlaceBase::findbase(std::vector< geometry_msgs::Pose > grasp_poses)
 
       if(selected_method_ == 3)
       {
-        if(selected_op_type_==1)
-        {
-          ROS_ERROR_STREAM("You have selected your method as vertical robot model and visualization as robot arm. "
-                           "Please select robot model as your visualization method");
-          //return false;
-        }
         transformToRobotbase(PoseColFilter, robot_PoseColfilter);
         sd.associatePose(baseTrnsCol, grasp_poses, robot_PoseColfilter, res);
         ROS_INFO("Size of baseTrnsCol dataset: %lu", baseTrnsCol.size());
@@ -430,12 +433,6 @@ bool PlaceBase::findbase(std::vector< geometry_msgs::Pose > grasp_poses)
 
       else
       {
-        if(selected_op_type_==2)
-        {
-          ROS_ERROR_STREAM("You have selected visualization method as robot model and all the transforms are at manipulator base."
-                           " Please select manipulator as visualization method ");
-          //return false;
-        }
         sd.associatePose(baseTrnsCol, grasp_poses, PoseColFilter, res);
         ROS_INFO("Size of baseTrnsCol dataset: %lu", baseTrnsCol.size());
         createSpheres(baseTrnsCol, sphereColor, highScoreSp, false);
@@ -510,11 +507,11 @@ void PlaceBase::BasePlaceMethodHandler()
       findBaseByVerticalRobotModel();
       break;
     }
-  case 4:
-  {
-    findBaseByUserIntuition();
-    break;
-  }
+   case 4:
+   {
+      findBaseByUserIntuition();
+      break;
+   }
   }
 }
 
@@ -547,12 +544,10 @@ void PlaceBase::OuputputVizHandler(std::vector< geometry_msgs::Pose > po)
 void PlaceBase::findBaseByUserIntuition()
 {
   ROS_INFO("Finding optimal base pose by user intuition.");
-
   double s = calculateScoreForRobotBase(GRASP_POSES_, final_base_poses_user);
   score_ = s;
   final_base_poses = final_base_poses_user;
 }
-
 
 void PlaceBase::findBaseByVerticalRobotModel()
 {
@@ -690,58 +685,6 @@ void PlaceBase::findBaseByGraspReachabilityScore()
     score_ = s;
     final_base_poses = pose_scores;
   }
-  /*ROS_INFO("Finding optimal base pose by GraspReachabilityScore.");
-  sphere_discretization::SphereDiscretization sd;
-  kinematics::Kinematics k;
-
-  std::vector< geometry_msgs::Pose > probBasePoses;
-
-  int numofSp = HIGH_SCORE_SP_;  // From how many spheres we are collecting all the poses
-  for (int i = 0; i < numofSp; ++i)
-  {
-    std::multimap< std::vector< double >, std::vector< double > >::iterator it;
-    for (it = baseTrnsCol.lower_bound(highScoreSp[i]); it != baseTrnsCol.upper_bound(highScoreSp[i]); ++it)
-    {
-      geometry_msgs::Pose pp;
-      sd.convertVectorToPose(it->second, pp);
-      probBasePoses.push_back(pp);
-    }
-  }
-
-  ROS_INFO_STREAM("Size of Probable Base poses: " << probBasePoses.size() << " with Spheres: " << numofSp);
-
-  std::multiset< std::pair< int, std::vector< double > > > basePoseWithHits;
-  for (int i = 0; i < probBasePoses.size(); ++i)
-  {
-    int numofHits = 0;
-    for (int j = 0; j < GRASP_POSES_.size(); ++j)
-    {
-      int nsolns = 0;
-      std::vector<double> joint_solns;
-      numofHits += k.isIkSuccesswithTransformedBase(probBasePoses[i], GRASP_POSES_[j],joint_solns, nsolns);
-    }
-    std::vector< double > baseP;
-    sd.convertPoseToVector(probBasePoses[i], baseP);
-    basePoseWithHits.insert(std::pair< int, std::vector< double > >(numofHits, baseP));
-  }
-  std::vector< geometry_msgs::Pose > final_base_loc;
-  for (std::multiset< std::pair< int, std::vector< double > > >::iterator it = basePoseWithHits.begin(); it != basePoseWithHits.end();
-       ++it)
-  {
-    if ((it->first) >= GRASP_POSES_.size())
-    {
-      geometry_msgs::Pose final_base;
-      sd.convertVectorToPose(it->second, final_base);
-      final_base_loc.push_back(final_base);
-    }
-  }
-  ROS_INFO_STREAM("Poses that have optimal base location: " << final_base_loc.size());
-  if (final_base_loc.size() < BASE_LOC_SIZE_)
-    ROS_ERROR_STREAM("The map you have provided is not suitable for base placement. Please provide a valid map.");
-  for (int i = 0; i < BASE_LOC_SIZE_; ++i)
-  {
-    final_base_poses.push_back(final_base_loc[i]);
-  }*/
 }
 
 void PlaceBase::findBaseByIKSolutionScore()
@@ -798,61 +741,6 @@ void PlaceBase::findBaseByIKSolutionScore()
     score_ = s;
     final_base_poses = pose_scores;
   }
-  /*ROS_INFO("Finding optimal base pose by GraspReachabilityScore.");
-  sphere_discretization::SphereDiscretization sd;
-  kinematics::Kinematics k;
-
-  std::vector< geometry_msgs::Pose > probBasePoses;
-  int numofSp = HIGH_SCORE_SP_;  // From how many spheres we are collecting all the poses
-  for (int i = 0; i < numofSp; ++i)
-  {
-    std::multimap< std::vector< double >, std::vector< double > >::iterator it;
-    for (it = baseTrnsCol.lower_bound(highScoreSp[i]); it != baseTrnsCol.upper_bound(highScoreSp[i]); ++it)
-    {
-      geometry_msgs::Pose pp;
-      sd.convertVectorToPose(it->second, pp);
-      probBasePoses.push_back(pp);
-    }
-  }
-
-  ROS_INFO("Size of Probable Base poses: %lu with %d Spheres", probBasePoses.size(), numofSp);
-  // ROS_INFO_STREAM("Size of Probable Base poses: "<<probBasePoses.size());
-  // ROS_INFO_STREAM(" with Spheres: "<<numofSp);
-  std::multiset< std::pair< double, std::vector< double > > > basePoseWithHits;
-  int max_solns = GRASP_POSES_.size() * 8;
-  int min_solns = 0;
-  for (int i = 0; i < probBasePoses.size(); ++i)
-  {
-    int numofHits = 0;
-    int solns = 0;
-    for (int j = 0; j < GRASP_POSES_.size(); ++j)
-    {
-      int nsolns = 0;
-      std::vector<double> joint_solns;
-      numofHits += k.isIkSuccesswithTransformedBase(probBasePoses[i], GRASP_POSES_[j],joint_solns, nsolns);
-      solns += nsolns;
-    }
-    std::vector< double > baseP;
-    sd.convertPoseToVector(probBasePoses[i], baseP);
-    double basePlaceScore = (double(solns) - double(min_solns)) / (double(max_solns) - double(min_solns));
-    basePoseWithHits.insert(std::pair< double, std::vector< double > >(basePlaceScore, baseP));
-  }
-  std::vector< geometry_msgs::Pose > final_base_loc;
-  for (std::multiset< std::pair< double, std::vector< double > > >::iterator it = basePoseWithHits.begin();
-       it != basePoseWithHits.end(); ++it)
-  {
-    geometry_msgs::Pose final_base;
-    sd.convertVectorToPose(it->second, final_base);
-    final_base_loc.push_back(final_base);
-  }
-
-  ROS_INFO_STREAM("Poses that have optimal base location: " << final_base_loc.size());
-  if (final_base_loc.size() < BASE_LOC_SIZE_)
-    ROS_ERROR_STREAM("The map you have provided is not suitable for base placement. Please provide a valid map.");
-  for (int i = 0; i < BASE_LOC_SIZE_; ++i)
-  {
-    final_base_poses.push_back(final_base_loc[i]);
-  }*/
 }
 
 void PlaceBase::showBaseLocationsbyArrow(std::vector< geometry_msgs::Pose > po)
@@ -930,7 +818,6 @@ void PlaceBase::showBaseLocationsbyArmModel(std::vector< geometry_msgs::Pose > p
 {
 
   ROS_INFO("Showing Base Locations by Arm Model:");
-  sphere_discretization::SphereDiscretization sd;
   kinematics::Kinematics k;
 
   boost::shared_ptr<interactive_markers::InteractiveMarkerServer> imServer;
@@ -939,8 +826,6 @@ void PlaceBase::showBaseLocationsbyArmModel(std::vector< geometry_msgs::Pose > p
   imServer->applyChanges();
 
   std::vector<visualization_msgs::InteractiveMarker> iMarkers;
-
-  //std::multimap <std::vector<double>, geometry_msgs::Pose >base_pose_joints;
   BasePoseJoint base_pose_joints;
   for(int i=0;i<po.size();i++)
   {
@@ -953,9 +838,7 @@ void PlaceBase::showBaseLocationsbyArmModel(std::vector< geometry_msgs::Pose > p
       base_pose_joints.insert(myPair);
     }
   }
-  //Create object with manipulator name
-  CreateMarker mark(selected_group_);
-  mark.makeArmMarker(base_pose_joints, iMarkers, show_ureach_models_);
+  mark_->makeArmMarker(base_pose_joints, iMarkers, show_ureach_models_);
   for(int i=0;i<iMarkers.size();i++)
     {
          imServer->insert(iMarkers[i]);
@@ -991,9 +874,7 @@ void PlaceBase::showBaseLocationsbyRobotModel(std::vector<geometry_msgs::Pose> p
       }
   }
 
-  //Create object with manipulator name
-  CreateMarker mark(selected_group_);
-  mark.makeRobotMarker(base_pose_joints, iMarkers, show_ureach_models_);
+  mark_->makeRobotMarker(base_pose_joints, iMarkers, show_ureach_models_);
   for(int i=0;i<iMarkers.size();i++)
     {
          imServer->insert(iMarkers[i]);
