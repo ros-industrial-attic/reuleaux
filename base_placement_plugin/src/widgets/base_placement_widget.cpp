@@ -17,6 +17,7 @@ BasePlacementWidget::BasePlacementWidget(std::string ns) : param_ns_(ns)
 
   */
   init();
+  show_umodels_ = false;
 }
 BasePlacementWidget::~BasePlacementWidget()
 {
@@ -76,10 +77,49 @@ void BasePlacementWidget::init()
   connect(ui_.btn_SavePath, SIGNAL(clicked()), this, SLOT(savePointsToFile()));
   connect(ui_.btn_ClearAllPoints, SIGNAL(clicked()), this, SLOT(clearAllPoints_slot()));
 
+
   // connect(ui_.btn_moveToHome,SIGNAL(clicked()),this,SLOT(moveToHomeFromUI()));
 
   connect(ui_.combo_planGroup, SIGNAL(currentIndexChanged(int)), this, SLOT(selectedMethod(int)));
   connect(ui_.combo_opGroup, SIGNAL(currentIndexChanged(int)), this, SLOT(selectedOuputType(int)));
+  connect(ui_.combo_robotModel, SIGNAL(currentIndexChanged(int)), this, SLOT(selectedRobotGroup(int)));
+  connect(ui_.show_umodel_checkBox,SIGNAL(stateChanged(int)), this, SLOT(showUreachModels()));
+}
+
+void BasePlacementWidget::showUreachModels()
+{
+  if(show_umodels_)
+    show_umodels_=false;
+  else
+    show_umodels_ = true;
+  Q_EMIT SendShowUmodel(show_umodels_);
+}
+
+
+void BasePlacementWidget::showUnionMapFromUI()
+{
+  show_union_map_ = true;
+  Q_EMIT showUnionMap_signal(show_union_map_);
+}
+
+void BasePlacementWidget::getRobotGroups(std::vector<std::string> groups)
+{
+  //ROS_INFO("Getting the robot groups");
+  int robot_group = groups.size();
+
+  disconnect(ui_.combo_robotModel, SIGNAL(currentIndexChanged(int)), this, SLOT(selectedRobotGroup(int)));
+  ui_.combo_robotModel->clear();
+  connect(ui_.combo_robotModel, SIGNAL(currentIndexChanged(int)), this, SLOT(selectedRobotGroup(int)));
+
+  for(int i=0;i<robot_group;i++)
+  {
+    ui_.combo_robotModel->addItem(QString::fromStdString(groups[i]));
+  }
+}
+
+void BasePlacementWidget::selectedRobotGroup(int index)
+{
+  Q_EMIT SendSelectedRobotGroup(index);
 }
 
 void BasePlacementWidget::getBasePlacePlanMethod(std::vector< std::string > methods)
@@ -95,8 +135,32 @@ void BasePlacementWidget::getBasePlacePlanMethod(std::vector< std::string > meth
 
 void BasePlacementWidget::selectedMethod(int index)
 {
+  if(index ==4)
+  {
+    ROS_INFO("AHA.The user intuition method is selected. Let's Play");
+    add_robot = new AddRobotBase();
+
+    //add_robot to widget
+    connect(this, SIGNAL(parseWayPointBtn_signal()), add_robot, SLOT(parseWayPoints()));
+    connect(add_robot, SIGNAL(baseWayPoints_signal(std::vector<geometry_msgs::Pose>)), this, SLOT(getWaypoints(std::vector<geometry_msgs::Pose>)));
+    connect(this, SIGNAL(clearAllPoints_signal()), add_robot, SLOT(clearAllPointsRviz()));
+  }
+  else
+  {
+    add_robot = 0;
+  }
+
+
   Q_EMIT SendSelectedMethod(index);
 }
+
+void BasePlacementWidget::getWaypoints(std::vector<geometry_msgs::Pose> base_poses)
+{
+  std::vector<geometry_msgs::Pose> new_base_poses;
+  new_base_poses = base_poses;
+  Q_EMIT SendBasePoses(new_base_poses);
+}
+
 
 void BasePlacementWidget::getOutputType(std::vector< std::string > op_types)
 {
@@ -558,11 +622,11 @@ void BasePlacementWidget::PlaceBaseFinishedHandler()
   ui_.tabWidget->setEnabled(true);
   ui_.targetPoint->setEnabled(true);
 }
-void BasePlacementWidget::PlaceBaseCompleted_slot()
+void BasePlacementWidget::PlaceBaseCompleted_slot(double score)
 {
   /* A message showing task has completed */
 
-  ui_.lbl_placeBaseCompleted->setText("FIND BASE TASK COMPLETED ");
+  ui_.lbl_placeBaseCompleted->setText("COMPLETED. Score: " + QString::number(score));
 }
 
 void BasePlacementWidget::loadReachabilityFile()
@@ -629,11 +693,7 @@ void BasePlacementWidget::loadReachabilityFile()
   ui_.progressBar->hide();
 }
 
-void BasePlacementWidget::showUnionMapFromUI()
-{
-  show_union_map_ = true;
-  Q_EMIT showUnionMap_signal(show_union_map_);
-}
+
 
 void BasePlacementWidget::clearUnionMapFromUI()
 {

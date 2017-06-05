@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<launch>
+<arg name ="moveit_pkg" />
+  <node name="moveit_req" pkg="base_placement_plugin" type="helper.bash"  output="screen" args="$(arg moveit_pkg)">
+	
+  </node>
+
+</launch>

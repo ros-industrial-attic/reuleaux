@@ -20,8 +20,7 @@ ReachMapDisplay::ReachMapDisplay()
 {
   do_display_arrow_ = new rviz::BoolProperty("Show Poses", false, "Displays the arrow.", this);
   do_display_sphere_ = new rviz::BoolProperty("Show Shape", true, "Displays the spheres.", this);
-  is_byReachability_ =
-      new rviz::BoolProperty("Color by Reachability", true, "Color transform by Reachability Index", this);
+  is_byReachability_ = new rviz::BoolProperty("Color by Reachability", true, "Color transform by Reachability Index", this);
 
   shape_property_ = new rviz::EnumProperty("Shape", "Sphere", "Shape to display the workspace.", this,
                                            SLOT(updateColorAndAlphaArrow()));
@@ -159,8 +158,9 @@ void ReachMapDisplay::processMessage(const map_creator::WorkSpace::ConstPtr& msg
   }
 
   visuals_.push_back(visual);
-  updateArrowSize();
+  //updateArrowSize();
   updateSphereSize();
+
 }
 
 }  // end namespace workspace_visualization
