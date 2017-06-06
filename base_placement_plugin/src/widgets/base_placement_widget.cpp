@@ -33,6 +33,7 @@ void BasePlacementWidget::init()
           .
         .
   */
+  add_robot = 0;
   ui_.setupUi(this);
 
   ui_.lnEdit_BaseLocSize->setText("10");
@@ -125,9 +126,7 @@ void BasePlacementWidget::selectedRobotGroup(int index)
 void BasePlacementWidget::getBasePlacePlanMethod(std::vector< std::string > methods)
 {
   ROS_INFO("setting the name of the Method in combo box");
-  int method_group = methods.size();
-
-  for (int i = 0; i < method_group; i++)
+  for (int i = 0; i < methods.size(); i++)
   {
     ui_.combo_planGroup->addItem(QString::fromStdString(methods[i]));
   }
@@ -147,7 +146,9 @@ void BasePlacementWidget::selectedMethod(int index)
   }
   else
   {
-    delete add_robot;
+    if(!add_robot == 0)
+      delete add_robot;
+    add_robot = 0;
   }
 
 

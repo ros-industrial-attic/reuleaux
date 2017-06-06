@@ -79,7 +79,7 @@ protected:
   //! Definition of an abstract data model.
   QStandardItemModel* pointDataModel;
 
-  QObject* add_robot;
+  QObject* add_robot ;
 
 
 
