@@ -4,6 +4,10 @@
 
 #define IK_VERSION 61
 #include "mh5_ikfast.cpp"
+//#include "abb_irb2400_manipulator_ikfast_solver.cpp"
+//#include "ur5_ikfast.cpp"
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -34,10 +38,14 @@ public:
 
   bool isIKSuccess(const std::vector<double> &pose, std::vector<double> &joints, int& numOfSolns);
 
+
+
   const std::string getRobotName();
 
-  bool isIkSuccesswithTransformedBase(const geometry_msgs::Pose& base_pose, const geometry_msgs::Pose& grasp_pose,
+  bool isIkSuccesswithTransformedBase(const geometry_msgs::Pose& base_pose, const geometry_msgs::Pose& grasp_pose, std::vector<double>& joint_soln,
                                       int& numOfSolns);
+
+
 };
 }
 
