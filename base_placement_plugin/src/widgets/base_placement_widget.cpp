@@ -96,6 +96,11 @@ void BasePlacementWidget::showUreachModels()
   Q_EMIT SendShowUmodel(show_umodels_);
 }
 
+void BasePlacementWidget::getSelectedGroup(std::string group_name)
+{
+  group_name_ = group_name;
+}
+
 
 void BasePlacementWidget::showUnionMapFromUI()
 {
@@ -134,15 +139,18 @@ void BasePlacementWidget::getBasePlacePlanMethod(std::vector< std::string > meth
 
 void BasePlacementWidget::selectedMethod(int index)
 {
+  Q_EMIT SendSelectedMethod(index);
   if(index ==4)
   {
-    ROS_INFO("AHA.The user intuition method is selected. Let's Play");
-    add_robot = new AddRobotBase();
-
-    //add_robot to widget
-    connect(this, SIGNAL(parseWayPointBtn_signal()), add_robot, SLOT(parseWayPoints()));
-    connect(add_robot, SIGNAL(baseWayPoints_signal(std::vector<geometry_msgs::Pose>)), this, SLOT(getWaypoints(std::vector<geometry_msgs::Pose>)));
-    connect(this, SIGNAL(clearAllPoints_signal()), add_robot, SLOT(clearAllPointsRviz()));
+    if(group_name_.size()>0)
+    {
+      add_robot = new AddRobotBase(0 , group_name_);
+      ROS_INFO("AHA.The user intuition method is selected. Let's Play");
+      //add_robot to widget
+      connect(this, SIGNAL(parseWayPointBtn_signal()), add_robot, SLOT(parseWayPoints()));
+      connect(add_robot, SIGNAL(baseWayPoints_signal(std::vector<geometry_msgs::Pose>)), this, SLOT(getWaypoints(std::vector<geometry_msgs::Pose>)));
+      connect(this, SIGNAL(clearAllPoints_signal()), add_robot, SLOT(clearAllPointsRviz()));
+    }
   }
   else
   {
@@ -150,9 +158,6 @@ void BasePlacementWidget::selectedMethod(int index)
       delete add_robot;
     add_robot = 0;
   }
-
-
-  Q_EMIT SendSelectedMethod(index);
 }
 
 void BasePlacementWidget::getWaypoints(std::vector<geometry_msgs::Pose> base_poses)

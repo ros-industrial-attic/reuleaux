@@ -121,6 +121,9 @@ Q_SIGNALS:
   //! Send the output types to the GUI
   void sendGroupType_signal(std::vector< std::string > group_names);
 
+  //! Send the selected groupd
+  void sendSelectedGroup_signal(std::string group_name);
+
 
 
 protected:
@@ -211,7 +214,7 @@ protected:
   //show unreachable models
   bool show_ureach_models_;
 
-
+  //Pointer for robot marker
   CreateMarker* mark_;
 };
 

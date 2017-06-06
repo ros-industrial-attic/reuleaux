@@ -28,6 +28,7 @@
 #include <rviz/properties/string_property.h>
 #include <base_placement_plugin/widgets/base_placement_widget.h>
 #include <base_placement_plugin/place_base.h>
+#include <base_placement_plugin/create_marker.h>
 
 #include <QWidget>
 #include <QCursor>
@@ -55,7 +56,7 @@ class AddRobotBase : public QObject
 {
     Q_OBJECT;
   public:
-    AddRobotBase(QWidget* parent = 0);
+    AddRobotBase(QWidget* parent, std::string group_name);
     virtual ~AddRobotBase();
     void init();
 
@@ -77,10 +78,10 @@ class AddRobotBase : public QObject
     void getWaypoints(std::vector<geometry_msgs::Pose>& waypoints);
 
 
+
     public Q_SLOTS:
     void parseWayPoints();
     void clearAllPointsRviz();
-
     void getRobotModelFrame_slot(const tf::Transform end_effector);
 
 protected:
@@ -113,6 +114,8 @@ private:
       std::string target_frame_;
 
       visualization_msgs::MarkerArray robot_markers_;
+      CreateMarker* mark_;
+      std::string group_name_;
 
 };
 

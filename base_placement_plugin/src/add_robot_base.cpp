@@ -1,11 +1,12 @@
 #include<base_placement_plugin/add_robot_base.h>
 #include <Eigen/Eigen>
 #include <eigen_conversions/eigen_msg.h>
-#include <base_placement_plugin/create_marker.h>
 
 
-AddRobotBase::AddRobotBase(QWidget *parent)
+
+AddRobotBase::AddRobotBase(QWidget *parent , std::string group_name)
 {
+  group_name_ = group_name;
   init();
 }
 
@@ -62,9 +63,10 @@ void AddRobotBase::init()
   menu_handler.setCheckState(menu_handler.insert("Fine adjustment", boost::bind(&AddRobotBase::processFeedback, this, _1)),
         interactive_markers::MenuHandler::UNCHECKED);
 
-  CreateMarker mark("arm");
-  //visualization_msgs::MarkerArray markArr;
-  robot_markers_ = mark.getDefaultMarkers();
+
+  mark_ = new CreateMarker(group_name_);
+  robot_markers_ = mark_->getDefaultMarkers();
+
 
 
   //tf::Vector3 vec(-1, 0, 0);
@@ -77,15 +79,11 @@ void AddRobotBase::init()
 
   box_pos = trns;
   target_frame_.assign("base_link");
-  ROS_INFO_STREAM("The robot model frame is_+: " << target_frame_);
+  ROS_INFO_STREAM("The robot model frame is: " << target_frame_);
   makeInteractiveMarker();
   server->applyChanges();
   ROS_INFO("User base placement interactive marker started.");
 }
-
-
-
-
 
 void AddRobotBase::processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {

@@ -87,6 +87,7 @@ protected:
   //! Bool value to show/unshow map
   bool show_union_map_;
   bool show_umodels_;
+  std::string group_name_;
 
 private:
   QStringList pointList;
@@ -152,6 +153,8 @@ protected Q_SLOTS:
   void getOutputType(std::vector< std::string > op_types);
   //! Set the ouput type name in the ComboBox
   void getRobotGroups(std::vector< std::string > groups);
+  //! Get selected group from place_base
+  void getSelectedGroup(std::string group_name);
 
   void selectedMethod(int index);
   void selectedOuputType(int op_index);
@@ -192,6 +195,7 @@ Q_SIGNALS:
   void SendShowUmodel(bool umodel);
   //!Sending baseposes selected by user
   void SendBasePoses(std::vector<geometry_msgs::Pose>);
+
 
 };
 }
