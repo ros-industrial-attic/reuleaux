@@ -5,6 +5,17 @@
 
 #include <pluginlib/class_loader.h>
 #include <std_msgs/String.h>
+#include<base_placement_plugin/create_marker.h>
+
+#include<moveit/planning_scene_monitor/planning_scene_monitor.h>
+#include<moveit/move_group_interface/move_group.h>
+#include<moveit/robot_model_loader/robot_model_loader.h>
+#include<moveit/robot_model/robot_model.h>
+#include<moveit/robot_model/joint_model_group.h>
+#include<moveit/robot_state/robot_state.h>
+
+#include<base_placement_plugin/add_robot_base.h>
+
 
 #include <QObject>
 #include <QTimer>
@@ -54,8 +65,11 @@ public Q_SLOTS:
   //! Showing the base locations by robot model
   void showBaseLocationsbyRobotModel(std::vector< geometry_msgs::Pose > po);
 
+  //! Showing the base locations by only arm
+  void showBaseLocationsbyArmModel(std::vector< geometry_msgs::Pose > po);
+
   //! Get the Way-Points from the RViz enviroment and use them to find base.
-  void findbase(std::vector< geometry_msgs::Pose > grasp_poses);
+  bool findbase(std::vector< geometry_msgs::Pose > grasp_poses);
 
   //! Sending the initial marker location and list of base Placement Method and visualization methods
   void initRvizDone();
@@ -72,6 +86,17 @@ public Q_SLOTS:
   //! Getting user Defined visualization method
   void getSelectedOpType(int op_index);
 
+  //! Getting user Defined robot model
+  void getSelectedRobotGroup(int model_index);
+
+  //! Getting user Defined unreachable model shown method
+  void getShowUreachModels(bool show_u_models);
+
+  //!Getting the user Defined base poses
+  void  getBasePoses(std::vector<geometry_msgs::Pose> base_poses);
+
+
+
 Q_SIGNALS:
 
   //! Signal for initial marker frame
@@ -79,13 +104,13 @@ Q_SIGNALS:
 
   //! Let the RQT Widget know that a Base Placement Process has started.
   void basePlacementProcessStarted();
-  ;
+
 
   //! Let the RQT Widget know that Base Placement Process has finished.
   void basePlacementProcessFinished();
 
   //! Let the RQT Widget know that Base Placement Process completed so it can show finish message
-  void basePlacementProcessCompleted();
+  void basePlacementProcessCompleted(double score);
 
   //! Send the Method groups to the GUI
   void sendBasePlaceMethods_signal(std::vector< std::string > method_names);
@@ -93,7 +118,14 @@ Q_SIGNALS:
   //! Send the output types to the GUI
   void sendOuputType_signal(std::vector< std::string > output_type);
 
+  //! Send the output types to the GUI
+  void sendGroupType_signal(std::vector< std::string > group_names);
+
+
+
 protected:
+  //QObject* add_robot;
+  //AddRobotBase add_robot;
   //! Base Placement by PCA
   void findBaseByPCA();
 
@@ -103,14 +135,39 @@ protected:
   //!Base Placement by IKSolutionScore
   void findBaseByIKSolutionScore();
 
+  //!Base Placement by VerticalRobotModel
+  void findBaseByVerticalRobotModel();
+
+  //!Base Placement by VerticalRobotModel
+  void findBaseByUserIntuition();
+
   //! Selecting the Base Placement Method
   void BasePlaceMethodHandler();
 
   //! Selecting the Visualization Method
   void OuputputVizHandler(std::vector< geometry_msgs::Pose > po);
 
+
+
+  //Transforming reachability data towards robot base
+  void transformToRobotbase(std::multimap< std::vector< double >, std::vector< double > > armBasePoses,
+                            std::multimap< std::vector< double >, std::vector< double > >& robotBasePoses);
+
+  void transformFromRobotbaseToArmBase(const geometry_msgs::Pose& base_pose, geometry_msgs::Pose &arm_base_pose);
+  void createSpheres(std::multimap< std::vector< double >, std::vector< double > > basePoses,
+                     std::map< std::vector< double >, double >& spColor, std::vector< std::vector< double > >& highScoredSp, bool reduce_D);
+
+  double calculateScoreForRobotBase(std::vector<geometry_msgs::Pose>& grasp_poses, std::vector<geometry_msgs::Pose>& base_poses);
+  double calculateScoreForArmBase(std::vector<geometry_msgs::Pose>& grasp_poses, std::vector<geometry_msgs::Pose>& base_poses);
+
+  bool loadRobotModel();
+  bool checkforRobotModel();
+
+  void getRobotGroups(std::vector<std::string>& groups);
+
   int selected_method_;
   int selected_op_type_;
+  std::string selected_group_;
 
   //! Number of base place locations to show
   int BASE_LOC_SIZE_;
@@ -121,6 +178,8 @@ protected:
   std::vector< std::string > method_names_;
   //! Vector for output visualization
   std::vector< std::string > output_type_;
+  //! Vector for robot groups
+  std::vector<std::string> group_names_;
   //! Taking the reachability data from the file
   std::multimap< std::vector< double >, std::vector< double > > PoseColFilter;
   std::multimap< std::vector< double >, double > SphereCol;
@@ -134,9 +193,26 @@ protected:
   std::vector< std::vector< double > > highScoreSp;
   //! Vector for storing final base poses
   std::vector< geometry_msgs::Pose > final_base_poses;
+  std::vector<geometry_msgs::Pose> final_base_poses_user;
 
   //! Vector for grasp poses
   std::vector< geometry_msgs::Pose > GRASP_POSES_;
+
+
+  //! Reachability data for the union map
+  std::multimap< std::vector< double >, std::vector< double > > robot_PoseColfilter;
+
+  double score_;
+  geometry_msgs::Pose best_pose_;
+
+  //Robot model cons pointer
+  moveit::core::RobotModelConstPtr robot_model_;
+
+  //show unreachable models
+  bool show_ureach_models_;
+
+
+  CreateMarker* mark_;
 };
 
 #endif  // PLACE_BASE_H_

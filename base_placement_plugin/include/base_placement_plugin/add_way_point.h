@@ -29,6 +29,7 @@
 #include <base_placement_plugin/widgets/base_placement_widget.h>
 
 #include <base_placement_plugin/place_base.h>
+#include<base_placement_plugin/add_robot_base.h>
 
 #include <QWidget>
 #include <QCursor>

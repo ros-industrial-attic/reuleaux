@@ -540,4 +540,3 @@ void AddRobotBase::pointPoseUpdated(const tf::Transform &point_pos, const char *
 }
 
 
-
