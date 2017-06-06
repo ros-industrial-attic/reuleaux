@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+
+<arg name = "moveit_pkg" default="motoman_moveit_config"/>
+
+<!--Launch moveit required pkgs for your robot-->
+<include file="$(find base_placement_plugin)/launch/moveit_pkgs.launch">
+    <arg name="moveit_pkg" value="$(arg moveit_pkg)"/>  
+    
+</include>
+
+<!--Running RVIZ for base_placement-->
+<node pkg="rviz" type="rviz" output="screen" name="rviz" args="-d $(find base_placement_plugin)/rviz/base_placement.rviz" />
+
+
+</launch>
