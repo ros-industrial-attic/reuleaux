@@ -28,6 +28,7 @@
 #include <rviz/properties/string_property.h>
 #include <base_placement_plugin/widgets/base_placement_widget.h>
 #include <base_placement_plugin/place_base.h>
+#include <base_placement_plugin/create_marker.h>
 
 #include <QWidget>
 #include <QCursor>
@@ -55,7 +56,7 @@ class AddRobotBase : public QObject
 {
     Q_OBJECT;
   public:
-    AddRobotBase(QWidget* parent = 0);
+    AddRobotBase(QWidget* parent, std::string group_name);
     virtual ~AddRobotBase();
     void init();
 
@@ -70,15 +71,17 @@ class AddRobotBase : public QObject
     void makeInteractiveMarker();
     visualization_msgs::InteractiveMarkerControl& makeInteractiveMarkerControl(visualization_msgs::InteractiveMarker& msg);
     visualization_msgs::Marker makeInterArrow(visualization_msgs::InteractiveMarker& msg);
+    visualization_msgs::MarkerArray makeRobotMarker(visualization_msgs::InteractiveMarker& msg,  bool waypoint);
+
 
     void pointPoseUpdated(const tf::Transform& point_pos, const char* marker_name);
     void getWaypoints(std::vector<geometry_msgs::Pose>& waypoints);
 
 
+
     public Q_SLOTS:
     void parseWayPoints();
     void clearAllPointsRviz();
-
     void getRobotModelFrame_slot(const tf::Transform end_effector);
 
 protected:
@@ -94,9 +97,12 @@ private:
 
       //! for arrows...........need to be modified
       std_msgs::ColorRGBA WAY_POINT_COLOR;
+      std_msgs::ColorRGBA ROBOT_WAY_POINT_COLOR;
       std_msgs::ColorRGBA ARROW_INTER_COLOR;
+      std_msgs::ColorRGBA ROBOT_INTER_COLOR;
       geometry_msgs::Vector3 WAY_POINT_SCALE_CONTROL;
       geometry_msgs::Vector3 ARROW_INTER_SCALE_CONTROL;
+
       float INTERACTIVE_MARKER_SCALE;
       float ARROW_INTERACTIVE_SCALE;
 
@@ -106,6 +112,10 @@ private:
       tf::Transform box_pos;
       int count;
       std::string target_frame_;
+
+      visualization_msgs::MarkerArray robot_markers_;
+      CreateMarker* mark_;
+      std::string group_name_;
 
 };
 

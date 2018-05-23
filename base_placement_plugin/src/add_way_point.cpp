@@ -85,6 +85,8 @@ void AddWayPoint::onInitialize()
           SLOT(getOutputType(std::vector< std::string >)));
   connect(place_base, SIGNAL(sendGroupType_signal(std::vector< std::string >)), widget_,
           SLOT(getRobotGroups(std::vector< std::string >)));
+  connect(place_base, SIGNAL(sendSelectedGroup_signal(std::string)), widget_,
+          SLOT(getSelectedGroup(std::string)));
 
 
 

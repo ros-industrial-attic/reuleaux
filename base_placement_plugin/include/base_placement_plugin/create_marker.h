@@ -29,6 +29,7 @@ public:
   bool makeRobotMarker(BasePoseJoint baseJoints,  std::vector<visualization_msgs::InteractiveMarker>& iMarkers, bool show_unreachable_models); //visualizing robot model with joint solutions
   bool checkEndEffector();
 
+  visualization_msgs::MarkerArray getDefaultMarkers();
 
 
 

@@ -3,8 +3,10 @@
 #include <eigen_conversions/eigen_msg.h>
 
 
-AddRobotBase::AddRobotBase(QWidget *parent)
+
+AddRobotBase::AddRobotBase(QWidget *parent , std::string group_name)
 {
+  group_name_ = group_name;
   init();
 }
 
@@ -22,8 +24,13 @@ void AddRobotBase::init()
   waypoints_pos.clear();
   count = 0;
 
+  ROBOT_WAY_POINT_COLOR.r = 0.5;
+  ROBOT_WAY_POINT_COLOR.g = 0.5;
+  ROBOT_WAY_POINT_COLOR.b = 0.5;
+  ROBOT_WAY_POINT_COLOR.a = 0.3;
+
   WAY_POINT_COLOR.r = 0.1;
-  WAY_POINT_COLOR.g = 0.50;
+  WAY_POINT_COLOR.g = 0.5;
   WAY_POINT_COLOR.b = 1;
   WAY_POINT_COLOR.a = 1.0;
 
@@ -38,9 +45,18 @@ void AddRobotBase::init()
   ARROW_INTER_COLOR.b = 0.2;
   ARROW_INTER_COLOR.a = 1.0;
 
+  ROBOT_INTER_COLOR.r = 0.0;
+  ROBOT_INTER_COLOR.g = 1.0;
+  ROBOT_INTER_COLOR.b = 0.0;
+  ROBOT_INTER_COLOR.a = 0.5;
+
+
   ARROW_INTER_SCALE_CONTROL.x = 0.27;
   ARROW_INTER_SCALE_CONTROL.y = 0.03;
   ARROW_INTER_SCALE_CONTROL.z = 0.03;
+
+
+
 
   ARROW_INTERACTIVE_SCALE = 0.3;
   menu_handler.insert("Delete", boost::bind(&AddRobotBase::processFeedback, this, _1));
@@ -48,6 +64,12 @@ void AddRobotBase::init()
         interactive_markers::MenuHandler::UNCHECKED);
 
 
+  mark_ = new CreateMarker(group_name_);
+  robot_markers_ = mark_->getDefaultMarkers();
+
+
+
+  //tf::Vector3 vec(-1, 0, 0);
   tf::Vector3 vec(-1, 0, 0);
   tf::Quaternion quat(0, 0, 0, 1);
   quat.normalize();
@@ -62,10 +84,6 @@ void AddRobotBase::init()
   server->applyChanges();
   ROS_INFO("User base placement interactive marker started.");
 }
-
-
-
-
 
 void AddRobotBase::processFeedback(const visualization_msgs::InteractiveMarkerFeedbackConstPtr &feedback)
 {
@@ -174,7 +192,7 @@ visualization_msgs::InteractiveMarkerControl& AddRobotBase::makeArrowControlDefa
 
   control_menu.name = "menu_select";
   msg.controls.push_back(control_menu);
-  control_menu.markers.push_back(makeWayPoint(msg));
+  //control_menu.markers.push_back(makeWayPoint(msg));
 
   visualization_msgs::InteractiveMarkerControl control_move3d;
   control_move3d.always_visible = true;
@@ -182,10 +200,17 @@ visualization_msgs::InteractiveMarkerControl& AddRobotBase::makeArrowControlDefa
   control_move3d.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_ROTATE_3D;
   control_move3d.name = "move";
   control_move3d.markers.push_back(makeWayPoint(msg));
-  msg.controls.push_back(control_move3d);
 
+  visualization_msgs::MarkerArray control_move3d_markers = makeRobotMarker(msg, true);
+
+  for(int i=0;i<control_move3d_markers.markers.size();++i)
+    control_move3d.markers.push_back(control_move3d_markers.markers[i]);
+
+  msg.controls.push_back(control_move3d);
   return msg.controls.back();
 }
+
+
 
 visualization_msgs::InteractiveMarkerControl& AddRobotBase::makeArrowControlDetails(visualization_msgs::InteractiveMarker &msg)
 {
@@ -197,6 +222,12 @@ visualization_msgs::InteractiveMarkerControl& AddRobotBase::makeArrowControlDeta
     msg.controls.push_back(control_menu);
     control_menu.markers.push_back(makeWayPoint(msg));
 
+    visualization_msgs::MarkerArray control_menu_markers = makeRobotMarker(msg, true);
+    for(int i=0;i<control_menu_markers.markers.size();++i)
+      control_menu.markers.push_back(control_menu_markers.markers[i]);
+
+
+
     visualization_msgs::InteractiveMarkerControl control_view_details;
     control_view_details.always_visible = true;
     //*************rotate and move around the x-axis********************
@@ -204,10 +235,6 @@ visualization_msgs::InteractiveMarkerControl& AddRobotBase::makeArrowControlDeta
     control_view_details.orientation.x = 1;
     control_view_details.orientation.y = 0;
     control_view_details.orientation.z = 0;
-
-    /*control_view_details.name = "rotate_x";
-    control_view_details.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-    msg.controls.push_back(control_view_details);*/
 
     control_view_details.name = "move_x";
     control_view_details.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
@@ -224,9 +251,6 @@ visualization_msgs::InteractiveMarkerControl& AddRobotBase::makeArrowControlDeta
     control_view_details.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
     msg.controls.push_back(control_view_details);
 
-    /*control_view_details.name = "move_z";
-    control_view_details.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
-    msg.controls.push_back(control_view_details);*/
     //*****************************************************************
 
     //*************rotate and move around the y-axis********************
@@ -235,15 +259,14 @@ visualization_msgs::InteractiveMarkerControl& AddRobotBase::makeArrowControlDeta
     control_view_details.orientation.y = 0;
     control_view_details.orientation.z = 1;
 
-    /*control_view_details.name = "rotate_y";
-    control_view_details.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-    msg.controls.push_back(control_view_details);*/
-
     control_view_details.name = "move_y";
     control_view_details.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
     msg.controls.push_back(control_view_details);
     control_view_details.markers.push_back(makeWayPoint(msg));
 
+    visualization_msgs::MarkerArray control_view_markers = makeRobotMarker(msg, true);
+    for(int i=0;i<control_view_markers.markers.size();++i)
+      control_view_details.markers.push_back(control_view_markers.markers[i]);
     msg.controls.push_back(control_view_details);
 
     //*****************************************************************
@@ -373,37 +396,20 @@ visualization_msgs::InteractiveMarkerControl& AddRobotBase::makeInteractiveMarke
   control_button.interaction_mode = visualization_msgs::InteractiveMarkerControl::BUTTON;
   control_button.name = "button_interaction";
   control_button.markers.push_back(makeInterArrow(msg));
+  visualization_msgs::MarkerArray control_button_markers = makeRobotMarker(msg, false);
+  for(int i=0;i<control_button_markers.markers.size();++i)
+    control_button.markers.push_back(control_button_markers.markers[i]);
 
   msg.controls.push_back(control_button);
-  // server.reset( new interactive_markers::InteractiveMarkerServer("base_placement_plugin","",false));
   visualization_msgs::InteractiveMarkerControl control_inter_arrow;
   control_inter_arrow.always_visible = true;
+
     //*************rotate and move around the x-axis********************
   control_inter_arrow.orientation.w = 1;
   control_inter_arrow.orientation.x = 1;
   control_inter_arrow.orientation.y = 0;
   control_inter_arrow.orientation.z = 0;
-
-  /*control_inter_arrow.name = "rotate_x";
-  control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-  msg.controls.push_back(control_inter_arrow);*/
-
   control_inter_arrow.name = "move_x";
-  control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
-  msg.controls.push_back(control_inter_arrow);
-  //*****************************************************************
-
-  //*************rotate and move around the z-axis********************
-  control_inter_arrow.orientation.w = 1;
-  control_inter_arrow.orientation.x = 0;
-  control_inter_arrow.orientation.y = 0;
-  control_inter_arrow.orientation.z = 1;
-
-  /*control_inter_arrow.name = "rotate_y";
-  control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
-  msg.controls.push_back(control_inter_arrow);*/
-
-  control_inter_arrow.name = "move_y";
   control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
   msg.controls.push_back(control_inter_arrow);
   //*****************************************************************
@@ -411,20 +417,54 @@ visualization_msgs::InteractiveMarkerControl& AddRobotBase::makeInteractiveMarke
   //*************rotate and move around the y-axis********************
   control_inter_arrow.orientation.w = 1;
   control_inter_arrow.orientation.x = 0;
+  control_inter_arrow.orientation.y = 0;
+  control_inter_arrow.orientation.z = 1;
+  control_inter_arrow.name = "move_y";
+  control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
+  msg.controls.push_back(control_inter_arrow);
+  //*****************************************************************
+
+
+  //*************rotate and move around the z-axis********************
+  control_inter_arrow.orientation.w = 1;
+  control_inter_arrow.orientation.x = 0;
   control_inter_arrow.orientation.y = 1;
   control_inter_arrow.orientation.z = 0;
-
   control_inter_arrow.name = "rotate_z";
   control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::ROTATE_AXIS;
   msg.controls.push_back(control_inter_arrow);
-
-  /*control_inter_arrow.name = "move_y";
-  control_inter_arrow.interaction_mode = visualization_msgs::InteractiveMarkerControl::MOVE_AXIS;
-  msg.controls.push_back(control_inter_arrow);*/
   //*****************************************************************
-  control_inter_arrow.markers.push_back(makeInterArrow(msg));
 
+  control_inter_arrow.markers.push_back(makeInterArrow(msg));
   return msg.controls.back();
+}
+
+visualization_msgs::MarkerArray AddRobotBase::makeRobotMarker(visualization_msgs::InteractiveMarker& msg, bool waypoint)
+{
+  Eigen::Affine3d base_tf;
+  tf::poseMsgToEigen(msg.pose, base_tf);
+  visualization_msgs::MarkerArray markArr;
+  visualization_msgs::MarkerArray robot_markers_new = robot_markers_;
+  for(int i=0;i<robot_markers_.markers.size();++i)
+  {
+    robot_markers_new.markers[i].type = visualization_msgs::Marker::MESH_RESOURCE;
+    robot_markers_new.markers[i].mesh_use_embedded_materials = true;
+    if(waypoint)
+      robot_markers_new.markers[i].color = ROBOT_WAY_POINT_COLOR;
+    else
+      robot_markers_new.markers[i].color = ROBOT_INTER_COLOR;
+
+    robot_markers_new.markers[i].action =  visualization_msgs::Marker::ADD;
+
+    Eigen::Affine3d link_marker;
+    tf::poseMsgToEigen(robot_markers_.markers[i].pose, link_marker);
+    geometry_msgs::Pose new_marker_pose;
+    tf::poseEigenToMsg(base_tf * link_marker, new_marker_pose);
+    robot_markers_new.markers[i].pose = new_marker_pose;
+
+    markArr.markers.push_back(robot_markers_new.markers[i]);
+  }
+  return markArr;
 }
 
 
@@ -440,18 +480,14 @@ visualization_msgs::Marker AddRobotBase::makeInterArrow(visualization_msgs::Inte
 
 void AddRobotBase::parseWayPoints()
 {
-
   geometry_msgs::Pose target_pose;
-    std::vector< geometry_msgs::Pose > waypoints;
-
-    for (int i = 0; i < waypoints_pos.size(); i++)
-    {
-      tf::poseTFToMsg(waypoints_pos[i], target_pose);
-
-      waypoints.push_back(target_pose);
-    }
-    Q_EMIT baseWayPoints_signal(waypoints);
-    //Q_EMIT wayPoints_signal(waypoints);
+  std::vector<geometry_msgs::Pose> waypoints;
+  for(int i=0;i<waypoints_pos.size();i++)
+  {
+    tf::poseTFToMsg(waypoints_pos[i], target_pose);
+    waypoints.push_back(target_pose);
+  }
+  Q_EMIT baseWayPoints_signal(waypoints);
 }
 
 
@@ -500,6 +536,5 @@ void AddRobotBase::pointPoseUpdated(const tf::Transform &point_pos, const char *
   server->applyChanges();
 
 }
-
 
 

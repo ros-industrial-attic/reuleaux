@@ -11,7 +11,7 @@ CreateMarker::CreateMarker(std::string group_name) : spinner(1), group_name_(gro
 {
   spinner.start();
   group_.reset(new moveit::planning_interface::MoveGroup(group_name_));
-  ROS_INFO_STREAM("Selected planning group: "<< group_->getName());
+  //ROS_INFO_STREAM("Selected planning group: "<< group_->getName());
   robot_model_ = group_->getRobotModel();
 }
 
@@ -118,7 +118,7 @@ void CreateMarker::updateMarkers(const geometry_msgs::Pose& base_pose, bool is_r
       markers.markers[j].color.r = 1.0;
       markers.markers[j].color.g = 0.0;
       markers.markers[j].color.b = 0.0;
-      markers.markers[j].color.a= 0.1;
+      markers.markers[j].color.a= 1.0;
     }
     else
     {
@@ -204,6 +204,18 @@ bool CreateMarker::makeArmMarker(BasePoseJoint baseJoints, std::vector<visualiza
   if(!show_unreachable_models)
       discardUnreachableModels(baseJoints);
    makeIntMarkers(baseJoints, true, iMarkers);
+}
+
+
+visualization_msgs::MarkerArray CreateMarker::getDefaultMarkers()
+{
+  moveit::core::RobotStatePtr robot_state(new moveit::core::RobotState(robot_model_));
+  //updateRobotState(joint_soln, robot_state);
+  std::vector<std::string> full_link_names;
+  getFullLinkNames(full_link_names, false);
+  visualization_msgs::MarkerArray full_link_markers;
+  robot_state->getRobotMarkers(full_link_markers, full_link_names);
+  return full_link_markers;
 }
 
 

@@ -102,6 +102,7 @@ void PlaceBase::getSelectedRobotGroup(int group_index)
     ROS_ERROR_STREAM("Is your selected group is a manipulator?? ");
     delete mark_;
   }
+  Q_EMIT sendSelectedGroup_signal(selected_group_);
 }
 
 void PlaceBase::getSelectedMethod(int index)
