@@ -1,7 +1,7 @@
 <library path="lib/libbase_placement_plugin">
   <class name="base_placement_plugin/Base Placement Plug-in"
          type="base_placement_plugin::AddWayPoint"
-         base_class_type="rviz::Panel">
+         base_class_type="rviz::Panel"/>
     <description>
       Tool for visualizing base placement methods
     </description>
