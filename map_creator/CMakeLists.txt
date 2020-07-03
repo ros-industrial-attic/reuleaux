@@ -17,6 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(octomap REQUIRED)
+find_package(HDF5 REQUIRED)
+find_package(MPI REQUIRED)
 
 add_message_files(
  FILES
@@ -43,8 +45,7 @@ catkin_package(
     roscpp
   CATKIN_DEPENDS message_runtime 
 )
-
-include_directories(include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS} ${HDF5_INCLUDE_DIR} ${PCL_INCLUDE_DIR})
+include_directories(include ${catkin_INCLUDE_DIRS} ${OCTOMAP_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS} ${PCL_INCLUDE_DIR} ${MPI_CXX_INCLUDE_DIRS})
 
 add_library(sphere_discretization  src/sphere_discretization.cpp)
 add_library(kinematics  src/kinematics.cpp )
@@ -52,7 +53,7 @@ add_library(hdf5_dataset  src/hdf5_dataset.cpp)
 
 target_link_libraries(sphere_discretization  ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES} ${PCL_LIBRARY_DIRS})
 target_link_libraries(kinematics  ${catkin_LIBRARIES} -llapack)
-target_link_libraries(hdf5_dataset  ${catkin_LIBRARIES} -lhdf5 -lhdf5_cpp)
+target_link_libraries(hdf5_dataset  ${catkin_LIBRARIES} ${HDF5_LIBRARIES} ${MPI_CXX_LIBRARIES})
 
 install(TARGETS sphere_discretization kinematics hdf5_dataset
  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

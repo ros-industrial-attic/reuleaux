@@ -10,7 +10,7 @@ double unifRand()
 CreateMarker::CreateMarker(std::string group_name) : spinner(1), group_name_(group_name)
 {
   spinner.start();
-  group_.reset(new moveit::planning_interface::MoveGroup(group_name_));
+  group_.reset(new MoveGroupInterface(group_name_));
   //ROS_INFO_STREAM("Selected planning group: "<< group_->getName());
   robot_model_ = group_->getRobotModel();
 }

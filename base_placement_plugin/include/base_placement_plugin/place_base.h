@@ -8,8 +8,14 @@
 #include<base_placement_plugin/create_marker.h>
 
 #include<moveit/planning_scene_monitor/planning_scene_monitor.h>
-#include<moveit/move_group_interface/move_group.h>
 #include<moveit/robot_model_loader/robot_model_loader.h>
+#if ROS_VERSION_MINIMUM(1,12,0)
+    #include <moveit/move_group_interface/move_group_interface.h>
+    typedef moveit::planning_interface::MoveGroupInterface MoveGroupInterface;
+#else
+    #include <moveit/move_group_interface/move_group.h>
+    typedef moveit::planning_interface::MoveGroup MoveGroupInterface;
+#endif
 #include<moveit/robot_model/robot_model.h>
 #include<moveit/robot_model/joint_model_group.h>
 #include<moveit/robot_state/robot_state.h>

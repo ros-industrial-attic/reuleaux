@@ -21,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
-
+find_package(HDF5 REQUIRED)
 include(${QT_USE_FILE})
 
 
@@ -80,9 +80,9 @@ catkin_package(
 qt4_wrap_cpp(base_placement_plugin_MOCS ${base_placement_plugin_HDRS} )
 qt4_wrap_ui(base_placement_plugin_UIS_H ${base_placement_plugin_UIS} )
 
-include_directories(${base_placement_plugin_INCLUDE_DIRECTORIES} ${catkin_INCLUDE_DIRS})
+include_directories(${base_placement_plugin_INCLUDE_DIRECTORIES} ${catkin_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
 add_library(${PROJECT_NAME} ${base_placement_plugin_SRCS} ${base_placement_plugin_MOCS} ${base_placement_plugin_UIS_H}) # ${base_placement_plugin_UIS_H}
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY}  yaml-cpp -lhdf5 -lhdf5_cpp  create_marker)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY}  yaml-cpp ${HDF5_LIBRARIES} create_marker)
 ## target_link_libraries(${PROJECT_NAME} yaml-cpp)
 
 
