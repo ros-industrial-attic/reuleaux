@@ -1,5 +1,7 @@
 # reuleaux
 =====
+[![Build Status](https://travis-ci.com/ros-industrial-consortium/reuleaux.svg?branch=master)](https://travis-ci.com/ros-industrial-consortium/reuleaux)
+
 Google Summer of Code Project: Robot reachability and Base Placement
 
 
