@@ -7,7 +7,6 @@
 //#include "abb_irb2400_manipulator_ikfast_solver.cpp"
 //#include "ur5_ikfast.cpp"
 
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>

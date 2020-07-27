@@ -1,5 +1,5 @@
 // -*- coding: utf-8 -*-
-// Copyright (C) 2012-2014 Rosen Diankov <rosen.diankov@gmail.com>
+// Copyright (C) 2012 Rosen Diankov <rosen.diankov@gmail.com>
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,14 +41,12 @@
 #define IKFAST_HEADER_COMMON
 
 /// should be the same as ikfast.__version__
-/// if 0x10000000 bit is set, then the iksolver assumes 6D transforms are done without the manipulator offset taken into
-/// account (allows to reuse IK when manipulator offset changes)
-#define IKFAST_VERSION 0x10000048
+#define IKFAST_VERSION 61
 
 namespace ikfast
 {
 /// \brief holds the solution for a single dof
-template < typename T >
+template <typename T>
 class IkSingleDOFSolutionBase
 {
 public:
@@ -61,7 +59,7 @@ public:
   unsigned char jointtype;     ///< joint type, 0x01 is revolute, 0x11 is slider
   unsigned char maxsolutions;  ///< max possible indices, 0 if controlled by free index or a free joint itself
   unsigned char indices[5];  ///< unique index of the solution used to keep track on what part it came from. sometimes a
-                             ///solution can be repeated for different indices. store at least another repeated root
+  /// solution can be repeated for different indices. store at least another repeated root
 };
 
 /// \brief The discrete solutions are returned in this structure.
@@ -69,7 +67,7 @@ public:
 /// Sometimes the joint axes of the robot can align allowing an infinite number of solutions.
 /// Stores all these solutions in the form of free variables that the user has to set when querying the solution. Its
 /// prototype is:
-template < typename T >
+template <typename T>
 class IkSolutionBase
 {
 public:
@@ -83,7 +81,7 @@ public:
   virtual void GetSolution(T* solution, const T* freevalues) const = 0;
 
   /// \brief std::vector version of \ref GetSolution
-  virtual void GetSolution(std::vector< T >& solution, const std::vector< T >& freevalues) const
+  virtual void GetSolution(std::vector<T>& solution, const std::vector<T>& freevalues) const
   {
     solution.resize(GetDOF());
     GetSolution(&solution.at(0), freevalues.size() > 0 ? &freevalues.at(0) : NULL);
@@ -91,16 +89,15 @@ public:
 
   /// \brief Gets the indices of the configuration space that have to be preset before a full solution can be returned
   ///
-  /// 0 always points to the first value accepted by the ik function.
   /// \return vector of indices indicating the free parameters
-  virtual const std::vector< int >& GetFree() const = 0;
+  virtual const std::vector<int>& GetFree() const = 0;
 
   /// \brief the dof of the solution
-  virtual const int GetDOF() const = 0;
+  virtual int GetDOF() const = 0;
 };
 
 /// \brief manages all the solutions
-template < typename T >
+template <typename T>
 class IkSolutionListBase
 {
 public:
@@ -112,13 +109,11 @@ public:
   ///
   /// \param vinfos Solution data for each degree of freedom of the manipulator
   /// \param vfree If the solution represents an infinite space, holds free parameters of the solution that users can
-  /// freely set. The indices are of the configuration that the IK solver accepts rather than the entire robot, ie 0
-  /// points to the first value accepted.
-  virtual size_t AddSolution(const std::vector< IkSingleDOFSolutionBase< T > >& vinfos,
-                             const std::vector< int >& vfree) = 0;
+  /// freely set.
+  virtual size_t AddSolution(const std::vector<IkSingleDOFSolutionBase<T> >& vinfos, const std::vector<int>& vfree) = 0;
 
   /// \brief returns the solution pointer
-  virtual const IkSolutionBase< T >& GetSolution(size_t index) const = 0;
+  virtual const IkSolutionBase<T>& GetSolution(size_t index) const = 0;
 
   /// \brief returns the number of solutions stored
   virtual size_t GetNumSolutions() const = 0;
@@ -129,13 +124,12 @@ public:
 };
 
 /// \brief holds function pointers for all the exported functions of ikfast
-template < typename T >
+template <typename T>
 class IkFastFunctions
 {
 public:
   IkFastFunctions()
     : _ComputeIk(NULL)
-    , _ComputeIk2(NULL)
     , _ComputeFk(NULL)
     , _GetNumFreeParameters(NULL)
     , _GetFreeParameters(NULL)
@@ -149,10 +143,8 @@ public:
   virtual ~IkFastFunctions()
   {
   }
-  typedef bool (*ComputeIkFn)(const T*, const T*, const T*, IkSolutionListBase< T >&);
+  typedef bool (*ComputeIkFn)(const T*, const T*, const T*, IkSolutionListBase<T>&);
   ComputeIkFn _ComputeIk;
-  typedef bool (*ComputeIk2Fn)(const T*, const T*, const T*, IkSolutionListBase< T >&, void*);
-  ComputeIk2Fn _ComputeIk2;
   typedef void (*ComputeFkFn)(const T*, T*, T*);
   ComputeFkFn _ComputeFk;
   typedef int (*GetNumFreeParametersFn)();
@@ -174,11 +166,11 @@ public:
 // Implementations of the abstract classes, user doesn't need to use them
 
 /// \brief Default implementation of \ref IkSolutionBase
-template < typename T >
-class IkSolution : public IkSolutionBase< T >
+template <typename T>
+class IkSolution : public IkSolutionBase<T>
 {
 public:
-  IkSolution(const std::vector< IkSingleDOFSolutionBase< T > >& vinfos, const std::vector< int >& vfree)
+  IkSolution(const std::vector<IkSingleDOFSolutionBase<T> >& vinfos, const std::vector<int>& vfree)
   {
     _vbasesol = vinfos;
     _vfree = vfree;
@@ -205,19 +197,19 @@ public:
     }
   }
 
-  virtual void GetSolution(std::vector< T >& solution, const std::vector< T >& freevalues) const
+  virtual void GetSolution(std::vector<T>& solution, const std::vector<T>& freevalues) const
   {
     solution.resize(GetDOF());
     GetSolution(&solution.at(0), freevalues.size() > 0 ? &freevalues.at(0) : NULL);
   }
 
-  virtual const std::vector< int >& GetFree() const
+  virtual const std::vector<int>& GetFree() const
   {
     return _vfree;
   }
-  virtual const int GetDOF() const
+  virtual int GetDOF() const
   {
-    return static_cast< int >(_vbasesol.size());
+    return static_cast<int>(_vbasesol.size());
   }
 
   virtual void Validate() const
@@ -239,14 +231,10 @@ public:
           throw std::runtime_error("2nd index >= max solutions for joint");
         }
       }
-      if (!std::isfinite(_vbasesol[i].foffset))
-      {
-        throw std::runtime_error("foffset was not finite");
-      }
     }
   }
 
-  virtual void GetSolutionIndices(std::vector< unsigned int >& v) const
+  virtual void GetSolutionIndices(std::vector<unsigned int>& v) const
   {
     v.resize(0);
     v.push_back(0);
@@ -277,29 +265,29 @@ public:
     }
   }
 
-  std::vector< IkSingleDOFSolutionBase< T > > _vbasesol;  ///< solution and their offsets if joints are mimiced
-  std::vector< int > _vfree;
+  std::vector<IkSingleDOFSolutionBase<T> > _vbasesol;  ///< solution and their offsets if joints are mimiced
+  std::vector<int> _vfree;
 };
 
 /// \brief Default implementation of \ref IkSolutionListBase
-template < typename T >
-class IkSolutionList : public IkSolutionListBase< T >
+template <typename T>
+class IkSolutionList : public IkSolutionListBase<T>
 {
 public:
-  virtual size_t AddSolution(const std::vector< IkSingleDOFSolutionBase< T > >& vinfos, const std::vector< int >& vfree)
+  virtual size_t AddSolution(const std::vector<IkSingleDOFSolutionBase<T> >& vinfos, const std::vector<int>& vfree)
   {
     size_t index = _listsolutions.size();
-    _listsolutions.push_back(IkSolution< T >(vinfos, vfree));
+    _listsolutions.push_back(IkSolution<T>(vinfos, vfree));
     return index;
   }
 
-  virtual const IkSolutionBase< T >& GetSolution(size_t index) const
+  virtual const IkSolutionBase<T>& GetSolution(size_t index) const
   {
     if (index >= _listsolutions.size())
     {
       throw std::runtime_error("GetSolution index is invalid");
     }
-    typename std::list< IkSolution< T > >::const_iterator it = _listsolutions.begin();
+    typename std::list<IkSolution<T> >::const_iterator it = _listsolutions.begin();
     std::advance(it, index);
     return *it;
   }
@@ -315,7 +303,7 @@ public:
   }
 
 protected:
-  std::list< IkSolution< T > > _listsolutions;
+  std::list<IkSolution<T> > _listsolutions;
 };
 }
 
@@ -358,12 +346,7 @@ typedef double IkReal;
    effector coordinate system.
  */
 IKFAST_API bool ComputeIk(const IkReal* eetrans, const IkReal* eerot, const IkReal* pfree,
-                          ikfast::IkSolutionListBase< IkReal >& solutions);
-
-/** \brief Similar to ComputeIk except takes OpenRAVE boost::shared_ptr<RobotBase::Manipulator>*
- */
-IKFAST_API bool ComputeIk2(const IkReal* eetrans, const IkReal* eerot, const IkReal* pfree,
-                           ikfast::IkSolutionListBase< IkReal >& solutions, void* pOpenRAVEManip);
+                          ikfast::IkSolutionListBase<IkReal>& solutions);
 
 /// \brief Computes the end effector coordinates given the joint values. This function is used to double check ik.
 IKFAST_API void ComputeFk(const IkReal* joints, IkReal* eetrans, IkReal* eerot);

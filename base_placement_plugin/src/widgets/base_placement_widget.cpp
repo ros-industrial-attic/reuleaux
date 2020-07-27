@@ -4,8 +4,8 @@
 
 #include <map_creator/hdf5_dataset.h>
 
-#include <H5Cpp.h>
-#include <hdf5.h>
+#include <hdf5/serial/H5Cpp.h>
+#include <hdf5/serial/hdf5.h>
 
 namespace base_placement_plugin
 {
