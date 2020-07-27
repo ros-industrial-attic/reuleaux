@@ -35,6 +35,7 @@
 #include <vector>
 #include <list>
 #include <stdexcept>
+#include <cmath>
 
 #ifndef IKFAST_HEADER_COMMON
 #define IKFAST_HEADER_COMMON
