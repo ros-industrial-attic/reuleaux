@@ -12,9 +12,11 @@
 #include <map_creator/sphere_discretization.h>
 #include <map_creator/kinematics.h>
 #include<map_creator/hdf5_dataset.h>
+#include <boost/format.hpp>
+
 
 //struct stat st;
-
+using namespace std;
 bool isFloat(std::string s)
 {
   std::istringstream iss(s);
