@@ -8,7 +8,7 @@
 #include<base_placement_plugin/create_marker.h>
 
 #include<moveit/planning_scene_monitor/planning_scene_monitor.h>
-#include<moveit/move_group_interface/move_group.h>
+#include<moveit/move_group_interface/move_group_interface.h>
 #include<moveit/robot_model_loader/robot_model_loader.h>
 #include<moveit/robot_model/robot_model.h>
 #include<moveit/robot_model/joint_model_group.h>

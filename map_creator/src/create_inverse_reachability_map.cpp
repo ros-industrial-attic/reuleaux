@@ -22,11 +22,13 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <ctime>
+#include <boost/format.hpp>
+
 
 #include <string>
 #include <time.h>
 //struct stat st;
-
+using namespace std;
 int main(int argc, char **argv)
 {
 ros::init(argc, argv, "inverse_workspace");

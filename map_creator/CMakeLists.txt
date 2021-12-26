@@ -50,6 +50,8 @@ add_library(sphere_discretization  src/sphere_discretization.cpp)
 add_library(kinematics  src/kinematics.cpp )
 add_library(hdf5_dataset  src/hdf5_dataset.cpp)
 
+
+
 target_link_libraries(sphere_discretization  ${catkin_LIBRARIES} ${OCTOMAP_LIBRARIES} ${PCL_LIBRARY_DIRS})
 target_link_libraries(kinematics  ${catkin_LIBRARIES} -llapack)
 target_link_libraries(hdf5_dataset  ${catkin_LIBRARIES} -lhdf5 -lhdf5_cpp)

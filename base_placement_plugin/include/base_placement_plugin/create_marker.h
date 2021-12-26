@@ -9,7 +9,7 @@
 #include <Eigen/Eigen>
 #include <eigen_conversions/eigen_msg.h>
 
-#include<moveit/move_group_interface/move_group.h>
+#include<moveit/move_group_interface/move_group_interface.h>
 #include<moveit/robot_state/robot_state.h>
 
 #include<moveit/robot_model_loader/robot_model_loader.h>
@@ -52,7 +52,7 @@ private:
 
   std::string group_name_;
   ros::AsyncSpinner spinner;
-  boost::scoped_ptr<moveit::planning_interface::MoveGroup> group_;
+  boost::scoped_ptr<moveit::planning_interface::MoveGroupInterface> group_;
   std::string parent_link;
   moveit::core::RobotModelConstPtr robot_model_; //Robot model const pointer
 };

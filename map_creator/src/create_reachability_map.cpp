@@ -14,9 +14,11 @@
 #include <map_creator/sphere_discretization.h>
 #include <map_creator/kinematics.h>
 #include<map_creator/hdf5_dataset.h>
+#include <boost/format.hpp>
+
 
 //struct stat st;
-
+using namespace std;
 typedef std::vector<std::pair< std::vector< double >, const std::vector< double >* > > MultiVector;
 //typedef std::multimap< const std::vector< double >*, const std::vector< double >* > MultiMap;
 
