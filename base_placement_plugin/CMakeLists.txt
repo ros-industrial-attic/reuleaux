@@ -20,9 +20,18 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_core
 )
 
-find_package(Qt4 COMPONENTS QtCore QtGui REQUIRED)
+if(rviz_QT_VERSION VERSION_LESS "5")
+  find_package(Qt4 ${rviz_QT_VERSION} REQUIRED QtCore QtGui)
+  include(${QT_USE_FILE})
+  set(QT_LIBRARIES )
+else()
+  find_package(Qt5 ${rviz_QT_VERSION} REQUIRED Core Widgets Concurrent)
+  set(QT_LIBRARIES Qt5::Core Qt5::Widgets Qt5::Concurrent)
+endif()
+# Instruct CMake to run moc automatically when needed.
+set(CMAKE_AUTOMOC ON)
 
-include(${QT_USE_FILE})
+find_package(HDF5 REQUIRED)
 
 
 add_definitions(-DQT_NO_KEYWORDS)
@@ -39,7 +48,6 @@ set(base_placement_plugin_SRCS
   src/place_base.cpp
   src/add_robot_base.cpp
 
-  
   ${MOC_FILES}
 )
 
@@ -77,12 +85,18 @@ catkin_package(
   map_creator
 )
 
-qt4_wrap_cpp(base_placement_plugin_MOCS ${base_placement_plugin_HDRS} )
-qt4_wrap_ui(base_placement_plugin_UIS_H ${base_placement_plugin_UIS} )
+if(rviz_QT_VERSION VERSION_LESS "5")
+  qt4_wrap_cpp(base_placement_plugin_MOCS ${base_placement_plugin_HDRS} )
+  qt4_wrap_ui(base_placement_plugin_UIS_H ${base_placement_plugin_UIS} )
+else()
+  qt5_wrap_cpp(base_placement_plugin_MOCS ${base_placement_plugin_HDRS} )
+  qt5_wrap_ui(base_placement_plugin_UIS_H ${base_placement_plugin_UIS} )
+endif()
 
-include_directories(${base_placement_plugin_INCLUDE_DIRECTORIES} ${catkin_INCLUDE_DIRS})
+
+include_directories(${base_placement_plugin_INCLUDE_DIRECTORIES} ${catkin_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
 add_library(${PROJECT_NAME} ${base_placement_plugin_SRCS} ${base_placement_plugin_MOCS} ${base_placement_plugin_UIS_H}) # ${base_placement_plugin_UIS_H}
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY}  yaml-cpp -lhdf5 -lhdf5_cpp  create_marker)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${QT_LIBRARIES} yaml-cpp ${HDF5_LIBRARIES} create_marker)
 ## target_link_libraries(${PROJECT_NAME} yaml-cpp)
 
 

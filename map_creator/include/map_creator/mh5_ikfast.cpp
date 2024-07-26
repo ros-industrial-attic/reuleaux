@@ -20,6 +20,7 @@
 #define IKFAST_HAS_LIBRARY
 #include "ikfast.h"  // found inside share/openrave-X.Y/python/ikfast.h
 using namespace ikfast;
+using namespace std;
 
 // check if the included ikfast version matches what this file was compiled with
 #define IKFAST_COMPILE_ASSERT(x) extern int __dummy[(int)x]

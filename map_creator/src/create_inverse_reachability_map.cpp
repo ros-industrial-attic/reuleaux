@@ -25,6 +25,8 @@
 
 #include <string>
 #include <time.h>
+#include <boost/format.hpp>
+#include <boost/filesystem.hpp>
 //struct stat st;
 
 int main(int argc, char **argv)
@@ -63,7 +65,7 @@ ros::init(argc, argv, "inverse_workspace");
       h5_res.open();
       h5_res.h5ToResolution(res);
       h5_res.close();
-      file =  str(boost::format("%s_r%d_Inv_reachability.h5") % k.getRobotName() % res);
+      file =  (boost::format("%s_r%d_Inv_reachability.h5") % k.getRobotName() % res).str();
       filename = path + file;
     }
   }
